@@ -8,7 +8,10 @@ import {
   parentProfileSchema,
   type ParentProfileInput
 } from "@/lib/validations/parent.schema";
-import { getParentOnboardingStatus } from "@/server/queries/parent.queries";
+import {
+  getCurrentParentProfile,
+  getParentOnboardingStatus
+} from "@/server/queries/parent.queries";
 
 type ParentProfileFieldErrors = Partial<Record<keyof ParentProfileInput, string>>;
 
@@ -26,6 +29,12 @@ export type ParentOnboardingStatusActionResult = {
   success: boolean;
   message: string;
   data?: Awaited<ReturnType<typeof getParentOnboardingStatus>>;
+};
+
+export type CurrentParentProfileActionResult = {
+  success: boolean;
+  message: string;
+  data?: Awaited<ReturnType<typeof getCurrentParentProfile>>;
 };
 
 export async function upsertParentProfileAction(
@@ -173,6 +182,30 @@ export async function getParentOnboardingStatusAction(): Promise<ParentOnboardin
           error.code === "UNAUTHENTICATED"
             ? "Authentication required."
             : "You do not have permission to view onboarding status."
+      };
+    }
+
+    throw error;
+  }
+}
+
+export async function getCurrentParentProfileAction(): Promise<CurrentParentProfileActionResult> {
+  try {
+    const parentProfile = await getCurrentParentProfile();
+
+    return {
+      success: true,
+      message: "Parent profile loaded.",
+      data: parentProfile
+    };
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return {
+        success: false,
+        message:
+          error.code === "UNAUTHENTICATED"
+            ? "Authentication required."
+            : "You do not have permission to view this parent profile."
       };
     }
 

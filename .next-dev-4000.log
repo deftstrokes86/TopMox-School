@@ -50,3 +50,865 @@
  ✓ Compiled /_not-found in 747ms (1295 modules)
  GET /_next/static/css/app/layout.css?v=1778781450041 404 in 907ms
  GET /_next/static/css/app/layout.css?v=1778781450041 404 in 29ms
+ ⨯ Error: Cannot find module './276.js'
+Require stack:
+- E:\TopMox-School\.next\server\webpack-runtime.js
+- E:\TopMox-School\.next\server\app\_not-found\page.js
+- E:\TopMox-School\node_modules\next\dist\server\require.js
+- E:\TopMox-School\node_modules\next\dist\server\load-components.js
+- E:\TopMox-School\node_modules\next\dist\build\utils.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-middleware.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1475:15)
+    at E:\TopMox-School\node_modules\next\dist\server\require-hook.js:55:36
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)
+    at Module._load (node:internal/modules/cjs/loader:1261:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at __webpack_require__.f.require (E:\TopMox-School\.next\server\webpack-runtime.js:198:28)
+    at E:\TopMox-School\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (E:\TopMox-School\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (E:\TopMox-School\.next\server\webpack-runtime.js:162:22)
+    at E:\TopMox-School\.next\server\app\(public)\page.js:1:20624
+    at Object.<anonymous> (E:\TopMox-School\.next\server\app\(public)\page.js:1:20693)
+    at Module._compile (node:internal/modules/cjs/loader:1829:14)
+    at Object..js (node:internal/modules/cjs/loader:1969:10)
+    at Module.load (node:internal/modules/cjs/loader:1552:32)
+    at Module._load (node:internal/modules/cjs/loader:1354:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at requirePage (E:\TopMox-School\node_modules\next\dist\server\require.js:109:84)
+    at E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (E:\TopMox-School\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:818:17)
+    at async E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (E:\TopMox-School\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'E:\\TopMox-School\\.next\\server\\webpack-runtime.js',
+    'E:\\TopMox-School\\.next\\server\\app\\_not-found\\page.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\require.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\load-components.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\build\\utils.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 2.3s (1533 modules)
+ GET / 500 in 2528ms
+ ✓ Compiled in 478ms (822 modules)
+ ⨯ Error: Cannot find module './276.js'
+Require stack:
+- E:\TopMox-School\.next\server\webpack-runtime.js
+- E:\TopMox-School\.next\server\pages\_document.js
+- E:\TopMox-School\node_modules\next\dist\server\require.js
+- E:\TopMox-School\node_modules\next\dist\server\load-components.js
+- E:\TopMox-School\node_modules\next\dist\build\utils.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-middleware.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1475:15)
+    at E:\TopMox-School\node_modules\next\dist\server\require-hook.js:55:36
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)
+    at Module._load (node:internal/modules/cjs/loader:1261:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at __webpack_require__.f.require (E:\TopMox-School\.next\server\webpack-runtime.js:198:28)
+    at E:\TopMox-School\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (E:\TopMox-School\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (E:\TopMox-School\.next\server\webpack-runtime.js:162:22)
+    at E:\TopMox-School\.next\server\app\(public)\page.js:1:20624
+    at Object.<anonymous> (E:\TopMox-School\.next\server\app\(public)\page.js:1:20693)
+    at Module._compile (node:internal/modules/cjs/loader:1829:14)
+    at Object..js (node:internal/modules/cjs/loader:1969:10)
+    at Module.load (node:internal/modules/cjs/loader:1552:32)
+    at Module._load (node:internal/modules/cjs/loader:1354:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at requirePage (E:\TopMox-School\node_modules\next\dist\server\require.js:109:84)
+    at E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (E:\TopMox-School\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:818:17)
+    at async E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (E:\TopMox-School\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'E:\\TopMox-School\\.next\\server\\webpack-runtime.js',
+    'E:\\TopMox-School\\.next\\server\\pages\\_document.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\require.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\load-components.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\build\\utils.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/'
+}
+ GET / 500 in 57ms
+ ✓ Compiled in 304ms (822 modules)
+ ⨯ Error: Cannot find module './276.js'
+Require stack:
+- E:\TopMox-School\.next\server\webpack-runtime.js
+- E:\TopMox-School\.next\server\pages\_document.js
+- E:\TopMox-School\node_modules\next\dist\server\require.js
+- E:\TopMox-School\node_modules\next\dist\server\load-components.js
+- E:\TopMox-School\node_modules\next\dist\build\utils.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-middleware.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1475:15)
+    at E:\TopMox-School\node_modules\next\dist\server\require-hook.js:55:36
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)
+    at Module._load (node:internal/modules/cjs/loader:1261:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at __webpack_require__.f.require (E:\TopMox-School\.next\server\webpack-runtime.js:198:28)
+    at E:\TopMox-School\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (E:\TopMox-School\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (E:\TopMox-School\.next\server\webpack-runtime.js:162:22)
+    at E:\TopMox-School\.next\server\app\(public)\page.js:1:20624
+    at Object.<anonymous> (E:\TopMox-School\.next\server\app\(public)\page.js:1:20693)
+    at Module._compile (node:internal/modules/cjs/loader:1829:14)
+    at Object..js (node:internal/modules/cjs/loader:1969:10)
+    at Module.load (node:internal/modules/cjs/loader:1552:32)
+    at Module._load (node:internal/modules/cjs/loader:1354:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at requirePage (E:\TopMox-School\node_modules\next\dist\server\require.js:109:84)
+    at E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (E:\TopMox-School\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:818:17)
+    at async E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (E:\TopMox-School\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'E:\\TopMox-School\\.next\\server\\webpack-runtime.js',
+    'E:\\TopMox-School\\.next\\server\\pages\\_document.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\require.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\load-components.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\build\\utils.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/'
+}
+ GET / 500 in 29ms
+ ✓ Compiled in 324ms (822 modules)
+ ⨯ Error: Cannot find module './276.js'
+Require stack:
+- E:\TopMox-School\.next\server\webpack-runtime.js
+- E:\TopMox-School\.next\server\pages\_document.js
+- E:\TopMox-School\node_modules\next\dist\server\require.js
+- E:\TopMox-School\node_modules\next\dist\server\load-components.js
+- E:\TopMox-School\node_modules\next\dist\build\utils.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-middleware.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1475:15)
+    at E:\TopMox-School\node_modules\next\dist\server\require-hook.js:55:36
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)
+    at Module._load (node:internal/modules/cjs/loader:1261:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at __webpack_require__.f.require (E:\TopMox-School\.next\server\webpack-runtime.js:198:28)
+    at E:\TopMox-School\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (E:\TopMox-School\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (E:\TopMox-School\.next\server\webpack-runtime.js:162:22)
+    at E:\TopMox-School\.next\server\app\(public)\page.js:1:20624
+    at Object.<anonymous> (E:\TopMox-School\.next\server\app\(public)\page.js:1:20693)
+    at Module._compile (node:internal/modules/cjs/loader:1829:14)
+    at Object..js (node:internal/modules/cjs/loader:1969:10)
+    at Module.load (node:internal/modules/cjs/loader:1552:32)
+    at Module._load (node:internal/modules/cjs/loader:1354:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at requirePage (E:\TopMox-School\node_modules\next\dist\server\require.js:109:84)
+    at E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (E:\TopMox-School\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:818:17)
+    at async E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (E:\TopMox-School\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'E:\\TopMox-School\\.next\\server\\webpack-runtime.js',
+    'E:\\TopMox-School\\.next\\server\\pages\\_document.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\require.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\load-components.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\build\\utils.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/'
+}
+ GET / 500 in 47ms
+ ✓ Compiled in 1316ms (1533 modules)
+ ⨯ Error: Cannot find module './276.js'
+Require stack:
+- E:\TopMox-School\.next\server\webpack-runtime.js
+- E:\TopMox-School\.next\server\app\(public)\page.js
+- E:\TopMox-School\node_modules\next\dist\server\require.js
+- E:\TopMox-School\node_modules\next\dist\server\load-components.js
+- E:\TopMox-School\node_modules\next\dist\build\utils.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-middleware.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1475:15)
+    at E:\TopMox-School\node_modules\next\dist\server\require-hook.js:55:36
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)
+    at Module._load (node:internal/modules/cjs/loader:1261:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at __webpack_require__.f.require (E:\TopMox-School\.next\server\webpack-runtime.js:198:28)
+    at E:\TopMox-School\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (E:\TopMox-School\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (E:\TopMox-School\.next\server\webpack-runtime.js:162:22)
+    at E:\TopMox-School\.next\server\app\(public)\page.js:1:20624
+    at Object.<anonymous> (E:\TopMox-School\.next\server\app\(public)\page.js:1:20693)
+    at Module._compile (node:internal/modules/cjs/loader:1829:14)
+    at Object..js (node:internal/modules/cjs/loader:1969:10)
+    at Module.load (node:internal/modules/cjs/loader:1552:32)
+    at Module._load (node:internal/modules/cjs/loader:1354:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at requirePage (E:\TopMox-School\node_modules\next\dist\server\require.js:109:84)
+    at E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (E:\TopMox-School\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:818:17)
+    at async E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (E:\TopMox-School\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'E:\\TopMox-School\\.next\\server\\webpack-runtime.js',
+    'E:\\TopMox-School\\.next\\server\\app\\(public)\\page.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\require.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\load-components.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\build\\utils.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/'
+}
+ GET / 500 in 1062ms
+ ✓ Compiled in 433ms (822 modules)
+ ⨯ SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>)
+    at loadManifest (E:\TopMox-School\node_modules\next\dist\server\load-manifest.js:36:25)
+    at DevServer.getNextFontManifest (E:\TopMox-School\node_modules\next\dist\server\next-server.js:750:47)
+    at DevServer.findPageComponents (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:571:43)
+    at async DevServer.renderPageComponent (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (E:\TopMox-School\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:818:17)
+    at async E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (E:\TopMox-School\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  page: '/'
+}
+ ✓ Compiled in 525ms (1519 modules)
+ GET / 500 in 523ms
+ ✓ Compiled in 520ms (822 modules)
+ ⨯ Error: Cannot find module './276.js'
+Require stack:
+- E:\TopMox-School\.next\server\webpack-runtime.js
+- E:\TopMox-School\.next\server\pages\_document.js
+- E:\TopMox-School\node_modules\next\dist\server\require.js
+- E:\TopMox-School\node_modules\next\dist\server\load-components.js
+- E:\TopMox-School\node_modules\next\dist\build\utils.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-middleware.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1475:15)
+    at E:\TopMox-School\node_modules\next\dist\server\require-hook.js:55:36
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)
+    at Module._load (node:internal/modules/cjs/loader:1261:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at __webpack_require__.f.require (E:\TopMox-School\.next\server\webpack-runtime.js:198:28)
+    at E:\TopMox-School\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (E:\TopMox-School\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (E:\TopMox-School\.next\server\webpack-runtime.js:162:22)
+    at E:\TopMox-School\.next\server\app\(public)\page.js:1:20624
+    at Object.<anonymous> (E:\TopMox-School\.next\server\app\(public)\page.js:1:20693)
+    at Module._compile (node:internal/modules/cjs/loader:1829:14)
+    at Object..js (node:internal/modules/cjs/loader:1969:10)
+    at Module.load (node:internal/modules/cjs/loader:1552:32)
+    at Module._load (node:internal/modules/cjs/loader:1354:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at requirePage (E:\TopMox-School\node_modules\next\dist\server\require.js:109:84)
+    at E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (E:\TopMox-School\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:818:17)
+    at async E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (E:\TopMox-School\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'E:\\TopMox-School\\.next\\server\\webpack-runtime.js',
+    'E:\\TopMox-School\\.next\\server\\pages\\_document.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\require.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\load-components.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\build\\utils.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/'
+}
+ GET / 500 in 45ms
+ ✓ Compiled in 399ms (822 modules)
+ ⨯ Error: Cannot find module './276.js'
+Require stack:
+- E:\TopMox-School\.next\server\webpack-runtime.js
+- E:\TopMox-School\.next\server\pages\_document.js
+- E:\TopMox-School\node_modules\next\dist\server\require.js
+- E:\TopMox-School\node_modules\next\dist\server\load-components.js
+- E:\TopMox-School\node_modules\next\dist\build\utils.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-middleware.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1475:15)
+    at E:\TopMox-School\node_modules\next\dist\server\require-hook.js:55:36
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)
+    at Module._load (node:internal/modules/cjs/loader:1261:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at __webpack_require__.f.require (E:\TopMox-School\.next\server\webpack-runtime.js:198:28)
+    at E:\TopMox-School\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (E:\TopMox-School\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (E:\TopMox-School\.next\server\webpack-runtime.js:162:22)
+    at E:\TopMox-School\.next\server\app\(public)\page.js:1:20624
+    at Object.<anonymous> (E:\TopMox-School\.next\server\app\(public)\page.js:1:20693)
+    at Module._compile (node:internal/modules/cjs/loader:1829:14)
+    at Object..js (node:internal/modules/cjs/loader:1969:10)
+    at Module.load (node:internal/modules/cjs/loader:1552:32)
+    at Module._load (node:internal/modules/cjs/loader:1354:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at requirePage (E:\TopMox-School\node_modules\next\dist\server\require.js:109:84)
+    at E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (E:\TopMox-School\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:818:17)
+    at async E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (E:\TopMox-School\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'E:\\TopMox-School\\.next\\server\\webpack-runtime.js',
+    'E:\\TopMox-School\\.next\\server\\pages\\_document.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\require.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\load-components.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\build\\utils.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/'
+}
+ GET / 500 in 21ms
+ ✓ Compiled in 321ms (822 modules)
+ ⨯ Error: Cannot find module './276.js'
+Require stack:
+- E:\TopMox-School\.next\server\webpack-runtime.js
+- E:\TopMox-School\.next\server\pages\_document.js
+- E:\TopMox-School\node_modules\next\dist\server\require.js
+- E:\TopMox-School\node_modules\next\dist\server\load-components.js
+- E:\TopMox-School\node_modules\next\dist\build\utils.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-middleware.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1475:15)
+    at E:\TopMox-School\node_modules\next\dist\server\require-hook.js:55:36
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)
+    at Module._load (node:internal/modules/cjs/loader:1261:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at __webpack_require__.f.require (E:\TopMox-School\.next\server\webpack-runtime.js:198:28)
+    at E:\TopMox-School\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (E:\TopMox-School\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (E:\TopMox-School\.next\server\webpack-runtime.js:162:22)
+    at E:\TopMox-School\.next\server\app\(public)\page.js:1:20624
+    at Object.<anonymous> (E:\TopMox-School\.next\server\app\(public)\page.js:1:20693)
+    at Module._compile (node:internal/modules/cjs/loader:1829:14)
+    at Object..js (node:internal/modules/cjs/loader:1969:10)
+    at Module.load (node:internal/modules/cjs/loader:1552:32)
+    at Module._load (node:internal/modules/cjs/loader:1354:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at requirePage (E:\TopMox-School\node_modules\next\dist\server\require.js:109:84)
+    at E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (E:\TopMox-School\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:818:17)
+    at async E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (E:\TopMox-School\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'E:\\TopMox-School\\.next\\server\\webpack-runtime.js',
+    'E:\\TopMox-School\\.next\\server\\pages\\_document.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\require.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\load-components.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\build\\utils.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/'
+}
+ GET / 500 in 25ms
+ ⨯ Error: Cannot find module './276.js'
+Require stack:
+- E:\TopMox-School\.next\server\webpack-runtime.js
+- E:\TopMox-School\.next\server\pages\_document.js
+- E:\TopMox-School\node_modules\next\dist\server\require.js
+- E:\TopMox-School\node_modules\next\dist\server\load-components.js
+- E:\TopMox-School\node_modules\next\dist\build\utils.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-middleware.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1475:15)
+    at E:\TopMox-School\node_modules\next\dist\server\require-hook.js:55:36
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)
+    at Module._load (node:internal/modules/cjs/loader:1261:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at __webpack_require__.f.require (E:\TopMox-School\.next\server\webpack-runtime.js:198:28)
+    at E:\TopMox-School\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (E:\TopMox-School\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (E:\TopMox-School\.next\server\webpack-runtime.js:162:22)
+    at E:\TopMox-School\.next\server\app\(public)\page.js:1:20624
+    at Object.<anonymous> (E:\TopMox-School\.next\server\app\(public)\page.js:1:20693)
+    at Module._compile (node:internal/modules/cjs/loader:1829:14)
+    at Object..js (node:internal/modules/cjs/loader:1969:10)
+    at Module.load (node:internal/modules/cjs/loader:1552:32)
+    at Module._load (node:internal/modules/cjs/loader:1354:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at requirePage (E:\TopMox-School\node_modules\next\dist\server\require.js:109:84)
+    at E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (E:\TopMox-School\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:818:17)
+    at async E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (E:\TopMox-School\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'E:\\TopMox-School\\.next\\server\\webpack-runtime.js',
+    'E:\\TopMox-School\\.next\\server\\pages\\_document.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\require.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\load-components.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\build\\utils.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/'
+}
+ GET / 500 in 28ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 723ms (1536 modules)
+ GET /_next/static/chunks/webpack.js 404 in 903ms
+ GET /_next/static/chunks/pages/_app.js 404 in 901ms
+ GET /_next/static/development/_buildManifest.js 404 in 902ms
+ GET /_next/static/chunks/main.js 404 in 904ms
+ GET /_next/static/development/_ssgManifest.js 404 in 901ms
+ GET /_next/static/chunks/pages/_error.js 404 in 894ms
+ GET /_next/static/chunks/react-refresh.js 404 in 66ms
+ ⨯ Error: Cannot find module './276.js'
+Require stack:
+- E:\TopMox-School\.next\server\webpack-runtime.js
+- E:\TopMox-School\.next\server\app\_not-found\page.js
+- E:\TopMox-School\node_modules\next\dist\server\require.js
+- E:\TopMox-School\node_modules\next\dist\server\load-components.js
+- E:\TopMox-School\node_modules\next\dist\build\utils.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-middleware.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1475:15)
+    at E:\TopMox-School\node_modules\next\dist\server\require-hook.js:55:36
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)
+    at Module._load (node:internal/modules/cjs/loader:1261:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at __webpack_require__.f.require (E:\TopMox-School\.next\server\webpack-runtime.js:198:28)
+    at E:\TopMox-School\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (E:\TopMox-School\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (E:\TopMox-School\.next\server\webpack-runtime.js:162:22)
+    at E:\TopMox-School\.next\server\app\(public)\page.js:1:20624
+    at Object.<anonymous> (E:\TopMox-School\.next\server\app\(public)\page.js:1:20693)
+    at Module._compile (node:internal/modules/cjs/loader:1829:14)
+    at Object..js (node:internal/modules/cjs/loader:1969:10)
+    at Module.load (node:internal/modules/cjs/loader:1552:32)
+    at Module._load (node:internal/modules/cjs/loader:1354:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at requirePage (E:\TopMox-School\node_modules\next\dist\server\require.js:109:84)
+    at E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:84
+    at async loadComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\load-components.js:103:26)
+    at async DevServer.findPageComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\next-server.js:714:36)
+    at async DevServer.findPageComponents (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1910:24)
+    at async DevServer.renderToResponseImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (E:\TopMox-School\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (E:\TopMox-School\node_modules\next\dist\server\base-server.js:818:17)
+    at async E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (E:\TopMox-School\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (E:\TopMox-School\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'E:\\TopMox-School\\.next\\server\\webpack-runtime.js',
+    'E:\\TopMox-School\\.next\\server\\app\\_not-found\\page.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\require.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\load-components.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\build\\utils.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/'
+}
+ ⨯ Error: Cannot find module './682.js'
+Require stack:
+- E:\TopMox-School\.next\server\webpack-runtime.js
+- E:\TopMox-School\.next\server\app\_not-found\page.js
+- E:\TopMox-School\node_modules\next\dist\server\require.js
+- E:\TopMox-School\node_modules\next\dist\server\load-components.js
+- E:\TopMox-School\node_modules\next\dist\build\utils.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-middleware.js
+- E:\TopMox-School\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\router-server.js
+- E:\TopMox-School\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1475:15)
+    at E:\TopMox-School\node_modules\next\dist\server\require-hook.js:55:36
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)
+    at Module._load (node:internal/modules/cjs/loader:1261:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at __webpack_require__.f.require (E:\TopMox-School\.next\server\webpack-runtime.js:198:28)
+    at E:\TopMox-School\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (E:\TopMox-School\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (E:\TopMox-School\.next\server\webpack-runtime.js:162:22)
+    at E:\TopMox-School\.next\server\pages\_document.js:1:340
+    at Object.<anonymous> (E:\TopMox-School\.next\server\pages\_document.js:1:382)
+    at Module._compile (node:internal/modules/cjs/loader:1829:14)
+    at Object..js (node:internal/modules/cjs/loader:1969:10)
+    at Module.load (node:internal/modules/cjs/loader:1552:32)
+    at Module._load (node:internal/modules/cjs/loader:1354:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1575:12)
+    at mod.require (E:\TopMox-School\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:191:16)
+    at requirePage (E:\TopMox-School\node_modules\next\dist\server\require.js:109:84)
+    at E:\TopMox-School\node_modules\next\dist\server\load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (E:\TopMox-School\node_modules\next\dist\server\next-server.js:714:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'E:\\TopMox-School\\.next\\server\\webpack-runtime.js',
+    'E:\\TopMox-School\\.next\\server\\app\\_not-found\\page.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\require.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\load-components.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\build\\utils.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'E:\\TopMox-School\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+ GET / 500 in 1363ms
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, lstat 'E:\TopMox-School\.next\server\vendor-chunks\@swc.js'
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving './vendor-chunks/@swc' in E:\TopMox-School\.next\server for build dependencies doesn't lead to expected result 'E:\TopMox-School\.next\server\vendor-chunks\@swc.js', but to 'Error: Can't resolve './vendor-chunks/@swc' in 'E:\TopMox-School\.next\server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ./vendor-chunks/@swc (expected E:\TopMox-School\.next\server\vendor-chunks\@swc.js)
+<w>  at file dependencies E:\TopMox-School\.next\server\webpack-runtime.js
+<w>  at file E:\TopMox-School\.next\server\webpack-runtime.js
+<w>  at file dependencies E:\TopMox-School\.next\server\pages\_app.js
+<w>  at file E:\TopMox-School\.next\server\pages\_app.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\server\require.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\server\require.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\server\load-components.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\server\load-components.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\build\utils.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\build\utils.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\compiled\loader-runner\LoaderRunner.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\compiled\loader-runner\LoaderRunner.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\compiled\webpack\bundle5.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\compiled\webpack\bundle5.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\compiled\webpack\webpack.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\compiled\webpack\webpack.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\build\webpack\plugins\define-env-plugin.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\build\webpack\plugins\define-env-plugin.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\build\swc\index.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\build\swc\index.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at resolve commonjs E:\TopMox-School\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving './vendor-chunks/next' in E:\TopMox-School\.next\server for build dependencies doesn't lead to expected result 'E:\TopMox-School\.next\server\vendor-chunks\next.js', but to 'Error: Can't resolve './vendor-chunks/next' in 'E:\TopMox-School\.next\server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ./vendor-chunks/next (expected E:\TopMox-School\.next\server\vendor-chunks\next.js)
+<w>  at file dependencies E:\TopMox-School\.next\server\webpack-runtime.js
+<w>  at file E:\TopMox-School\.next\server\webpack-runtime.js
+<w>  at file dependencies E:\TopMox-School\.next\server\pages\_app.js
+<w>  at file E:\TopMox-School\.next\server\pages\_app.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\server\require.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\server\require.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\server\load-components.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\server\load-components.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\build\utils.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\build\utils.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\build\webpack\loaders\next-route-loader\index.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\compiled\loader-runner\LoaderRunner.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\compiled\loader-runner\LoaderRunner.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\compiled\webpack\bundle5.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\compiled\webpack\bundle5.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\compiled\webpack\webpack.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\compiled\webpack\webpack.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\build\webpack\plugins\define-env-plugin.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\build\webpack\plugins\define-env-plugin.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\build\swc\index.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\build\swc\index.js
+<w>  at file dependencies E:\TopMox-School\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at file E:\TopMox-School\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at resolve commonjs E:\TopMox-School\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js

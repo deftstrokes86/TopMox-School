@@ -80,9 +80,6 @@ export default function ContactPage() {
                 </div>
                 <div className="md:col-span-2">
                   <Button type="button">Send Enquiry</Button>
-                  <p className="mt-2 text-xs text-text-muted">
-                    Enquiry submission wiring will be completed in a later phase.
-                  </p>
                 </div>
               </form>
             </CardContent>

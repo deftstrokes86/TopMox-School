@@ -413,7 +413,7 @@ export default function PublicHomePage() {
 }
 
 export const metadata: Metadata = {
-  title: "TopMox Global Tutoring | School-Backed Online Tutoring",
+  title: "TopMox Global Tutoring | School-Backed Online Tutoring for Children",
   description:
-    "School-backed online tutoring for children in Nigeria and abroad. Book a child assessment to get a structured learning recommendation and visible progress support."
+    "Structured online tutoring from TopMox Schools for children in Nigeria and abroad, with assessments, live lessons, parent visibility, and progress reports."
 };

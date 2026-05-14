@@ -4,14 +4,26 @@ export type NavigationItem = {
 };
 
 export const PUBLIC_NAV_ITEMS: NavigationItem[] = [
+  { label: "Home", href: "/" },
   { label: "Global Tutoring", href: "/global-tutoring" },
   { label: "Subjects", href: "/subjects" },
   { label: "Exam Prep", href: "/exam-prep" },
   { label: "Pricing", href: "/pricing" },
+  { label: "Resources", href: "/resources" },
   { label: "About", href: "/about" },
-  { label: "FAQ", href: "/faq" },
-  { label: "Contact", href: "/contact" },
-  { label: "Resources", href: "/resources" }
+  { label: "Contact", href: "/contact" }
+];
+
+export const PUBLIC_HELP_LINKS: NavigationItem[] = [
+  { label: "FAQ", href: "/faq" }
+];
+
+export const SUBJECT_LINKS: NavigationItem[] = [
+  { label: "Mathematics", href: "/subjects/mathematics" },
+  { label: "English", href: "/subjects/english" },
+  { label: "Science", href: "/subjects/science" },
+  { label: "Reading & Comprehension", href: "/subjects/reading-comprehension" },
+  { label: "Exam Preparation", href: "/exam-prep" }
 ];
 
 export const PARENT_NAV_ITEMS: NavigationItem[] = [

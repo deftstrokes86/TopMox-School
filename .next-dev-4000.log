@@ -1,9 +1,52 @@
 
 > topmox-global-tutoring@0.1.0 dev
-> next dev -p 4000
+> next dev --port 4000
 
   ▲ Next.js 14.2.35
   - Local:        http://localhost:4000
 
  ✓ Starting...
- ✓ Ready in 2.3s
+ ✓ Ready in 3.7s
+ ○ Compiling / ...
+ ✓ Compiled / in 6s (1298 modules)
+ GET / 200 in 6379ms
+ ○ Compiling /global-tutoring ...
+ ✓ Compiled /global-tutoring in 4.2s (1305 modules)
+ GET /global-tutoring 200 in 4365ms
+ ✓ Compiled /subjects in 295ms (1293 modules)
+ GET /subjects 200 in 396ms
+ ✓ Compiled /exam-prep in 266ms (1298 modules)
+ GET /exam-prep 200 in 361ms
+ ✓ Compiled /pricing in 303ms (1304 modules)
+ GET /pricing 200 in 397ms
+ ✓ Compiled /resources in 307ms (1312 modules)
+ GET /resources 200 in 394ms
+ ✓ Compiled /resources/[slug] in 323ms (1319 modules)
+ GET /resources/how-online-tutoring-works-at-topmox 200 in 860ms
+ ○ Compiling /about ...
+ ✓ Compiled /about in 601ms (1322 modules)
+ GET /about 200 in 688ms
+ ○ Compiling /contact ...
+ ✓ Compiled /contact in 665ms (1341 modules)
+ GET /contact 200 in 769ms
+ ✓ Compiled /faq in 350ms (1343 modules)
+ GET /faq 200 in 429ms
+ ✓ Compiled /book-assessment in 348ms (1346 modules)
+ GET /book-assessment 200 in 422ms
+ GET /about 200 in 57ms
+ ✓ Compiled in 824ms (636 modules)
+ ✓ Compiled in 466ms (636 modules)
+ ✓ Compiled in 226ms (636 modules)
+ ✓ Compiled in 249ms (636 modules)
+ ✓ Compiled in 226ms (636 modules)
+ ✓ Compiled in 484ms (636 modules)
+ ✓ Compiled in 249ms (636 modules)
+ ✓ Compiled in 297ms (636 modules)
+ ✓ Compiled in 391ms (636 modules)
+ ✓ Compiled in 259ms (636 modules)
+ ✓ Compiled in 217ms (636 modules)
+ ✓ Compiled in 425ms (636 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 747ms (1295 modules)
+ GET /_next/static/css/app/layout.css?v=1778781450041 404 in 907ms
+ GET /_next/static/css/app/layout.css?v=1778781450041 404 in 29ms

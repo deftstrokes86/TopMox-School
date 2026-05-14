@@ -1,58 +1,15 @@
 import { db } from "@/lib/db";
+import { canAccessStudentWithClient } from "./access-control-core";
 import type { AppRole } from "./types";
 
-/**
- * Phase 3A foundational authorization helper.
- * Final ownership and assignment rules will be tightened in Phase 3B+.
- */
 export async function canAccessStudent(
   userId: string,
   role: AppRole,
   studentId: string
 ): Promise<boolean> {
-  if (!userId || !studentId) {
-    return false;
-  }
-
-  if (role === "ADMIN") {
-    return true;
-  }
-
-  if (role === "PARENT") {
-    const student = await db.studentProfile.findFirst({
-      where: {
-        id: studentId,
-        parent: {
-          userId
-        }
-      },
-      select: { id: true }
-    });
-
-    return Boolean(student);
-  }
-
-  if (role === "TUTOR") {
-    const lesson = await db.lesson.findFirst({
-      where: {
-        studentId,
-        tutor: {
-          userId
-        }
-      },
-      select: { id: true }
-    });
-
-    return Boolean(lesson);
-  }
-
-  return false;
+  return canAccessStudentWithClient(db, userId, role, studentId);
 }
 
-/**
- * Phase 3A foundational authorization helper.
- * Final ownership and assignment rules will be tightened in Phase 3B+.
- */
 export async function canAccessLesson(
   userId: string,
   role: AppRole,
@@ -82,10 +39,6 @@ export async function canAccessLesson(
   return Boolean(lesson);
 }
 
-/**
- * Phase 3A foundational authorization helper.
- * Final ownership and assignment rules will be tightened in Phase 3B+.
- */
 export async function canAccessReport(
   userId: string,
   role: AppRole,
@@ -115,10 +68,6 @@ export async function canAccessReport(
   return Boolean(report);
 }
 
-/**
- * Phase 3A foundational authorization helper.
- * Final ownership and assignment rules will be tightened in Phase 3B+.
- */
 export async function canAccessPayment(
   userId: string,
   role: AppRole,
@@ -149,10 +98,6 @@ export async function canAccessPayment(
   return Boolean(payment);
 }
 
-/**
- * Phase 3A foundational authorization helper.
- * Final ownership and assignment rules will be tightened in Phase 3B+.
- */
 export async function canAccessAssessment(
   userId: string,
   role: AppRole,

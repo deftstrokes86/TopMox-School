@@ -1,3 +1,9 @@
 # Demo Data
 
-Phase 0 includes folder scaffolding only. Demo and mock datasets will be added during feature phases.
+This folder contains demo datasets used for phased MVP development before full
+database-backed querying is wired into public pages and dashboards.
+
+Current datasets:
+
+- `resources.ts`: Static public resource content used by `/resources` and
+  `/resources/[slug]` in Phase 4D.

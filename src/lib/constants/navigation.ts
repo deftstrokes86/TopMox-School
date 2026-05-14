@@ -6,6 +6,7 @@ export type NavigationItem = {
 export const PUBLIC_NAV_ITEMS: NavigationItem[] = [
   { label: "Global Tutoring", href: "/global-tutoring" },
   { label: "Subjects", href: "/subjects" },
+  { label: "Exam Prep", href: "/exam-prep" },
   { label: "Pricing", href: "/pricing" },
   { label: "Resources", href: "/resources" },
   { label: "FAQ", href: "/faq" }

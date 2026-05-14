@@ -9,7 +9,7 @@ import { getDashboardPathForRole } from "./role";
 import { isAppRole, type AppRole } from "./types";
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
   session: {
     strategy: "jwt"
   },

@@ -1,6 +1,6 @@
 "use server";
 
-import type { Prisma } from "@prisma/client";
+import type { PrismaClient } from "@prisma/client";
 
 import { AuthError, requireParent } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -86,8 +86,10 @@ export async function upsertParentProfileAction(
     }
 
     const parentProfile = await db.$transaction(
-      async (tx: Prisma.TransactionClient) => {
-        await tx.user.update({
+      async (tx: unknown) => {
+        const transaction = tx as PrismaClient;
+
+        await transaction.user.update({
           where: { id: user.id },
           data: {
             name: data.fullName.trim(),
@@ -96,7 +98,7 @@ export async function upsertParentProfileAction(
           select: { id: true }
         });
 
-        await tx.profile.upsert({
+        await transaction.profile.upsert({
           where: { userId: user.id },
           create: {
             userId: user.id,
@@ -112,7 +114,7 @@ export async function upsertParentProfileAction(
           select: { id: true }
         });
 
-        return tx.parentProfile.upsert({
+        return transaction.parentProfile.upsert({
           where: { userId: user.id },
           create: {
             userId: user.id,

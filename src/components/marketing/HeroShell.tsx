@@ -30,7 +30,7 @@ export function HeroShell({
   return (
     <section className="md:py-18 relative overflow-hidden rounded-2xl border border-royal-blue/20 bg-gradient-to-br from-deep-navy via-royal-blue to-[#2f75bf] px-6 py-14 text-white shadow-lifted md:px-10">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="max-w-3xl space-y-5"

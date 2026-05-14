@@ -1,62 +1,77 @@
 # Final Verification Report
 
-Date: 2026-05-14  
+Date/Time: 2026-05-14 22:00:40 +01:00  
 Repo: `TopMox-School`
 
-## Scope
+## Verification Summary
 
-Verification pass after blank-page recovery, Prisma/type hardening, and auth env stabilization.
+- Blank-page recovery flow is working.
+- Homepage renders real HTML (not an empty shell).
+- `/_next/static` assets return `200`.
+- No missing `.next` chunk/runtime errors were found.
+- No manifest JSON parse errors were found.
+- No NextAuth `NEXTAUTH_URL` / `NO_SECRET` warnings were found when env values were configured.
+- The only unresolved issue is Prisma binary download DNS/network failure (`EAI_AGAIN`) in this environment.
 
-## Commands Run
+## Commands Run and Status
 
 1. `npm run clean:next`  
 Status: **PASS**
 
-2. `npm run prisma:generate`  
+2. `npm run lint`  
+Status: **PASS**
+
+3. `npm run typecheck`  
+Status: **PASS**
+
+4. `npm test`  
+Status: **PASS** (21/21)
+
+5. `npm run build`  
+Status: **PASS**
+
+6. `npx prisma generate` (executed as `npx.cmd prisma generate` in this PowerShell environment)  
 Status: **FAIL**  
 Error:
-- `getaddrinfo EAI_AGAIN binaries.prisma.sh` (network/DNS fetch failure for Prisma engine binaries)
-
-3. `npm run lint`  
-Status: **PASS**
-
-4. `npm run typecheck`  
-Status: **PASS**
-
-5. `npm test`  
-Status: **PASS** (21 tests passed, 0 failed)
-
-6. `npm run build`  
-Status: **PASS**
+- `getaddrinfo EAI_AGAIN binaries.prisma.sh`
 
 7. `npm run dev:clean`  
-Status: **PASS** (started successfully on `http://localhost:4000`)
+Status: **PASS** (server started on `http://localhost:4000`)
 
-## Runtime Verification Results
+8. `npm run verify:homepage`  
+Status: **PASS**  
+Output:
+- `Homepage verification passed: status 200, HTML length 119663, contains "TopMox", checked 3 static asset(s).`
 
-Environment used for runtime check:
-- `NEXTAUTH_URL=http://localhost:4000`
-- `NEXTAUTH_SECRET` set (local test value)
+## Runtime and Log Checks
 
-Checks:
+Runtime checks:
 - Homepage response: **200**
-- Homepage HTML length: **119663** (non-empty, real HTML)
-- Homepage content includes TopMox copy: **Yes**
-- Static asset check: `/_next/static/css/app/layout.css?...` returned **200**
+- Homepage HTML length: **119663**
+- Homepage content contains `TopMox`: **Yes**
+- Static asset checks: **3 assets checked, all 200**
 
-## Log Checks
+Log pattern checks:
+- Missing chunk errors (`Cannot find module './276.js'`, webpack-runtime chunk failures): **Not found**
+- Manifest parse errors (`Unexpected end of JSON input`): **Not found**
+- NextAuth env warnings (`[next-auth][warn][NEXTAUTH_URL]`, `[next-auth][warn][NO_SECRET]`): **Not found**
+- Prisma generated-client runtime errors: **Not found**
 
-Searched dev logs for known failure patterns:
-- Missing chunk / `Cannot find module './276.js'`: **Not found**
-- Manifest JSON parse errors (`Unexpected end of JSON input`): **Not found**
-- NextAuth warnings (`NEXTAUTH_URL`, `NO_SECRET`): **Not found**
-- Prisma generated client runtime errors: **Not found**
+## Remaining Issue (Environment Limitation)
 
-## Remaining Issues
+`prisma generate` is currently blocked by DNS/network access to Prisma's binary host:
 
-1. `npm run prisma:generate` is currently blocked by external DNS/network access to `binaries.prisma.sh` in this environment.
-2. All other verification gates passed, including build, typecheck, tests, and runtime page/static asset checks.
+- Host: `binaries.prisma.sh`
+- Error: `EAI_AGAIN` (temporary DNS resolution failure)
 
-## Files Changed
+Interpretation:
+- This is a network/environment issue, not evidence of a blank-page source code problem.
+- Since lint/typecheck/test/build and homepage runtime verification all pass, the app is not considered broken by this Prisma network failure alone.
 
-- `docs/final-verification.md` (created)
+## Files Changed for This Verification Pass
+
+- `docs/final-verification.md` (updated)
+- `docs/dev-troubleshooting.md` (updated with Prisma `EAI_AGAIN` guidance)
+- `scripts/verify-homepage.mjs` (created)
+- `package.json` (added `verify:homepage` script)
+- `.env.example` (updated placeholders)

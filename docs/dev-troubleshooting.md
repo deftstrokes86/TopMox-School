@@ -31,3 +31,33 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 Then restart the dev server.
+
+## Prisma generate fails with EAI_AGAIN
+
+If `prisma generate` fails with an error like:
+
+- `getaddrinfo EAI_AGAIN binaries.prisma.sh`
+
+this means the current environment could not resolve or reach Prisma's binary download host.
+
+What this usually means:
+
+- It is a DNS/network connectivity issue, not a Prisma schema or app code issue.
+- If `lint`, `typecheck`, `test`, `build`, and homepage verification pass, this error should not be treated as the root cause of a blank page.
+- Retry Prisma generation on a machine/network with stable internet access.
+
+Commands to retry locally:
+
+```bash
+npx prisma generate
+npm run typecheck
+npm run build
+```
+
+Optional diagnostics:
+
+```bash
+nslookup binaries.prisma.sh
+npm config get proxy
+npm config get https-proxy
+```

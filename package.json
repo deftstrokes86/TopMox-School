@@ -7,6 +7,7 @@
     "dev:4000": "node scripts/dev-4000.mjs",
     "clean:next": "node scripts/clean-next-cache.mjs",
     "dev:clean": "npm run clean:next && next dev --port 4000",
+    "verify:homepage": "node scripts/verify-homepage.mjs",
     "build": "next build",
     "start": "next start",
     "start:4000": "next start --hostname 0.0.0.0 --port 4000",

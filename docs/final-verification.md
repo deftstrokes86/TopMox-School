@@ -1,16 +1,18 @@
 # Final Verification Report
 
-Date/Time: 2026-05-14 22:00:40 +01:00  
+Date/Time: 2026-05-14 22:06:00 +01:00  
 Repo: `TopMox-School`
 
 ## Verification Summary
 
 - Blank-page recovery flow is working.
-- Homepage renders real HTML (not an empty shell).
+- App renders correctly when started cleanly.
+- Homepage returns real HTML (not an empty shell).
 - `/_next/static` assets return `200`.
 - No missing `.next` chunk/runtime errors were found.
 - No manifest JSON parse errors were found.
 - No NextAuth `NEXTAUTH_URL` / `NO_SECRET` warnings were found when env values were configured.
+- No Prisma generated-client runtime errors were found.
 - The only unresolved issue is Prisma binary download DNS/network failure (`EAI_AGAIN`) in this environment.
 
 ## Commands Run and Status
@@ -65,13 +67,14 @@ Log pattern checks:
 - Error: `EAI_AGAIN` (temporary DNS resolution failure)
 
 Interpretation:
-- This is a network/environment issue, not evidence of a blank-page source code problem.
-- Since lint/typecheck/test/build and homepage runtime verification all pass, the app is not considered broken by this Prisma network failure alone.
+- This is a network/environment issue, not a blank-page source code issue.
+- Since lint/typecheck/test/build and homepage/static checks pass, this should not be treated as a product-code regression.
+- Retry Prisma generation on a machine/network with stable internet access.
 
 ## Files Changed for This Verification Pass
 
 - `docs/final-verification.md` (updated)
-- `docs/dev-troubleshooting.md` (updated with Prisma `EAI_AGAIN` guidance)
-- `scripts/verify-homepage.mjs` (created)
-- `package.json` (added `verify:homepage` script)
-- `.env.example` (updated placeholders)
+- `docs/dev-troubleshooting.md` (already contains Prisma `EAI_AGAIN` guidance)
+- `package.json` (contains `verify:homepage`)
+- `scripts/verify-homepage.mjs` (present and passing)
+- `.env.example` (contains required placeholders)

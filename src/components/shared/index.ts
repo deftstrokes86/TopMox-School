@@ -1,6 +1,7 @@
 export * from "@/components/shared/CTASection";
 export * from "@/components/shared/ConfirmDialog";
 export * from "@/components/shared/EmptyState";
+export * from "@/components/shared/ErrorBoundary";
 export * from "@/components/shared/ErrorState";
 export * from "@/components/shared/LoadingState";
 export * from "@/components/shared/PageHeader";

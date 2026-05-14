@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import "@/app/globals.css";
+import { ClientLayout } from "@/app/ClientLayout";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { BRAND } from "@/lib/constants/brand";
 
 export const metadata: Metadata = {
@@ -13,7 +15,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <ClientLayout>
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </ClientLayout>
+      </body>
     </html>
   );
 }

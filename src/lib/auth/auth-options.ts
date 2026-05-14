@@ -31,17 +31,35 @@ export const authOptions: NextAuthOptions = {
 
         const { email, password } = parsed.data;
         const normalizedEmail = email.trim().toLowerCase();
-        const { db } = await import("@/lib/db");
-        const user = await db.user.findUnique({
-          where: { email: normalizedEmail },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            role: true,
-            passwordHash: true
-          }
-        });
+        let user:
+          | {
+              id: string;
+              email: string;
+              name: string;
+              role: string;
+              passwordHash: string | null;
+            }
+          | null = null;
+
+        try {
+          const { db } = await import("@/lib/db");
+          user = await db.user.findUnique({
+            where: { email: normalizedEmail },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              role: true,
+              passwordHash: true
+            }
+          });
+        } catch (error) {
+          console.error("NextAuth authorize database query failed:", {
+            email: normalizedEmail,
+            error
+          });
+          return null;
+        }
 
         if (!user || !user.passwordHash || !isAppRole(user.role)) {
           return null;

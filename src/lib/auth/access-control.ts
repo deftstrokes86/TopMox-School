@@ -1,11 +1,5 @@
-import type { AppRole } from "./types";
-
 import { db } from "@/lib/db";
-
-type AccessCheckInput = {
-  userId: string;
-  role: AppRole;
-};
+import type { AppRole } from "./types";
 
 /**
  * Phase 3A foundational authorization helper.
@@ -187,8 +181,4 @@ export async function canAccessAssessment(
   });
 
   return Boolean(assessment);
-}
-
-export function normalizeAccessCheckInput(input: AccessCheckInput): AccessCheckInput {
-  return input;
 }

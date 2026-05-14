@@ -3,7 +3,6 @@ import { timingSafeEqual } from "crypto";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-import { db } from "@/lib/db";
 import { loginSchema } from "@/lib/validations/auth.schema";
 
 import { getDashboardPathForRole } from "./role";
@@ -57,6 +56,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         const { email, password } = parsed.data;
+        const { db } = await import("@/lib/db");
         const user = await db.user.findUnique({
           where: { email },
           select: {

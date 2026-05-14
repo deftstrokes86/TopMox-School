@@ -1,6 +1,7 @@
 "use server";
 
 import { AuthError, requireParent } from "@/lib/auth";
+import { SUPPORT_SUBJECT_OPTIONS } from "@/lib/constants/subjects";
 import { db } from "@/lib/db";
 import {
   childProfileSchema,
@@ -79,30 +80,25 @@ async function resolveSubjectIds(
     };
   }
 
-  const normalizedRequests = requestedSubjects.map((subject) =>
+  const supportedSubjectMap = new Map<
+    string,
+    { slug: string; name: string; description: string }
+  >();
+  for (const subject of SUPPORT_SUBJECT_OPTIONS) {
+    supportedSubjectMap.set(subject.slug.toLowerCase(), subject);
+    supportedSubjectMap.set(subject.name.toLowerCase(), subject);
+  }
+
+  const normalizedSubjects = requestedSubjects.map((subject) =>
     subject.toLowerCase()
   );
 
-  const subjects: Array<{ id: string; name: string; slug: string }> =
-    await db.subject.findMany({
-    where: {
-      OR: normalizedRequests.flatMap((subject) => [
-        { slug: { equals: subject, mode: "insensitive" } },
-        { name: { equals: subject, mode: "insensitive" } }
-      ])
-    },
-    select: {
-      id: true,
-      name: true,
-      slug: true
-    }
-    });
-
-  const subjectLookup = new Set(
-    subjects.flatMap((subject) => [subject.slug.toLowerCase(), subject.name.toLowerCase()])
+  const canonicalSubjects = normalizedSubjects.map((subject) =>
+    supportedSubjectMap.get(subject)
   );
-  const missingSubjects = normalizedRequests.filter(
-    (subject) => !subjectLookup.has(subject)
+
+  const missingSubjects = normalizedSubjects.filter(
+    (_, index) => !canonicalSubjects[index]
   );
 
   if (missingSubjects.length > 0) {
@@ -115,9 +111,39 @@ async function resolveSubjectIds(
     };
   }
 
+  const uniqueCanonicalSubjects = Array.from(
+    new Map(
+      canonicalSubjects
+        .filter((subject): subject is NonNullable<typeof subject> =>
+          Boolean(subject)
+        )
+        .map((subject) => [subject.slug, subject])
+    ).values()
+  );
+
+  const resolvedSubjects = await Promise.all(
+    uniqueCanonicalSubjects.map((subject) =>
+      db.subject.upsert({
+        where: { slug: subject.slug },
+        update: {
+          name: subject.name,
+          description: subject.description
+        },
+        create: {
+          slug: subject.slug,
+          name: subject.name,
+          description: subject.description
+        },
+        select: {
+          id: true
+        }
+      })
+    )
+  );
+
   return {
     success: true,
-    subjectIds: subjects.map((subject) => subject.id)
+    subjectIds: resolvedSubjects.map((subject) => subject.id)
   };
 }
 

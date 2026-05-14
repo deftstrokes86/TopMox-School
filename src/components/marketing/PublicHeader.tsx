@@ -15,8 +15,8 @@ export function PublicHeader() {
           {BRAND.PRODUCT_NAME}
         </Link>
 
-        <nav className="hidden items-center gap-5 md:flex">
-          {PUBLIC_NAV_ITEMS.slice(0, 4).map((item) => (
+        <nav className="hidden items-center gap-5 lg:flex">
+          {PUBLIC_NAV_ITEMS.slice(0, 7).map((item) => (
             <Link
               key={item.href}
               href={item.href}

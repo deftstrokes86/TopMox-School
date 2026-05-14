@@ -34,7 +34,9 @@ export function DashboardShell({
                 subtitle={topbarSubtitle}
                 actions={topbarActions}
               />
-              <main className="flex-1 p-5 md:p-6">{children}</main>
+              <main className="flex-1 p-5 pb-24 md:p-6 md:pb-24 lg:pb-6">
+                {children}
+              </main>
               <MobileDashboardNav items={navItems} />
             </div>
           </div>

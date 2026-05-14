@@ -1,6 +1,6 @@
 # Final Verification Report
 
-Date/Time: 2026-05-14 22:06:00 +01:00  
+Date/Time: 2026-05-14 23:31:53 +01:00  
 Repo: `TopMox-School`
 
 ## Verification Summary
@@ -38,18 +38,18 @@ Error:
 - `getaddrinfo EAI_AGAIN binaries.prisma.sh`
 
 7. `npm run dev:clean`  
-Status: **PASS** (server started on `http://localhost:4000`)
+Status: **PASS** (server started on `http://localhost:7000`)
 
 8. `npm run verify:homepage`  
 Status: **PASS**  
 Output:
-- `Homepage verification passed: status 200, HTML length 119663, contains "TopMox", checked 3 static asset(s).`
+- `Homepage verification passed: status 200, HTML length 120068, contains "TopMox", checked 3 static asset(s).`
 
 ## Runtime and Log Checks
 
 Runtime checks:
 - Homepage response: **200**
-- Homepage HTML length: **119663**
+- Homepage HTML length: **120068**
 - Homepage content contains `TopMox`: **Yes**
 - Static asset checks: **3 assets checked, all 200**
 
@@ -77,4 +77,5 @@ Interpretation:
 - `docs/dev-troubleshooting.md` (already contains Prisma `EAI_AGAIN` guidance)
 - `package.json` (contains `verify:homepage`)
 - `scripts/verify-homepage.mjs` (present and passing)
+- `docs/blank-page-diagnosis.md` (updated with current root-cause notes)
 - `.env.example` (contains required placeholders)

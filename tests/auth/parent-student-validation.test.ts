@@ -18,6 +18,20 @@ describe("parent and student validation schemas", () => {
     assert.equal(result.success, false);
   });
 
+  test("parent schema accepts a complete onboarding profile", () => {
+    const result = parentProfileSchema.safeParse({
+      fullName: "Ada Okafor",
+      email: "ada@example.com",
+      whatsappNumber: "+2348012345678",
+      country: "Nigeria",
+      timezone: "Africa/Lagos",
+      preferredContactMethod: "WHATSAPP",
+      heardAboutTopMox: "School referral"
+    });
+
+    assert.equal(result.success, true);
+  });
+
   test("child schema rejects missing required fields", () => {
     const result = childProfileSchema.safeParse({
       fullName: "",
@@ -50,6 +64,26 @@ describe("parent and student validation schemas", () => {
     });
 
     assert.equal(result.success, false);
+  });
+
+  test("child schema accepts a complete profile and coerces age input", () => {
+    const result = childProfileSchema.safeParse({
+      fullName: "Tomi Ade",
+      age: "11",
+      classYearGroup: "Year 6",
+      countryOfStudy: "United Kingdom",
+      curriculum: "British",
+      subjectsNeedingSupport: ["mathematics", "english"],
+      mainAcademicChallenge: "Needs more structure with word problems",
+      academicGoal: "Build confidence and improve independent study habits",
+      preferredLessonDays: ["Monday", "Wednesday"],
+      preferredLessonTime: "6:00 PM BST"
+    });
+
+    assert.equal(result.success, true);
+    if (result.success) {
+      assert.equal(result.data.age, 11);
+    }
   });
 
   test("child schema requires at least one subject", () => {

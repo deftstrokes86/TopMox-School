@@ -297,7 +297,7 @@ export function ChildProfileForm({
       ) : null}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-        <Button type="submit" disabled={isPending}>
+        <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
           {isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -310,12 +310,12 @@ export function ChildProfileForm({
           )}
         </Button>
 
-        <Button asChild variant="outline">
+        <Button asChild variant="outline" className="w-full sm:w-auto">
           <Link href="/parent/children">Back to Children</Link>
         </Button>
 
         {savedChildCountHint ? (
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" className="w-full sm:w-auto">
             <Link href="/book-assessment">Next: Book a Child Assessment</Link>
           </Button>
         ) : null}

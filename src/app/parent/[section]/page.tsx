@@ -7,37 +7,37 @@ const PARENT_SECTION_COPY: Record<string, { title: string; message: string }> = 
   onboarding: {
     title: "Onboarding",
     message:
-      "Parent onboarding steps, profile completion, and readiness tracking will be implemented in upcoming phases."
+      "Your guided parent onboarding path is available from the dedicated onboarding page."
   },
   children: {
     title: "Children",
     message:
-      "Child profile creation, curriculum details, and subject support preferences will be implemented in upcoming phases."
+      "Your child profiles are available from the dedicated children page."
   },
   assessments: {
     title: "Assessments",
     message:
-      "Assessment request submission, scheduling visibility, and recommendation outcomes will be implemented in upcoming phases."
+      "After child profiles are ready, this area will show assessment requests, schedules, and recommendations."
   },
   lessons: {
     title: "Lessons",
     message:
-      "Upcoming lessons, attendance summaries, and lesson history views will be implemented in upcoming phases."
+      "Once an enrollment is active, this area will show upcoming lessons, attendance, and lesson history."
   },
   payments: {
     title: "Payments",
     message:
-      "Manual payment tracking, verification status, and enrollment linkage will be implemented in upcoming phases."
+      "Payment records and verification status will appear here after a tutoring plan is recommended."
   },
   reports: {
     title: "Reports",
     message:
-      "Published progress reports, academic summaries, and parent action points will be implemented in upcoming phases."
+      "Published progress reports will appear here once lessons and reporting are connected."
   },
   support: {
     title: "Support",
     message:
-      "Support request creation, status tracking, and response history will be implemented in upcoming phases."
+      "Support requests and response history will appear here once parent support workflows are connected."
   }
 };
 

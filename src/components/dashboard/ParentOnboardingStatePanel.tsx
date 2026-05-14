@@ -9,6 +9,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AppRole } from "@/lib/auth/types";
+import { resolveParentOnboardingFlow } from "@/lib/utils/parent-onboarding-flow";
 import {
   getParentOnboardingStatusAction,
   type ParentOnboardingStatusActionResult
@@ -18,50 +19,28 @@ type ParentOnboardingStatePanelProps = {
   userName: string;
   userEmail: string;
   role: AppRole;
+  initialState?: OnboardingState;
 };
 
 type OnboardingState = NonNullable<ParentOnboardingStatusActionResult["data"]>;
 
-function getOnboardingContent(state: OnboardingState) {
-  if (!state.hasParentProfile) {
-    return {
-      title: "Complete your parent profile",
-      description:
-        "Add your contact and timezone details so TopMox can coordinate support around your family.",
-      ctaLabel: "Complete Parent Profile",
-      ctaHref: "/parent/onboarding"
-    };
-  }
-
-  if (!state.hasChildren) {
-    return {
-      title: "Add your child profile",
-      description:
-        "Your parent profile is saved. Next, add your child details so we can prepare the right academic support.",
-      ctaLabel: "Add Child Profile",
-      ctaHref: "/parent/children"
-    };
-  }
-
-  return {
-    title: "Your family profile is ready",
-    description:
-      "Your family profile is ready. Next, you can request a child assessment.",
-    ctaLabel: "Book a Child Assessment",
-    ctaHref: "/book-assessment"
-  };
-}
-
 export function ParentOnboardingStatePanel({
   userName,
   userEmail,
-  role
+  role,
+  initialState
 }: ParentOnboardingStatePanelProps) {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialState);
   const [error, setError] = useState<string | null>(null);
-  const [state, setState] = useState<OnboardingState | null>(null);
+  const [state, setState] = useState<OnboardingState | null>(
+    initialState ?? null
+  );
 
   useEffect(() => {
+    if (initialState) {
+      return;
+    }
+
     let mounted = true;
 
     const loadState = async () => {
@@ -94,9 +73,9 @@ export function ParentOnboardingStatePanel({
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [initialState]);
 
-  const content = state ? getOnboardingContent(state) : null;
+  const content = state ? resolveParentOnboardingFlow(state) : null;
 
   return (
     <section className="space-y-5">
@@ -145,6 +124,56 @@ export function ParentOnboardingStatePanel({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {content ? (
+            <div className="grid gap-3 md:grid-cols-3">
+              {[
+                {
+                  label: "Step 1",
+                  title: "Parent Profile",
+                  active: content.activeStep === 1,
+                  complete: content.profileSaved
+                },
+                {
+                  label: "Step 2",
+                  title: "Child Profile",
+                  active: content.activeStep === 2,
+                  complete: content.hasChildProfiles
+                },
+                {
+                  label: "Step 3",
+                  title: "Assessment Request",
+                  active: content.activeStep === 3,
+                  complete: false
+                }
+              ].map((step) => (
+                <div
+                  key={step.label}
+                  className={
+                    step.active
+                      ? "rounded-xl border border-royal-blue/30 bg-soft-blue/35 p-4"
+                      : step.complete
+                        ? "rounded-xl border border-success/30 bg-success/10 p-4"
+                        : "rounded-xl border border-border bg-soft-cream/50 p-4"
+                  }
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-royal-blue">
+                    {step.label}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-deep-navy">
+                    {step.title}
+                  </p>
+                  <p className="mt-1 text-xs text-text-secondary">
+                    {step.active
+                      ? "Current step"
+                      : step.complete
+                        ? "Completed"
+                        : "Upcoming"}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
           {loading ? (
             <p className="inline-flex items-center text-sm text-text-secondary">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

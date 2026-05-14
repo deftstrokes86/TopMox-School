@@ -35,7 +35,7 @@ export default async function ParentChildrenPage() {
         title="Children"
         description="Each child gets their own learning profile so TopMox can prepare focused support, clearer recommendations, and better academic direction."
         actions={
-          <Button asChild>
+          <Button asChild className="w-full sm:w-auto">
             <Link href="/parent/children/new">
               <Plus className="mr-2 h-4 w-4" />
               Add Child
@@ -60,7 +60,7 @@ export default async function ParentChildrenPage() {
               Your parent profile helps TopMox coordinate communication and
               schedule support around your timezone.
             </p>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="w-full sm:w-auto">
               <Link href="/parent/onboarding">Go to Parent Onboarding</Link>
             </Button>
           </CardContent>
@@ -77,7 +77,7 @@ export default async function ParentChildrenPage() {
                     {child.fullName}
                   </CardTitle>
                   <p className="text-sm text-text-secondary">
-                    Age {child.age} • {child.classYearGroup}
+                    Age {child.age} | {child.classYearGroup}
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -125,7 +125,7 @@ export default async function ParentChildrenPage() {
                     </p>
                   </div>
 
-                  <Button asChild variant="outline">
+                  <Button asChild variant="outline" className="w-full sm:w-auto">
                     <Link href={`/parent/children/${child.id}`}>
                       View/Edit Profile
                       <ArrowRight className="ml-2 h-4 w-4" />
@@ -147,7 +147,7 @@ export default async function ParentChildrenPage() {
                   right learning path.
                 </p>
               </div>
-              <Button asChild>
+              <Button asChild className="w-full sm:w-auto">
                 <Link href="/book-assessment">Next: Book a Child Assessment</Link>
               </Button>
             </CardContent>

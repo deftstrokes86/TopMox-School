@@ -13,7 +13,7 @@ export default async function ParentLayout({ children }: { children: ReactNode }
       shellTitle="Parent Dashboard"
       navItems={PARENT_NAV_ITEMS}
       topbarTitle="TopMox Parent Workspace"
-      topbarSubtitle="Protected parent area. Student workflows will be implemented in later phases."
+      topbarSubtitle="Manage your family profile and prepare for the child assessment journey."
       topbarActions={
         <DashboardUserMenu name={user.name} email={user.email} role={user.role} />
       }

@@ -227,7 +227,11 @@ export function ParentOnboardingForm({
       ) : null}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <Button type="submit" disabled={isPending || isLoadingProfile}>
+        <Button
+          type="submit"
+          disabled={isPending || isLoadingProfile}
+          className="w-full sm:w-auto"
+        >
           {isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -239,11 +243,16 @@ export function ParentOnboardingForm({
         </Button>
 
         {isProfileReady ? (
-          <Button asChild variant="outline">
-            <Link href="/parent/children">Continue to Child Profile</Link>
+          <Button asChild variant="outline" className="w-full sm:w-auto">
+            <Link href="/parent/children/new">Continue to Child Profile</Link>
           </Button>
         ) : (
-          <Button type="button" variant="outline" disabled>
+          <Button
+            type="button"
+            variant="outline"
+            disabled
+            className="w-full sm:w-auto"
+          >
             Continue to Child Profile
           </Button>
         )}

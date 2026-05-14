@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 
 import "@/app/globals.css";
 import { ClientLayout } from "@/app/ClientLayout";
-import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { BRAND } from "@/lib/constants/brand";
 
 export const metadata: Metadata = {
@@ -17,7 +16,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body>
         <ClientLayout>
-          <ErrorBoundary>{children}</ErrorBoundary>
+          {children}
         </ClientLayout>
       </body>
     </html>

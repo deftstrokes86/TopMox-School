@@ -40,7 +40,11 @@ export function ParentOnboardingProgress({
             Parent Profile
           </p>
           <p className="mt-1 text-xs text-text-secondary">
-            {isStep1Active ? "Current step" : "Completed"}
+            {isStep1Active
+              ? "Current step"
+              : profileSaved
+                ? "Completed"
+                : "Upcoming"}
           </p>
         </div>
 
@@ -64,7 +68,7 @@ export function ParentOnboardingProgress({
             <p className="mt-1 text-xs text-text-secondary">Current step</p>
           ) : profileSaved ? (
             <Link
-              href="/parent/children"
+              href="/parent/children/new"
               className="mt-1 inline-block text-xs font-medium text-royal-blue hover:text-deep-navy"
             >
               Continue to child profile

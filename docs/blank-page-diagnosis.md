@@ -1,112 +1,116 @@
 # Blank Page Diagnosis (TopMox Global Tutoring)
 
-## Scope
-This diagnosis focuses on why the app intermittently shows a blank page in local development, without changing UI/layout/business logic.
+## Current Verdict
 
----
+The public homepage is not blank from source code. A clean dev run on port `7000` returns real HTML and valid static assets.
 
-## 1) Repo/runtime facts
+Latest runtime check:
 
-- **Framework**: Next.js `14.2.35` (from `package.json`)
-- **Router**: **App Router** (`src/app` exists; `src/pages` does not)
-- **Package manager**: **npm** (`package-lock.json` present)
-- **Scripts**:
-  - `dev`: `next dev`
-  - `build`: `next build`
-  - `start`: `next start`
-  - `lint`: `next lint`
-  - `typecheck`: `node scripts/typecheck.mjs`
-  - `test`: `tsx --test tests/**/*.test.ts`
-- **Prisma**:
-  - `prisma/schema.prisma` present (PostgreSQL datasource)
-  - `@prisma/client` dependency present
-  - Prisma scripts present (`prisma:generate`, `prisma:migrate`, `prisma:seed`, etc.)
-- **NextAuth**:
-  - App Router handler at `src/app/api/auth/[...nextauth]/route.ts`
-  - Auth options in `src/lib/auth/auth-options.ts` with credentials provider
-
----
-
-## 2) Build artifacts in workspace
-
-- `.next/` **exists in the working directory**.
-- `.next/` is **gitignored** (`/.next/` in `.gitignore`).
-- `git ls-files .next` returns nothing, so `.next` is **not tracked in git**.
-
-Implication: stale artifacts can still exist locally or inside a shared zip/workspace snapshot even though they are not committed.
-
----
-
-## 3) Verification commands run
-
-Dependency install command was **not required** because `node_modules` was already present.
-
-| Command | Result |
+| Check | Result |
 |---|---|
-| `npm.cmd run lint` | Pass |
-| `npm.cmd run typecheck` | Pass |
-| `npm.cmd run test` | Pass (21/21) |
-| `npm.cmd run build` | Pass |
+| `npm run dev:clean` | Pass |
+| `npm run verify:homepage` | Pass |
+| Homepage status | `200` |
+| Homepage HTML length | `120068` |
+| Homepage contains `TopMox` | Yes |
+| Static assets checked | 3 assets, all OK |
+| Missing `.next` chunk errors | Not found |
+| Manifest JSON parse errors | Not found |
+| NextAuth env warnings | Not found |
+| Prisma generated-client runtime errors | Not found |
 
-### Failing commands/errors observed
+## Root Causes Found
 
-No failures occurred in the current lint/typecheck/test/build sweep.
+### 1) Stale or corrupted `.next` artifacts
 
-However, prior failing dev runs are clearly recorded in `.next-dev-4000.log`:
+Earlier failures showed generated Next.js artifact errors:
 
-- Dev runtime failures while serving `/`:
-  - `GET / 500 ...`
-  - `Error: Cannot find module './276.js'`
-  - `Error: Cannot find module './682.js'`
-  - Require stack includes `.next/server/webpack-runtime.js`
-- Static asset failures:
-  - `GET /_next/static/... 404`
-- Manifest corruption symptom:
-  - `SyntaxError: Unexpected end of JSON input`
-  - at `next/dist/server/load-manifest.js`
-- Webpack cache warnings referencing missing files under `.next/server/vendor-chunks/...`
+- `Cannot find module './276.js'`
+- `Cannot find module './682.js'`
+- require stack involving `.next/server/webpack-runtime.js`
+- `/_next/static/...` returning `404`
+- `Unexpected end of JSON input` while loading a manifest
 
-These are consistent with corrupted/incomplete generated artifacts, not with a React render error in source code.
+Those errors are generated-cache failures, not homepage source failures.
 
----
+Recovery:
 
-## 4) Root-cause conclusion
+```bash
+npm run clean:next
+npm run dev:clean
+```
 
-### Most likely cause (primary)
-**Stale/corrupted local Next build artifacts (`.next`) and dev cache state** causing chunk/manifest mismatch at runtime.
+Then open:
 
-Why this is most likely:
-- Missing compiled chunks (`./276.js`, `./682.js`) and manifest parse failures are generated-artifact problems.
-- `/` returns 500 with `.next/server/webpack-runtime.js` in stack during broken runs.
-- Static chunk/CSS 404s from `/_next/static/...` align with partial/corrupt generation.
-- Source-level checks (lint/typecheck/test/build) are currently clean.
+```txt
+http://localhost:7000
+```
 
-### Not the primary cause
-- **Routing/source imports/layout tree**: no blocking errors found; production build succeeds.
-- **Missing env vars** for homepage render: `.env` missing, but public homepage still builds.
-  - Note: auth/dashboard/DB-backed pages may still fail at runtime without env.
-- **Prisma client generation**: not currently breaking build in this sweep.
+### 2) Port mismatch after moving from 4000 to 7000
 
----
+The active dev port is now `7000`.
 
-## 5) Priority-ordered next fixes
+Use:
 
-1. **Always start dev from a clean artifact state**
-   - Stop all node processes
-   - Remove `.next`
-   - Start dev server fresh
-2. **Do not reuse stale `.next` from copied workspaces/zips**
-   - Ensure archives/shared snapshots exclude `.next`
-3. **Use a single stable startup command/team convention**
-   - Keep one terminal session alive for dev server
-   - Avoid overlapping/dev restarts that leave partial caches
-4. **If blank page persists after clean start, capture browser evidence**
-   - First failed `document` request in Network
-   - First red Console error
-5. **Env hardening (secondary)**
-   - Add local `.env` with required auth/db placeholders to avoid unrelated runtime failures on protected routes
+```bash
+npm run dev:clean
+```
 
----
+Expected URL:
 
-## Short verdict
-The blank page behavior is most consistent with **local generated artifact corruption (`.next`)** during dev runtime, not with a broken homepage source implementation.
+```txt
+http://localhost:7000
+```
+
+If a browser tab is still pointed at `4000`, it is looking at the old port.
+
+### 3) Invalid `next.config.mjs` option
+
+`next.config.mjs` previously included an unsupported `onError` key. Next.js 14 warned:
+
+```txt
+Invalid next.config.mjs options detected
+Unrecognized key(s) in object: 'onError'
+```
+
+That key has been removed. Client-side logging now lives in `src/app/ClientLayout.tsx` and `src/lib/utils/logger.ts`.
+
+### 4) Health route was being prerendered and touching Prisma at build time
+
+`/api/health` previously tried to instantiate Prisma during build prerendering. That caused:
+
+```txt
+@prisma/client did not initialize yet. Please run "prisma generate"
+```
+
+The route is now marked dynamic:
+
+```ts
+export const dynamic = "force-dynamic";
+```
+
+So health checks run at request time, not during static generation.
+
+## Verification Commands
+
+Latest successful commands:
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm run dev:clean
+npm run verify:homepage
+```
+
+## Remaining External Issue
+
+`prisma generate` can still fail in this environment with:
+
+```txt
+getaddrinfo EAI_AGAIN binaries.prisma.sh
+```
+
+That means the environment cannot resolve or reach Prisma's binary download host. If lint, typecheck, tests, build, and homepage verification pass, this specific error should not be treated as the blank-page cause.
+

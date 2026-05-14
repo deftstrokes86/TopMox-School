@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { checkDatabaseConnection } from "@/lib/db/connection-check";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const isConnected = await checkDatabaseConnection();
 
@@ -17,4 +19,3 @@ export async function GET() {
     { status: 503 }
   );
 }
-

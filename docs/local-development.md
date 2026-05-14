@@ -13,7 +13,7 @@ npm install
 1. Copy `.env.example` to `.env.local`.
 2. Fill these required values in `.env.local`:
    - `DATABASE_URL`
-   - `NEXTAUTH_URL=http://localhost:4000`
+   - `NEXTAUTH_URL=http://localhost:7000`
    - `NEXTAUTH_SECRET` (secure random string)
    - `NEXT_PUBLIC_DEMO_LOGIN_ENABLED=true` (or `false`)
 
@@ -42,7 +42,7 @@ Optional:
 npm run lint
 ```
 
-## 5) Start the dev server (port 4000)
+## 5) Start the dev server (port 7000)
 
 ```bash
 npm run dev:clean
@@ -50,17 +50,17 @@ npm run dev:clean
 
 This runs:
 - `npm run clean:next`
-- `next dev --port 4000`
+- `next dev --port 7000`
 
 ## 6) Expected local URLs
 
-- Public homepage: `http://localhost:4000/`
-- Login page: `http://localhost:4000/login`
-- Register page: `http://localhost:4000/register`
-- Forgot password: `http://localhost:4000/forgot-password`
-- Admin dashboard placeholder: `http://localhost:4000/admin`
-- Parent dashboard placeholder: `http://localhost:4000/parent`
-- Tutor dashboard placeholder: `http://localhost:4000/tutor`
+- Public homepage: `http://localhost:7000/`
+- Login page: `http://localhost:7000/login`
+- Register page: `http://localhost:7000/register`
+- Forgot password: `http://localhost:7000/forgot-password`
+- Admin dashboard placeholder: `http://localhost:7000/admin`
+- Parent dashboard placeholder: `http://localhost:7000/parent`
+- Tutor dashboard placeholder: `http://localhost:7000/tutor`
 
 Note: dashboard routes are protected and may redirect based on auth/session role.
 
@@ -98,7 +98,7 @@ Examples:
 - `[next-auth][warn][NO_SECRET]`
 
 Fix:
-- Set `NEXTAUTH_URL=http://localhost:4000` in `.env.local`.
+- Set `NEXTAUTH_URL=http://localhost:7000` in `.env.local`.
 - Set `NEXTAUTH_SECRET` in `.env.local`.
 - Restart dev server.
 
@@ -115,7 +115,7 @@ Fix:
 
 - `npm run clean:next`
 - `npm run dev:clean`
-- `npm run dev:4000`
+- `npm run dev:7000`
 - `npm run prisma:generate`
 - `npm run typecheck`
 - `npm run test`

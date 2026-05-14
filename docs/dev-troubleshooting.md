@@ -9,7 +9,7 @@ If the page is blank after the dev server starts, recover with this exact flow:
 3. Run `npm run dev:clean`.
 4. Hard refresh the browser (`Ctrl+F5` on Windows / `Cmd+Shift+R` on macOS).
 
-This clears stale Next.js generated artifacts (`.next` and `node_modules/.cache`) before starting development on port `4000`.
+This clears stale Next.js generated artifacts (`.next` and `node_modules/.cache`) before starting development on port `7000`.
 
 ## NextAuth warnings (`NEXTAUTH_URL` / `NO_SECRET`)
 
@@ -20,7 +20,7 @@ If you see warnings like:
 configure local auth environment variables in `.env.local`:
 
 ```env
-NEXTAUTH_URL=http://localhost:4000
+NEXTAUTH_URL=http://localhost:7000
 NEXTAUTH_SECRET=your-secure-random-string
 ```
 

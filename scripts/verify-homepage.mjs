@@ -1,4 +1,4 @@
-const BASE_URL = process.env.VERIFY_URL ?? "http://localhost:4000";
+const BASE_URL = process.env.VERIFY_URL ?? "http://localhost:7000";
 const MIN_HTML_LENGTH = 2000;
 const REQUIRED_TEXT = "TopMox";
 

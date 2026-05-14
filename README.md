@@ -84,7 +84,7 @@ npm run prisma:seed
 npm run dev
 ```
 
-Open: `http://localhost:3000`
+Open: `http://localhost:7000`
 
 ---
 
@@ -123,17 +123,17 @@ npm run prisma:generate
 
 ### Development
 
-- `npm run dev` → Start Next.js dev server (default port).
-- `npm run dev:4000` → Start dev server helper on port `4000`.
+- `npm run dev` → Start Next.js dev server (port `7000`).
+- `npm run dev:7000` → Start dev server helper on port `7000`.
 - `npm run clean:next` → Remove `.next` and `node_modules/.cache`.
-- `npm run dev:clean` → Clean cache and start dev server on port `4000`.
+- `npm run dev:clean` → Clean cache and start dev server on port `7000`.
 - `npm run verify:homepage` → Verify homepage + static asset responses.
 
 ### Build & Start
 
 - `npm run build` → Build the production app.
 - `npm run start` → Start production server.
-- `npm run start:4000` → Start production server on port `4000`.
+- `npm run start:7000` → Start production server on port `7000`.
 
 ### Quality
 
@@ -159,3 +159,4 @@ npm run prisma:generate
 - Keep `.env` and `.env.local` out of version control.
 - Use the troubleshooting commands above if you see blank pages after code changes.
 - Prefer running `lint`, `typecheck`, and `test` before opening PRs.
+

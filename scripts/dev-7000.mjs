@@ -18,7 +18,7 @@ async function run() {
 
   const child = spawn(
     process.execPath,
-    [nextBinPath, "dev", "--hostname", "0.0.0.0", "--port", "4000"],
+    [nextBinPath, "dev", "--hostname", "0.0.0.0", "--port", "7000"],
     {
       stdio: "inherit",
       env: process.env
@@ -36,6 +36,7 @@ async function run() {
 }
 
 run().catch((error) => {
-  console.error("Failed to start dev server on port 4000:", error);
+  console.error("Failed to start dev server on port 7000:", error);
   process.exit(1);
 });
+

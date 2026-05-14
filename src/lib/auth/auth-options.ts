@@ -1,34 +1,13 @@
-import { timingSafeEqual } from "crypto";
-
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 import { loginSchema } from "@/lib/validations/auth.schema";
 
+import { verifyPassword } from "./password";
 import { getDashboardPathForRole } from "./role";
 import { isAppRole, type AppRole } from "./types";
 
 const demoLoginEnabled = process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED === "true";
-
-const safeEqual = (left: string, right: string): boolean => {
-  const leftBuffer = Buffer.from(left);
-  const rightBuffer = Buffer.from(right);
-
-  if (leftBuffer.length !== rightBuffer.length) {
-    return false;
-  }
-
-  return timingSafeEqual(leftBuffer, rightBuffer);
-};
-
-const verifyPassword = async (
-  plainPassword: string,
-  storedPasswordHash: string
-): Promise<boolean> => {
-  // Phase 3A: demo-only comparison.
-  // In Phase 3B, replace with bcrypt/argon password-hash verification.
-  return safeEqual(plainPassword, storedPasswordHash);
-};
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.AUTH_SECRET,

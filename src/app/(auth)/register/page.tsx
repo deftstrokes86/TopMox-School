@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { LoginForm } from "@/components/forms/auth/login-form";
+import { RegisterForm } from "@/components/forms/auth/register-form";
 import { getDashboardPathForRole } from "@/lib/auth/role";
 import { getCurrentUser } from "@/lib/auth/session";
 
-export default async function LoginPage() {
+export default async function RegisterPage() {
   const user = await getCurrentUser();
   if (user) {
     redirect(getDashboardPathForRole(user.role));
@@ -14,21 +14,27 @@ export default async function LoginPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold text-text-primary">Sign in</h1>
+        <h1 className="text-2xl font-semibold text-text-primary">
+          Create parent account
+        </h1>
         <p className="text-sm text-text-secondary">
-          Continue to your parent, tutor, or admin workspace.
+          Start with secure access and we will guide you to the next steps.
         </p>
       </div>
 
-      <LoginForm />
+      <RegisterForm />
 
       <p className="text-xs text-text-muted">
-        New to TopMox?{" "}
+        By continuing, you are registering as a parent account under TopMox Global
+        Tutoring.
+      </p>
+      <p className="text-xs text-text-muted">
+        Need to sign in instead?{" "}
         <Link
-          href="/register"
+          href="/login"
           className="font-medium text-royal-blue transition-colors hover:text-deep-navy"
         >
-          Create a parent account
+          Go to login
         </Link>
         .
       </p>

@@ -1,11 +1,15 @@
-const items = [
+const defaultItems = [
   "Experienced educators",
   "Structured learning plans",
   "Parent visibility and reports",
   "Flexible lessons across time zones"
 ];
 
-export function TrustStrip() {
+type TrustStripProps = {
+  items?: string[];
+};
+
+export function TrustStrip({ items = defaultItems }: TrustStripProps) {
   return (
     <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {items.map((item) => (

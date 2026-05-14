@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { BRAND } from "@/lib/constants/brand";
@@ -9,9 +10,23 @@ import { BRAND } from "@/lib/constants/brand";
 type HeroShellProps = {
   title: string;
   subtitle: string;
+  trustMicrocopy?: string;
+  benefitChips?: string[];
 };
 
-export function HeroShell({ title, subtitle }: HeroShellProps) {
+const defaultBenefitChips = [
+  "Structured learning plans",
+  "Experienced educators",
+  "Monthly progress reports",
+  "Flexible online lessons"
+];
+
+export function HeroShell({
+  title,
+  subtitle,
+  trustMicrocopy = "Powered by TopMox Schools",
+  benefitChips = defaultBenefitChips
+}: HeroShellProps) {
   return (
     <section className="md:py-18 relative overflow-hidden rounded-2xl border border-royal-blue/20 bg-gradient-to-br from-deep-navy via-royal-blue to-[#2f75bf] px-6 py-14 text-white shadow-lifted md:px-10">
       <motion.div
@@ -27,6 +42,7 @@ export function HeroShell({ title, subtitle }: HeroShellProps) {
           {title}
         </h1>
         <p className="text-base text-blue-50/95 md:text-lg">{subtitle}</p>
+        <p className="text-sm font-medium text-blue-100">{trustMicrocopy}</p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button
             asChild
@@ -43,6 +59,17 @@ export function HeroShell({ title, subtitle }: HeroShellProps) {
           >
             <Link href="/pricing">{BRAND.SECONDARY_CTA}</Link>
           </Button>
+        </div>
+        <div className="grid gap-2 pt-2 sm:grid-cols-2">
+          {benefitChips.map((chip) => (
+            <p
+              key={chip}
+              className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-sm text-blue-50/95"
+            >
+              <CheckCircle2 className="h-4 w-4 text-soft-gold" />
+              {chip}
+            </p>
+          ))}
         </div>
       </motion.div>
     </section>

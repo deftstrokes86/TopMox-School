@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/components/forms/auth/login-form";
+import { DEMO_LOGIN_ACCOUNTS, isDemoLoginEnabled } from "@/lib/auth/demo-login";
 import { getDashboardPathForRole } from "@/lib/auth/role";
 import { getCurrentUser } from "@/lib/auth/session";
 
@@ -10,6 +11,8 @@ export default async function LoginPage() {
   if (user) {
     redirect(getDashboardPathForRole(user.role));
   }
+
+  const demoLoginEnabled = isDemoLoginEnabled();
 
   return (
     <div className="space-y-6">
@@ -20,7 +23,10 @@ export default async function LoginPage() {
         </p>
       </div>
 
-      <LoginForm />
+      <LoginForm
+        demoLoginEnabled={demoLoginEnabled}
+        demoAccounts={demoLoginEnabled ? DEMO_LOGIN_ACCOUNTS : []}
+      />
 
       <p className="text-xs text-text-muted">
         New to TopMox?{" "}

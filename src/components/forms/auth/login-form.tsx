@@ -12,12 +12,25 @@ import { ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  DEMO_LOGIN_PASSWORD,
+  type DemoLoginAccount
+} from "@/lib/auth/demo-login";
 import { getDashboardPathForRole } from "@/lib/auth/role";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth.schema";
 
-export function LoginForm() {
+type LoginFormProps = {
+  demoLoginEnabled?: boolean;
+  demoAccounts?: DemoLoginAccount[];
+};
+
+export function LoginForm({
+  demoLoginEnabled = false,
+  demoAccounts = []
+}: LoginFormProps) {
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
+  const [demoLoadingEmail, setDemoLoadingEmail] = useState<string | null>(null);
 
   const {
     register,
@@ -55,6 +68,37 @@ export function LoginForm() {
 
     router.replace(nextPath);
     router.refresh();
+  };
+
+  const onDemoLogin = async (account: DemoLoginAccount) => {
+    setFormError(null);
+    setDemoLoadingEmail(account.email);
+
+    try {
+      const result = await signIn("credentials", {
+        email: account.email,
+        password: DEMO_LOGIN_PASSWORD,
+        redirect: false
+      });
+
+      if (!result || result.error) {
+        setFormError("Demo login failed. Please confirm demo mode is enabled.");
+        return;
+      }
+
+      const session = await getSession();
+      const nextPath = getDashboardPathForRole(session?.user?.role);
+
+      if (nextPath === "/login") {
+        setFormError("We could not determine your account role. Please try again.");
+        return;
+      }
+
+      router.replace(nextPath);
+      router.refresh();
+    } finally {
+      setDemoLoadingEmail(null);
+    }
   };
 
   return (
@@ -132,15 +176,36 @@ export function LoginForm() {
         </Link>
       </div>
 
-      <div className="rounded-xl border border-royal-blue/20 bg-soft-blue/35 p-4">
-        <p className="flex items-center gap-2 text-sm font-semibold text-deep-navy">
-          <Sparkles className="h-4 w-4 text-warm-gold" />
-          Demo Login
-        </p>
-        <p className="mt-1 text-sm text-text-secondary">
-          Demo login controls will be enabled in Phase 3C.
-        </p>
-      </div>
+      {demoLoginEnabled ? (
+        <div className="rounded-xl border border-royal-blue/20 bg-soft-blue/35 p-4">
+          <p className="flex items-center gap-2 text-sm font-semibold text-deep-navy">
+            <Sparkles className="h-4 w-4 text-warm-gold" />
+            Demo Login
+          </p>
+          <p className="mt-1 text-sm text-text-secondary">
+            Demo-only quick access for MVP walkthroughs. Remove before production.
+          </p>
+          <div className="mt-3 grid gap-2">
+            {demoAccounts.map((account) => (
+              <Button
+                key={account.email}
+                type="button"
+                variant="outline"
+                className="justify-start"
+                disabled={isSubmitting || demoLoadingEmail !== null}
+                onClick={() => onDemoLogin(account)}
+              >
+                {demoLoadingEmail === account.email ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="mr-2 h-4 w-4 text-warm-gold" />
+                )}
+                {`Continue as ${account.label}`}
+              </Button>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </motion.form>
   );
 }

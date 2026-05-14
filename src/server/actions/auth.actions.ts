@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db";
 import { hashPassword } from "@/lib/auth/password";
+import { buildParentRegistrationData } from "@/server/services/auth-registration";
 import {
   forgotPasswordSchema,
   registerSchema,
@@ -55,14 +56,14 @@ export async function registerParentAction(
   }
 
   const passwordHash = await hashPassword(password);
+  const parentRegistrationData = buildParentRegistrationData({
+    fullName,
+    email,
+    passwordHash
+  });
 
   await db.user.create({
-    data: {
-      name: fullName.trim(),
-      email: normalizedEmail,
-      passwordHash,
-      role: "PARENT"
-    },
+    data: parentRegistrationData,
     select: { id: true }
   });
 

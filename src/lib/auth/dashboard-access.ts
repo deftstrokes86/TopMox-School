@@ -11,14 +11,29 @@ import type { AppRole, AuthUser } from "./types";
  */
 export async function requireDashboardAccess(role: AppRole): Promise<AuthUser> {
   const user = await getCurrentUser();
+  const redirectPath = getDashboardRedirectPath(role, user);
 
+  if (redirectPath) {
+    redirect(redirectPath);
+  }
+
+  return user as AuthUser;
+}
+
+/**
+ * Pure helper exposed for unit tests and shared guard logic.
+ */
+export function getDashboardRedirectPath(
+  requiredRole: AppRole,
+  user: AuthUser | null
+): string | null {
   if (!user) {
-    redirect("/login");
+    return "/login";
   }
 
-  if (user.role !== role) {
-    redirect(getDashboardPathForRole(user.role));
+  if (user.role !== requiredRole) {
+    return getDashboardPathForRole(user.role);
   }
 
-  return user;
+  return null;
 }

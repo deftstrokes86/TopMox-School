@@ -3,11 +3,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 
 import { loginSchema } from "@/lib/validations/auth.schema";
 
-import { verifyPassword } from "./password";
+import { isDemoLoginEnabled } from "./demo-login";
+import { isScryptPasswordHash, verifyPassword } from "./password";
 import { getDashboardPathForRole } from "./role";
 import { isAppRole, type AppRole } from "./types";
-
-const demoLoginEnabled = process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED === "true";
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.AUTH_SECRET,
@@ -25,19 +24,16 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!demoLoginEnabled && process.env.NODE_ENV !== "test") {
-          return null;
-        }
-
         const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) {
           return null;
         }
 
         const { email, password } = parsed.data;
+        const normalizedEmail = email.trim().toLowerCase();
         const { db } = await import("@/lib/db");
         const user = await db.user.findUnique({
-          where: { email },
+          where: { email: normalizedEmail },
           select: {
             id: true,
             email: true,
@@ -48,6 +44,16 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!user || !user.passwordHash || !isAppRole(user.role)) {
+          return null;
+        }
+
+        const usesLegacyDemoHash = !isScryptPasswordHash(user.passwordHash);
+        // Demo-only protection: legacy plain demo hashes should never authenticate in production unless explicitly enabled.
+        if (
+          usesLegacyDemoHash &&
+          !isDemoLoginEnabled() &&
+          process.env.NODE_ENV !== "test"
+        ) {
           return null;
         }
 

@@ -3,6 +3,10 @@ import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
 const SCRYPT_PREFIX = "scrypt";
 const SCRYPT_KEY_LENGTH = 64;
 
+export function isScryptPasswordHash(passwordHash: string): boolean {
+  return passwordHash.startsWith(`${SCRYPT_PREFIX}$`);
+}
+
 function safeEqual(left: string, right: string): boolean {
   const leftBuffer = Buffer.from(left);
   const rightBuffer = Buffer.from(right);
@@ -25,7 +29,7 @@ export async function verifyPassword(
   storedPasswordHash: string
 ): Promise<boolean> {
   // Backward compatibility for seeded demo users from prior phases.
-  if (!storedPasswordHash.startsWith(`${SCRYPT_PREFIX}$`)) {
+  if (!isScryptPasswordHash(storedPasswordHash)) {
     return safeEqual(plainPassword, storedPasswordHash);
   }
 

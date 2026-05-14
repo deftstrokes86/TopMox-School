@@ -1,10 +1,16 @@
-import { EmptyState } from "@/components/shared/EmptyState";
+import { DashboardPlaceholderPanel } from "@/components/dashboard/DashboardPlaceholderPanel";
+import { requireDashboardAccess } from "@/lib/auth/dashboard-access";
 
-export default function TutorPlaceholderPage() {
+export default async function TutorPlaceholderPage() {
+  const user = await requireDashboardAccess("TUTOR");
+
   return (
-    <EmptyState
-      title="Tutor features are not implemented yet"
-      description="Assigned lessons, notes, homework, and report drafting tools will be added in upcoming phases."
+    <DashboardPlaceholderPanel
+      title="Tutor Dashboard"
+      role={user.role}
+      userName={user.name}
+      userEmail={user.email}
+      message="Your tutor dashboard will show assigned students, upcoming lessons, lesson notes, homework, and progress reports."
     />
   );
 }

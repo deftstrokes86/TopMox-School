@@ -13,10 +13,13 @@ export const PUBLIC_NAV_ITEMS: NavigationItem[] = [
 
 export const PARENT_NAV_ITEMS: NavigationItem[] = [
   { label: "Overview", href: "/parent" },
+  { label: "Onboarding", href: "/parent/onboarding" },
   { label: "Children", href: "/parent/children" },
   { label: "Assessments", href: "/parent/assessments" },
   { label: "Lessons", href: "/parent/lessons" },
-  { label: "Reports", href: "/parent/reports" }
+  { label: "Payments", href: "/parent/payments" },
+  { label: "Reports", href: "/parent/reports" },
+  { label: "Support", href: "/parent/support" }
 ];
 
 export const TUTOR_NAV_ITEMS: NavigationItem[] = [
@@ -29,8 +32,15 @@ export const TUTOR_NAV_ITEMS: NavigationItem[] = [
 
 export const ADMIN_NAV_ITEMS: NavigationItem[] = [
   { label: "Overview", href: "/admin" },
+  { label: "Parents", href: "/admin/parents" },
+  { label: "Students", href: "/admin/students" },
+  { label: "Tutors", href: "/admin/tutors" },
   { label: "Assessments", href: "/admin/assessments" },
-  { label: "Payments", href: "/admin/payments" },
   { label: "Lessons", href: "/admin/lessons" },
-  { label: "Resources", href: "/admin/resources" }
+  { label: "Plans", href: "/admin/plans" },
+  { label: "Payments", href: "/admin/payments" },
+  { label: "Reports", href: "/admin/reports" },
+  { label: "Support", href: "/admin/support" },
+  { label: "Resources", href: "/admin/resources" },
+  { label: "Settings", href: "/admin/settings" }
 ];

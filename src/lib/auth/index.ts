@@ -6,6 +6,7 @@ export {
   canAccessStudent
 } from "./access-control";
 export { authOptions } from "./auth-options";
+export { requireDashboardAccess } from "./dashboard-access";
 export { getDashboardPathForRole } from "./role";
 export {
   AuthError,

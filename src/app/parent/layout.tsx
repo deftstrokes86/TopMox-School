@@ -1,39 +1,24 @@
 import type { ReactNode } from "react";
 
-import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
-import { StatCard } from "@/components/dashboard/StatCard";
+import { DashboardUserMenu } from "@/components/dashboard/DashboardUserMenu";
+import { requireDashboardAccess } from "@/lib/auth/dashboard-access";
 import { PARENT_NAV_ITEMS } from "@/lib/constants/navigation";
 
-export default function ParentLayout({ children }: { children: ReactNode }) {
+export default async function ParentLayout({ children }: { children: ReactNode }) {
+  const user = await requireDashboardAccess("PARENT");
+
   return (
     <DashboardShell
       shellTitle="Parent Dashboard"
       navItems={PARENT_NAV_ITEMS}
-      topbarTitle="Parent Dashboard Shell"
-      topbarSubtitle="Foundation placeholder only. No business workflows yet."
+      topbarTitle="TopMox Parent Workspace"
+      topbarSubtitle="Protected parent area. Student workflows will be implemented in later phases."
+      topbarActions={
+        <DashboardUserMenu name={user.name} email={user.email} role={user.role} />
+      }
     >
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <StatCard
-          label="Active Children"
-          value="--"
-          context="Phase foundation placeholder"
-        />
-        <StatCard
-          label="Upcoming Lessons"
-          value="--"
-          context="Phase foundation placeholder"
-        />
-        <StatCard
-          label="Reports"
-          value="--"
-          context="Phase foundation placeholder"
-        />
-      </div>
-      <div className="mt-5">
-        <ActivityFeed />
-      </div>
-      <div className="mt-5">{children}</div>
+      {children}
     </DashboardShell>
   );
 }

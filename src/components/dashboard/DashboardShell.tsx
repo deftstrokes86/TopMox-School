@@ -10,6 +10,7 @@ type DashboardShellProps = {
   navItems: NavigationItem[];
   topbarTitle: string;
   topbarSubtitle?: string;
+  topbarActions?: ReactNode;
   children: ReactNode;
 };
 
@@ -18,6 +19,7 @@ export function DashboardShell({
   navItems,
   topbarTitle,
   topbarSubtitle,
+  topbarActions,
   children
 }: DashboardShellProps) {
   return (
@@ -27,7 +29,11 @@ export function DashboardShell({
           <div className="grid min-h-[78vh] lg:grid-cols-[16rem_1fr]">
             <DashboardSidebar title={shellTitle} items={navItems} />
             <div className="flex min-h-full flex-col">
-              <DashboardTopbar title={topbarTitle} subtitle={topbarSubtitle} />
+              <DashboardTopbar
+                title={topbarTitle}
+                subtitle={topbarSubtitle}
+                actions={topbarActions}
+              />
               <main className="flex-1 p-5 md:p-6">{children}</main>
               <MobileDashboardNav items={navItems} />
             </div>

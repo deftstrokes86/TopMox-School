@@ -1,10 +1,16 @@
-import { EmptyState } from "@/components/shared/EmptyState";
+import { DashboardPlaceholderPanel } from "@/components/dashboard/DashboardPlaceholderPanel";
+import { requireDashboardAccess } from "@/lib/auth/dashboard-access";
 
-export default function AdminPlaceholderPage() {
+export default async function AdminPlaceholderPage() {
+  const user = await requireDashboardAccess("ADMIN");
+
   return (
-    <EmptyState
-      title="Admin features are not implemented yet"
-      description="Assessment operations, payments, tutor assignment, lesson scheduling, and reports will be added in upcoming phases."
+    <DashboardPlaceholderPanel
+      title="Admin Dashboard"
+      role={user.role}
+      userName={user.name}
+      userEmail={user.email}
+      message="TopMox operations dashboard will manage assessments, parents, tutors, lessons, payments, reports, and revenue visibility."
     />
   );
 }

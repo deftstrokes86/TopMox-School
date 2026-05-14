@@ -7,4 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Models are intentionally deferred to the next phase.
+// Foundation placeholder schema.
+// Product models will be introduced in the next phase.
+model Placeholder {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

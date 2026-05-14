@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
-import { PublicFooter } from "@/components/marketing/public-footer";
-import { PublicHeader } from "@/components/marketing/public-header";
+import { PublicFooter } from "@/components/marketing/PublicFooter";
+import { PublicHeader } from "@/components/marketing/PublicHeader";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (

@@ -138,35 +138,35 @@ Tutor can:
 
 ## 4. Permission Matrix
 
-| Permission | Admin | Parent | Tutor | Student Profile |
-|---|---|---|---|---|
-| View public website | Yes | Yes | Yes | Yes |
-| Register account | Yes | Yes | Yes | No |
-| Create child profile | Admin only | Yes | No | No |
-| Request assessment | Admin only | Yes | No | No |
-| View own assessment | Yes | Own only | Assigned only | No |
-| View all assessments | Yes | No | No | No |
-| Schedule assessment | Yes | No | No | No |
-| Record assessment outcome | Yes | No | No | No |
-| Recommend plan | Yes | No | No | No |
-| Accept plan | Admin only | Own only | No | No |
-| Manage plans | Yes | No | No | No |
-| Create payment record | Admin only | Own only | No | No |
-| Approve payment | Yes | No | No | No |
-| View own lessons | Yes | Own only | Assigned only | No |
-| View assigned lessons | Yes | No | Assigned only | No |
-| View all lessons | Yes | No | No | No |
-| Schedule lessons | Yes | No | No | No |
-| Mark attendance | Admin only | No | Assigned only | No |
-| Add lesson notes | Admin only | No | Assigned only | No |
-| Assign homework | Admin only | No | Assigned only | No |
-| Draft report | Admin only | No | Assigned only | No |
-| Publish report | Yes | No | No | No |
-| View own reports | Yes | Own only | Assigned only | No |
-| View all reports | Yes | No | No | No |
-| Create support request | Admin only | Own only | No | No |
-| Manage support requests | Yes | No | No | No |
-| View admin analytics | Yes | No | No | No |
+| Permission                | Admin      | Parent   | Tutor         | Student Profile |
+| ------------------------- | ---------- | -------- | ------------- | --------------- |
+| View public website       | Yes        | Yes      | Yes           | Yes             |
+| Register account          | Yes        | Yes      | Yes           | No              |
+| Create child profile      | Admin only | Yes      | No            | No              |
+| Request assessment        | Admin only | Yes      | No            | No              |
+| View own assessment       | Yes        | Own only | Assigned only | No              |
+| View all assessments      | Yes        | No       | No            | No              |
+| Schedule assessment       | Yes        | No       | No            | No              |
+| Record assessment outcome | Yes        | No       | No            | No              |
+| Recommend plan            | Yes        | No       | No            | No              |
+| Accept plan               | Admin only | Own only | No            | No              |
+| Manage plans              | Yes        | No       | No            | No              |
+| Create payment record     | Admin only | Own only | No            | No              |
+| Approve payment           | Yes        | No       | No            | No              |
+| View own lessons          | Yes        | Own only | Assigned only | No              |
+| View assigned lessons     | Yes        | No       | Assigned only | No              |
+| View all lessons          | Yes        | No       | No            | No              |
+| Schedule lessons          | Yes        | No       | No            | No              |
+| Mark attendance           | Admin only | No       | Assigned only | No              |
+| Add lesson notes          | Admin only | No       | Assigned only | No              |
+| Assign homework           | Admin only | No       | Assigned only | No              |
+| Draft report              | Admin only | No       | Assigned only | No              |
+| Publish report            | Yes        | No       | No            | No              |
+| View own reports          | Yes        | Own only | Assigned only | No              |
+| View all reports          | Yes        | No       | No            | No              |
+| Create support request    | Admin only | Own only | No            | No              |
+| Manage support requests   | Yes        | No       | No            | No              |
+| View admin analytics      | Yes        | No       | No            | No              |
 
 ---
 
@@ -523,26 +523,26 @@ Owns SEO and parent education content.
 
 ### 9.1 Admin Dashboard Metrics
 
-| Metric | Definition | Suggested Derivation |
-|---|---|---|
-| Total parents | Count of registered parent accounts | `COUNT(users WHERE role = PARENT)` |
-| Total students | Count of student profiles | `COUNT(students)` |
-| Active enrollments | Enrollments currently active | `COUNT(enrollments WHERE status = ACTIVE)` |
-| Pending assessments | Assessments awaiting review or scheduling | `COUNT(assessments WHERE status IN (PENDING_REVIEW, SCHEDULED))` |
-| Scheduled lessons | Future lessons scheduled | `COUNT(lessons WHERE status = SCHEDULED AND start_time >= now)` |
-| Completed lessons | Lessons delivered | `COUNT(lessons WHERE status = COMPLETED)` |
-| Active tutors | Tutors with active assignment load | `COUNT(DISTINCT tutor_id from active assignments)` |
-| Monthly revenue | Paid amounts for current month | `SUM(payments.amount WHERE status = PAID AND paid_at within month)` |
-| Pending payments | Unverified payment submissions | `COUNT(payments WHERE status = AWAITING_VERIFICATION)` |
-| Reports due | Expected reports not yet published | Rule-based count from enrollment/report schedule |
-| Students by country | Distribution of students | Group by parent/student country field |
-| Popular subjects | Most selected learning support subjects | Group count from assessments/enrollments/lessons |
-| Tutor workload | Lesson load per tutor | Count scheduled/completed lessons by tutor |
-| Conversion funnel | Assessment → Plan → Payment → Active | Stage-by-stage counts and conversion percentages |
-| Recent assessments | Latest assessment submissions | Sorted descending by created timestamp |
-| Recent payments | Latest payment records/updates | Sorted descending by created timestamp |
-| Upcoming lessons | Next scheduled lessons | Sorted ascending by lesson time |
-| Revenue simulator | Projection widget (non-authoritative) | Price x active students or plan mix assumptions |
+| Metric              | Definition                                | Suggested Derivation                                                |
+| ------------------- | ----------------------------------------- | ------------------------------------------------------------------- |
+| Total parents       | Count of registered parent accounts       | `COUNT(users WHERE role = PARENT)`                                  |
+| Total students      | Count of student profiles                 | `COUNT(students)`                                                   |
+| Active enrollments  | Enrollments currently active              | `COUNT(enrollments WHERE status = ACTIVE)`                          |
+| Pending assessments | Assessments awaiting review or scheduling | `COUNT(assessments WHERE status IN (PENDING_REVIEW, SCHEDULED))`    |
+| Scheduled lessons   | Future lessons scheduled                  | `COUNT(lessons WHERE status = SCHEDULED AND start_time >= now)`     |
+| Completed lessons   | Lessons delivered                         | `COUNT(lessons WHERE status = COMPLETED)`                           |
+| Active tutors       | Tutors with active assignment load        | `COUNT(DISTINCT tutor_id from active assignments)`                  |
+| Monthly revenue     | Paid amounts for current month            | `SUM(payments.amount WHERE status = PAID AND paid_at within month)` |
+| Pending payments    | Unverified payment submissions            | `COUNT(payments WHERE status = AWAITING_VERIFICATION)`              |
+| Reports due         | Expected reports not yet published        | Rule-based count from enrollment/report schedule                    |
+| Students by country | Distribution of students                  | Group by parent/student country field                               |
+| Popular subjects    | Most selected learning support subjects   | Group count from assessments/enrollments/lessons                    |
+| Tutor workload      | Lesson load per tutor                     | Count scheduled/completed lessons by tutor                          |
+| Conversion funnel   | Assessment → Plan → Payment → Active      | Stage-by-stage counts and conversion percentages                    |
+| Recent assessments  | Latest assessment submissions             | Sorted descending by created timestamp                              |
+| Recent payments     | Latest payment records/updates            | Sorted descending by created timestamp                              |
+| Upcoming lessons    | Next scheduled lessons                    | Sorted ascending by lesson time                                     |
+| Revenue simulator   | Projection widget (non-authoritative)     | Price x active students or plan mix assumptions                     |
 
 ### 9.2 Parent Dashboard Data
 
@@ -735,16 +735,16 @@ For MVP, notifications are in-app only.
 
 ## 14. System Design Risks
 
-| Risk | Impact | Mitigation |
-|---|---|---|
-| Scope creep | Delays MVP launch and quality | Enforce phased delivery from task list and strict change control |
+| Risk                                     | Impact                                           | Mitigation                                                                  |
+| ---------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------- |
+| Scope creep                              | Delays MVP launch and quality                    | Enforce phased delivery from task list and strict change control            |
 | Dashboard overbuild before core workflow | Analytics-heavy UI with weak operations backbone | Prioritize assessment-to-payment-to-lesson workflow before advanced widgets |
-| Payment gateway complexity | Blocks go-live timeline | Keep MVP manual verification, abstract gateway interface for later |
-| Tutor workflow complexity | Low tutor adoption, incomplete lesson records | Keep tutor screens minimal and action-driven with clear defaults |
-| Parent dashboard clutter | Lower trust and engagement | Prioritize core visibility cards: status, lessons, homework, reports |
-| Weak access control | Serious data privacy breach | Enforce ownership checks at query and action layers |
-| Reporting burden too high | Tutors/admin skip regular reports | Use structured templates and monthly cadence with reminders |
-| LMS features built too early | Engineering dilution | Keep non-goals explicit and defer advanced classroom features |
+| Payment gateway complexity               | Blocks go-live timeline                          | Keep MVP manual verification, abstract gateway interface for later          |
+| Tutor workflow complexity                | Low tutor adoption, incomplete lesson records    | Keep tutor screens minimal and action-driven with clear defaults            |
+| Parent dashboard clutter                 | Lower trust and engagement                       | Prioritize core visibility cards: status, lessons, homework, reports        |
+| Weak access control                      | Serious data privacy breach                      | Enforce ownership checks at query and action layers                         |
+| Reporting burden too high                | Tutors/admin skip regular reports                | Use structured templates and monthly cadence with reminders                 |
+| LMS features built too early             | Engineering dilution                             | Keep non-goals explicit and defer advanced classroom features               |
 
 ---
 

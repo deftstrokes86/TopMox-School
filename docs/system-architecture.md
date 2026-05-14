@@ -296,17 +296,17 @@ docs/
 
 ### Folder Responsibilities
 
-| Folder | What belongs here | What should not belong here |
-|---|---|---|
-| `src/app` | Routes, layouts, page-level composition | Shared business logic, raw DB calls |
-| `src/components` | Reusable UI units and feature UI blocks | Prisma logic, auth checks |
-| `src/lib` | Utilities, constants, validation, auth helpers, db client | Feature-specific action orchestration |
-| `src/server/actions` | Request-bound mutations and command handlers | UI rendering logic |
-| `src/server/queries` | Read models, aggregation queries, filtered retrieval | Direct UI components |
-| `src/server/services` | Reusable domain/business workflows | Route/layout files |
-| `src/server/integrations` | Third-party provider adapters | Core domain business rules |
-| `prisma` | Schema, migrations, seed scripts | UI components |
-| `docs` | Product/architecture documents | Runtime code |
+| Folder                    | What belongs here                                         | What should not belong here           |
+| ------------------------- | --------------------------------------------------------- | ------------------------------------- |
+| `src/app`                 | Routes, layouts, page-level composition                   | Shared business logic, raw DB calls   |
+| `src/components`          | Reusable UI units and feature UI blocks                   | Prisma logic, auth checks             |
+| `src/lib`                 | Utilities, constants, validation, auth helpers, db client | Feature-specific action orchestration |
+| `src/server/actions`      | Request-bound mutations and command handlers              | UI rendering logic                    |
+| `src/server/queries`      | Read models, aggregation queries, filtered retrieval      | Direct UI components                  |
+| `src/server/services`     | Reusable domain/business workflows                        | Route/layout files                    |
+| `src/server/integrations` | Third-party provider adapters                             | Core domain business rules            |
+| `prisma`                  | Schema, migrations, seed scripts                          | UI components                         |
+| `docs`                    | Product/architecture documents                            | Runtime code                          |
 
 ---
 
@@ -1019,14 +1019,14 @@ Future enhancements:
 
 ### Environment Variables
 
-| Variable | Purpose |
-|---|---|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `AUTH_SECRET` | Session/JWT signing secret |
-| `NEXTAUTH_URL` (or equivalent) | Canonical auth callback URL |
-| `EMAIL_PROVIDER_KEY` | Placeholder for future email notifications |
-| `PAYMENT_PROVIDER_SECRET` | Placeholder for future payment integration |
-| `STORAGE_PROVIDER_KEY` | Placeholder for future file storage integration |
+| Variable                       | Purpose                                         |
+| ------------------------------ | ----------------------------------------------- |
+| `DATABASE_URL`                 | PostgreSQL connection string                    |
+| `AUTH_SECRET`                  | Session/JWT signing secret                      |
+| `NEXTAUTH_URL` (or equivalent) | Canonical auth callback URL                     |
+| `EMAIL_PROVIDER_KEY`           | Placeholder for future email notifications      |
+| `PAYMENT_PROVIDER_SECRET`      | Placeholder for future payment integration      |
+| `STORAGE_PROVIDER_KEY`         | Placeholder for future file storage integration |
 
 ---
 

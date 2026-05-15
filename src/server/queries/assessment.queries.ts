@@ -88,7 +88,7 @@ const assessmentRequestSelect = {
   }
 } satisfies Prisma.AssessmentRequestSelect;
 
-const assessmentOutcomeAdminSelect = {
+export const assessmentOutcomeAdminSelect = {
   id: true,
   assessmentRequestId: true,
   recommendedPlanId: true,

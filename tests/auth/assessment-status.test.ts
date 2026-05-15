@@ -6,6 +6,9 @@ import {
   assertAssessmentStatusTransition,
   canRecordAssessmentOutcome,
   canTransitionAssessmentStatus,
+  getAdminAssessmentSubmittedNotificationPayload,
+  getAssessmentStatusNotificationPayload,
+  getParentAssessmentSubmittedNotificationPayload,
   getPlanRecommendedNotificationPayload,
   shouldPublishAssessmentRecommendation
 } from "@/server/services/assessment.service";
@@ -43,6 +46,13 @@ describe("assessment status transitions", () => {
   test("PLAN_RECOMMENDED can transition to CONVERTED", () => {
     assert.equal(
       canTransitionAssessmentStatus("PLAN_RECOMMENDED", "CONVERTED"),
+      true
+    );
+  });
+
+  test("PLAN_RECOMMENDED can transition to DECLINED", () => {
+    assert.equal(
+      canTransitionAssessmentStatus("PLAN_RECOMMENDED", "DECLINED"),
       true
     );
   });
@@ -92,5 +102,28 @@ describe("assessment status transitions", () => {
     assert.equal(payload.type, "PLAN_RECOMMENDED");
     assert.equal(payload.title, "Learning recommendation ready");
     assert.equal(payload.href, "/parent/assessments/assessment_123");
+  });
+
+  test("assessment submitted notification payloads are parent and admin ready", () => {
+    const adminPayload = getAdminAssessmentSubmittedNotificationPayload({
+      parentName: "Ada Parent",
+      childName: "Timi Parent"
+    });
+    const parentPayload = getParentAssessmentSubmittedNotificationPayload();
+
+    assert.equal(adminPayload.type, "ASSESSMENT_SUBMITTED");
+    assert.match(adminPayload.message, /Ada Parent/);
+    assert.match(adminPayload.message, /Timi Parent/);
+    assert.equal(adminPayload.href, "/admin/assessments");
+    assert.equal(parentPayload.type, "ASSESSMENT_SUBMITTED");
+    assert.equal(parentPayload.href, "/parent/assessments");
+  });
+
+  test("assessment scheduled notification payload is linked to parent assessments", () => {
+    const payload = getAssessmentStatusNotificationPayload("SCHEDULED");
+
+    assert.ok(payload);
+    assert.equal(payload.type, "ASSESSMENT_SCHEDULED");
+    assert.equal(payload.href, "/parent/assessments");
   });
 });

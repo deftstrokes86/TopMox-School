@@ -51,7 +51,10 @@ export function AssessmentStatusActions({
     });
   };
 
-  const canDecline = status === "PENDING_REVIEW" || status === "SCHEDULED";
+  const canDecline =
+    status === "PENDING_REVIEW" ||
+    status === "SCHEDULED" ||
+    status === "PLAN_RECOMMENDED";
   const canComplete = status === "SCHEDULED";
 
   return (
@@ -150,7 +153,11 @@ export function AssessmentStatusActions({
       <ConfirmDialog
         open={pendingAction === "decline"}
         title="Decline assessment request?"
-        description="This stops the request from moving forward. Use this only when TopMox should not continue with this assessment request."
+        description={
+          status === "PLAN_RECOMMENDED"
+            ? "This closes the recommendation path for this request. Use this only when TopMox should not continue toward plan acceptance."
+            : "This stops the request from moving forward. Use this only when TopMox should not continue with this assessment request."
+        }
         confirmLabel="Decline Request"
         confirmTone="destructive"
         onCancel={() => setPendingAction(null)}

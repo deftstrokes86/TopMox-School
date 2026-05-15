@@ -21,6 +21,9 @@ import {
   AssessmentStatusTransitionError,
   assertAssessmentStatusTransition,
   canRecordAssessmentOutcome,
+  getAdminAssessmentSubmittedNotificationPayload,
+  getAssessmentStatusNotificationPayload,
+  getParentAssessmentSubmittedNotificationPayload,
   getPlanRecommendedNotificationPayload,
   shouldPublishAssessmentRecommendation
 } from "@/server/services/assessment.service";
@@ -90,34 +93,6 @@ function toTransitionErrorResult(error: unknown) {
   }
 
   return null;
-}
-
-function getStatusNotification(status: AssessmentStatus) {
-  switch (status) {
-    case "SCHEDULED":
-      return {
-        type: "ASSESSMENT_SCHEDULED" as const,
-        title: "Your child assessment has been scheduled.",
-        message:
-          "TopMox has scheduled your child assessment. Please review the details in your parent dashboard."
-      };
-    case "COMPLETED":
-      return {
-        type: "ASSESSMENT_COMPLETED" as const,
-        title: "Your child assessment has been completed.",
-        message:
-          "TopMox has marked the assessment as completed. The next step is an academic recommendation."
-      };
-    case "DECLINED":
-      return {
-        type: "ASSESSMENT_DECLINED" as const,
-        title: "Your assessment request has been updated.",
-        message:
-          "TopMox has updated your assessment request status. Please contact support if you need clarification."
-      };
-    default:
-      return null;
-  }
 }
 
 async function resolveAssessmentSubjectIds(
@@ -298,19 +273,15 @@ export async function createAssessmentRequestAction(
     });
 
     await Promise.all([
-      notifyAdmins({
-        type: "ASSESSMENT_SUBMITTED",
-        title: "New assessment request submitted.",
-        message: `${user.name} submitted a child assessment request for ${child.fullName}.`,
-        href: "/admin/assessments"
-      }),
+      notifyAdmins(
+        getAdminAssessmentSubmittedNotificationPayload({
+          parentName: user.name,
+          childName: child.fullName
+        })
+      ),
       createNotification({
         userId: user.id,
-        type: "ASSESSMENT_SUBMITTED",
-        title: "Your assessment request has been received.",
-        message:
-          "TopMox has received your child assessment request. An academic coordinator will review it and follow up with next steps.",
-        href: "/parent/assessments"
+        ...getParentAssessmentSubmittedNotificationPayload()
       })
     ]);
 
@@ -392,14 +363,13 @@ export async function scheduleAssessmentAction(
       }
     });
 
-    await createNotification({
-      userId: assessment.parent.userId,
-      type: "ASSESSMENT_SCHEDULED",
-      title: "Your child assessment has been scheduled.",
-      message:
-        "TopMox has scheduled your child assessment. Please review the assessment details in your parent dashboard.",
-      href: "/parent/assessments"
-    });
+    const notification = getAssessmentStatusNotificationPayload("SCHEDULED");
+    if (notification) {
+      await createNotification({
+        userId: assessment.parent.userId,
+        ...notification
+      });
+    }
 
     return {
       success: true,
@@ -483,12 +453,13 @@ export async function updateAssessmentStatusAction(
       }
     });
 
-    const notification = getStatusNotification(updatedAssessment.status);
+    const notification = getAssessmentStatusNotificationPayload(
+      updatedAssessment.status
+    );
     if (notification) {
       await createNotification({
         userId: assessment.parent.userId,
-        ...notification,
-        href: "/parent/assessments"
+        ...notification
       });
     }
 

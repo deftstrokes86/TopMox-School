@@ -1,6 +1,7 @@
-# Auth Test Coverage (Phase 3D)
+# Test Coverage
 
-This phase adds minimal, fast unit tests for auth hardening:
+The current suite uses minimal, fast unit tests for auth hardening,
+onboarding, and the assessment workflow foundation:
 
 - Role route mapping (`getDashboardPathForRole`)
 - Auth schema validation (`loginSchema`, `registerSchema`)
@@ -9,6 +10,11 @@ This phase adds minimal, fast unit tests for auth hardening:
 - Demo-login env flag behavior (`parseDemoLoginEnabled`, `isDemoLoginEnabled`)
 - Parent and child onboarding validation schemas
 - Parent-student ownership gate behavior via `canAccessStudentWithClient`
+- Assessment request, schedule, and outcome validation schemas
+- Assessment status transition helpers for scheduling, completion, recommendation, and decline paths
+- Assessment ownership checks via `canAccessAssessmentWithClient`
+- Assessment notification payload helpers for submitted, scheduled, and plan-recommended events
+- Parent/admin assessment outcome data-shaping guards for internal admin notes
 
 ## Deferred Integration Tests
 
@@ -20,4 +26,8 @@ The following should be added in later phases when workflow actions and richer r
 - Ownership isolation tests against Prisma-backed records
 - Parent profile upsert action integration tests
 - Child profile create/update/delete action integration tests
+- Prisma-backed assessment request submission with notification creation
+- Prisma-backed admin scheduling, completion, and outcome recording
+- Browser-level route access tests for parent, admin, and tutor assessment pages
+- End-to-end assessment-to-recommendation flow against seeded demo data
 - CSRF/session hardening checks for production auth mode

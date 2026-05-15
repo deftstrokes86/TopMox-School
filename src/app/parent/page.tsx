@@ -4,21 +4,25 @@ import {
 } from "@/components/dashboard/ParentOnboardingStatePanel";
 import { requireDashboardAccess } from "@/lib/auth/dashboard-access";
 import type { AssessmentStatusValue } from "@/lib/utils/assessment-status";
+import { getNextUpcomingLessonSummary } from "@/lib/utils/lesson-dashboard";
+import type { LessonStatusValue } from "@/lib/utils/lesson-status";
 import { getCurrentParentAssessmentRequests } from "@/server/queries/assessment.queries";
 import {
   getCurrentParentEnrollments,
   getEnrollmentByAssessmentForCurrentParent
 } from "@/server/queries/enrollment.queries";
+import { getCurrentParentLessons } from "@/server/queries/lesson.queries";
 import { getParentOnboardingStatus } from "@/server/queries/parent.queries";
 import { getCurrentParentPayments } from "@/server/queries/payment.queries";
 
 export default async function ParentPlaceholderPage() {
   const user = await requireDashboardAccess("PARENT");
-  const [onboardingStatus, assessments, enrollments, payments] = await Promise.all([
+  const [onboardingStatus, assessments, enrollments, payments, lessons] = await Promise.all([
     getParentOnboardingStatus(),
     getCurrentParentAssessmentRequests(),
     getCurrentParentEnrollments(),
-    getCurrentParentPayments()
+    getCurrentParentPayments(),
+    getCurrentParentLessons()
   ]);
   const latestAssessment = assessments[0]
     ? {
@@ -49,6 +53,18 @@ export default async function ParentPlaceholderPage() {
   const pendingEnrollment = enrollments.find(
     (enrollment) => enrollment.status === "PENDING_PAYMENT"
   );
+  const nextLessonSummary = getNextUpcomingLessonSummary(lessons);
+  const nextLesson = nextLessonSummary
+    ? {
+        id: nextLessonSummary.id,
+        title: nextLessonSummary.title,
+        childName: nextLessonSummary.childName,
+        subjectName: nextLessonSummary.subjectName,
+        startTime: nextLessonSummary.startTime.toISOString(),
+        status: nextLessonSummary.status as LessonStatusValue,
+        timezone: nextLessonSummary.timezone
+      }
+    : null;
   let planNextStep: ParentDashboardPlanNextStep | null = null;
 
   if (activeEnrollment) {
@@ -109,6 +125,7 @@ export default async function ParentPlaceholderPage() {
       userEmail={user.email}
       initialState={onboardingStatus}
       latestAssessment={latestAssessment}
+      nextLesson={nextLesson}
       planNextStep={planNextStep}
     />
   );

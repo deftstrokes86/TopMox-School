@@ -1,4 +1,4 @@
-import type { LessonStatus, Prisma } from "@prisma/client";
+import type { EnrollmentStatus, LessonStatus, Prisma } from "@prisma/client";
 
 import { requireAdmin, requireParent, requireTutor } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -43,7 +43,10 @@ const lessonSelect = {
       fullName: true,
       age: true,
       classYearGroup: true,
-      curriculum: true
+      countryOfStudy: true,
+      curriculum: true,
+      mainAcademicChallenge: true,
+      academicGoal: true
     }
   },
   tutor: {
@@ -79,6 +82,49 @@ const lessonSelect = {
     }
   }
 } satisfies Prisma.LessonSelect;
+
+export type LessonQueryResult = Prisma.LessonGetPayload<{
+  select: typeof lessonSelect;
+}>;
+
+type LessonDetailViewSource = {
+  id: string;
+  title: string;
+  startTime: Date;
+  endTime: Date;
+  timezone: string;
+  meetingLink: string | null;
+  status: LessonStatus;
+  parent: {
+    country: string;
+    timezone: string;
+  };
+  student: {
+    fullName: string;
+    age: number;
+    classYearGroup: string;
+    countryOfStudy: string;
+    curriculum: string;
+    mainAcademicChallenge: string | null;
+    academicGoal: string | null;
+  };
+  tutor: {
+    user: {
+      name: string;
+    };
+  };
+  subject: {
+    name: string;
+  };
+  enrollment: {
+    id: string;
+    status: EnrollmentStatus;
+    tutoringPlan: {
+      name: string;
+      sessionsPerWeek: number;
+    };
+  } | null;
+};
 
 export type AdminLessonFilters = {
   status?: LessonStatus;
@@ -126,6 +172,79 @@ export function buildAdminLessonWhereInput(
   return where;
 }
 
+export function buildParentLessonWhereInput(
+  userId: string,
+  lessonId?: string
+): Prisma.LessonWhereInput {
+  return {
+    ...(lessonId ? { id: lessonId } : {}),
+    parent: {
+      userId
+    }
+  };
+}
+
+export function buildTutorLessonWhereInput(
+  userId: string,
+  lessonId?: string
+): Prisma.LessonWhereInput {
+  return {
+    ...(lessonId ? { id: lessonId } : {}),
+    tutor: {
+      userId
+    }
+  };
+}
+
+export function buildParentLessonDetailView(lesson: LessonDetailViewSource) {
+  return {
+    id: lesson.id,
+    title: lesson.title,
+    childName: lesson.student.fullName,
+    tutorName: lesson.tutor.user.name,
+    subjectName: lesson.subject.name,
+    startTime: lesson.startTime,
+    endTime: lesson.endTime,
+    timezone: lesson.timezone,
+    meetingLink: lesson.meetingLink,
+    status: lesson.status,
+    enrollment: lesson.enrollment
+      ? {
+          id: lesson.enrollment.id,
+          status: lesson.enrollment.status,
+          planName: lesson.enrollment.tutoringPlan.name,
+          sessionsPerWeek: lesson.enrollment.tutoringPlan.sessionsPerWeek
+        }
+      : null
+  };
+}
+
+export function buildTutorLessonDetailView(lesson: LessonDetailViewSource) {
+  return {
+    id: lesson.id,
+    title: lesson.title,
+    studentName: lesson.student.fullName,
+    subjectName: lesson.subject.name,
+    startTime: lesson.startTime,
+    endTime: lesson.endTime,
+    timezone: lesson.timezone,
+    meetingLink: lesson.meetingLink,
+    status: lesson.status,
+    parentContext: {
+      country: lesson.parent.country,
+      timezone: lesson.parent.timezone
+    },
+    learningContext: {
+      age: lesson.student.age,
+      classYearGroup: lesson.student.classYearGroup,
+      countryOfStudy: lesson.student.countryOfStudy,
+      curriculum: lesson.student.curriculum,
+      mainAcademicChallenge: lesson.student.mainAcademicChallenge,
+      academicGoal: lesson.student.academicGoal
+    }
+  };
+}
+
 export async function getAdminLessons(filters: AdminLessonFilters = {}) {
   await requireAdmin();
 
@@ -154,11 +273,7 @@ export async function getCurrentParentLessons() {
   const user = await requireParent();
 
   return db.lesson.findMany({
-    where: {
-      parent: {
-        userId: user.id
-      }
-    },
+    where: buildParentLessonWhereInput(user.id),
     select: lessonSelect,
     orderBy: {
       startTime: "asc"
@@ -170,12 +285,7 @@ export async function getCurrentParentLessonById(lessonId: string) {
   const user = await requireParent();
 
   return db.lesson.findFirst({
-    where: {
-      id: lessonId,
-      parent: {
-        userId: user.id
-      }
-    },
+    where: buildParentLessonWhereInput(user.id, lessonId),
     select: lessonSelect
   });
 }
@@ -184,11 +294,7 @@ export async function getCurrentTutorLessons() {
   const user = await requireTutor();
 
   return db.lesson.findMany({
-    where: {
-      tutor: {
-        userId: user.id
-      }
-    },
+    where: buildTutorLessonWhereInput(user.id),
     select: lessonSelect,
     orderBy: {
       startTime: "asc"
@@ -200,12 +306,7 @@ export async function getCurrentTutorLessonById(lessonId: string) {
   const user = await requireTutor();
 
   return db.lesson.findFirst({
-    where: {
-      id: lessonId,
-      tutor: {
-        userId: user.id
-      }
-    },
+    where: buildTutorLessonWhereInput(user.id, lessonId),
     select: lessonSelect
   });
 }

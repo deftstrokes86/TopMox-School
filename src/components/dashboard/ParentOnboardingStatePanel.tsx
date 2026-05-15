@@ -14,6 +14,10 @@ import {
   getParentAssessmentNextAction,
   type AssessmentStatusValue
 } from "@/lib/utils/assessment-status";
+import {
+  getLessonStatusMeta,
+  type LessonStatusValue
+} from "@/lib/utils/lesson-status";
 import { resolveParentOnboardingFlow } from "@/lib/utils/parent-onboarding-flow";
 import {
   getParentOnboardingStatusAction,
@@ -26,6 +30,7 @@ type ParentOnboardingStatePanelProps = {
   role: AppRole;
   initialState?: OnboardingState;
   latestAssessment?: ParentDashboardAssessmentSummary | null;
+  nextLesson?: ParentDashboardLessonSummary | null;
   planNextStep?: ParentDashboardPlanNextStep | null;
 };
 
@@ -37,6 +42,16 @@ type ParentDashboardAssessmentSummary = {
   childName: string;
   createdAt: string;
   scheduledAt: string | null;
+};
+
+type ParentDashboardLessonSummary = {
+  id: string;
+  title: string;
+  childName: string;
+  subjectName: string;
+  startTime: string;
+  status: LessonStatusValue;
+  timezone?: string;
 };
 
 export type ParentDashboardPlanNextStep = {
@@ -65,6 +80,7 @@ export function ParentOnboardingStatePanel({
   role,
   initialState,
   latestAssessment,
+  nextLesson,
   planNextStep
 }: ParentOnboardingStatePanelProps) {
   const [loading, setLoading] = useState(!initialState);
@@ -121,6 +137,9 @@ export function ParentOnboardingStatePanel({
         latestAssessment.status,
         latestAssessment.id
       )
+    : null;
+  const nextLessonStatus = nextLesson
+    ? getLessonStatusMeta(nextLesson.status)
     : null;
 
   return (
@@ -270,6 +289,41 @@ export function ParentOnboardingStatePanel({
                       </Button>
                     </div>
                   ) : null}
+                </div>
+              ) : null}
+              {content.state === "READY_FOR_ASSESSMENT" &&
+              nextLesson &&
+              nextLessonStatus ? (
+                <div className="mt-4 rounded-xl border border-royal-blue/20 bg-white p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
+                        Next Lesson
+                      </p>
+                      <p className="mt-1 font-semibold text-deep-navy">
+                        {nextLesson.title}
+                      </p>
+                      <p className="mt-1 text-sm text-text-secondary">
+                        {nextLesson.childName} | {nextLesson.subjectName}
+                      </p>
+                      <p className="mt-2 text-xs text-text-muted">
+                        {formatDashboardDate(nextLesson.startTime)}
+                        {nextLesson.timezone ? ` | ${nextLesson.timezone}` : ""}
+                      </p>
+                    </div>
+                    <StatusBadge
+                      label={nextLessonStatus.label}
+                      tone={nextLessonStatus.tone}
+                    />
+                  </div>
+                  <div className="mt-4">
+                    <Button asChild variant="outline">
+                      <Link href={`/parent/lessons/${nextLesson.id}`}>
+                        View Lesson
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               ) : null}
               {content.state === "READY_FOR_ASSESSMENT" &&

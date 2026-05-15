@@ -26,6 +26,7 @@ type ParentOnboardingStatePanelProps = {
   role: AppRole;
   initialState?: OnboardingState;
   latestAssessment?: ParentDashboardAssessmentSummary | null;
+  planNextStep?: ParentDashboardPlanNextStep | null;
 };
 
 type OnboardingState = NonNullable<ParentOnboardingStatusActionResult["data"]>;
@@ -36,6 +37,15 @@ type ParentDashboardAssessmentSummary = {
   childName: string;
   createdAt: string;
   scheduledAt: string | null;
+};
+
+export type ParentDashboardPlanNextStep = {
+  title: string;
+  description: string;
+  badgeLabel: string;
+  badgeTone: "neutral" | "info" | "success" | "warning" | "danger";
+  ctaLabel?: string;
+  ctaHref?: string;
 };
 
 function formatDashboardDate(value: string | null): string {
@@ -54,7 +64,8 @@ export function ParentOnboardingStatePanel({
   userEmail,
   role,
   initialState,
-  latestAssessment
+  latestAssessment,
+  planNextStep
 }: ParentOnboardingStatePanelProps) {
   const [loading, setLoading] = useState(!initialState);
   const [error, setError] = useState<string | null>(null);
@@ -230,6 +241,37 @@ export function ParentOnboardingStatePanel({
               <p className="mt-2 text-sm text-text-secondary">
                 {content.description}
               </p>
+              {content.state === "READY_FOR_ASSESSMENT" && planNextStep ? (
+                <div className="mt-4 rounded-xl border border-warm-gold/30 bg-warm-gold/10 p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
+                        Tutoring plan next step
+                      </p>
+                      <p className="mt-1 font-semibold text-deep-navy">
+                        {planNextStep.title}
+                      </p>
+                      <p className="mt-1 text-sm text-text-secondary">
+                        {planNextStep.description}
+                      </p>
+                    </div>
+                    <StatusBadge
+                      label={planNextStep.badgeLabel}
+                      tone={planNextStep.badgeTone}
+                    />
+                  </div>
+                  {planNextStep.ctaHref && planNextStep.ctaLabel ? (
+                    <div className="mt-4">
+                      <Button asChild>
+                        <Link href={planNextStep.ctaHref}>
+                          {planNextStep.ctaLabel}
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
               {content.state === "READY_FOR_ASSESSMENT" &&
               latestAssessment &&
               latestAssessmentStatus &&

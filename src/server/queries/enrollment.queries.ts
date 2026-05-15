@@ -47,6 +47,17 @@ const enrollmentSelect = {
         }
       }
     }
+  },
+  payments: {
+    select: {
+      id: true,
+      status: true,
+      createdAt: true
+    },
+    orderBy: {
+      createdAt: "desc"
+    },
+    take: 1
   }
 } satisfies Prisma.EnrollmentSelect;
 
@@ -114,6 +125,30 @@ export async function getEnrollmentByAssessmentForCurrentParent(
       tutoringPlanId: assessment.outcome.recommendedPlanId,
       status: {
         not: "CANCELLED"
+      }
+    },
+    select: enrollmentSelect,
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+}
+
+export async function getCurrentParentPendingPaymentEnrollments() {
+  const user = await requireParent();
+
+  return db.enrollment.findMany({
+    where: {
+      parent: {
+        userId: user.id
+      },
+      status: "PENDING_PAYMENT",
+      payments: {
+        none: {
+          status: {
+            in: ["AWAITING_VERIFICATION", "PAID"]
+          }
+        }
       }
     },
     select: enrollmentSelect,

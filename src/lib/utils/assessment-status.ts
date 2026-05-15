@@ -96,14 +96,14 @@ export function getParentAssessmentNextAction(
         label: "View Learning Recommendation",
         href: detailHref,
         description:
-          "Review the recommended tutoring path. Plan acceptance comes in a later phase."
+          "Review the recommended tutoring path and accept the plan when ready."
       };
     case "CONVERTED":
       return {
-        label: "View Assessment Details",
-        href: detailHref,
+        label: "View Tutoring Plans",
+        href: "/parent/enrollments",
         description:
-          "This assessment has already moved forward into the tutoring journey."
+          "This assessment has moved into the tutoring enrollment journey."
       };
     case "DECLINED":
       return {

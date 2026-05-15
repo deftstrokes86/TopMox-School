@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CheckCircle2, ExternalLink } from "lucide-react";
 
+import { AcceptRecommendedPlanButton } from "@/components/forms/parent/accept-recommended-plan-button";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import {
   getAssessmentOutcomeForCurrentParent,
   getAssessmentRequestForCurrentParent
 } from "@/server/queries/assessment.queries";
+import { getEnrollmentByAssessmentForCurrentParent } from "@/server/queries/enrollment.queries";
 
 export const dynamic = "force-dynamic";
 
@@ -74,6 +76,9 @@ export default async function ParentAssessmentDetailPage({
   }
 
   const status = getAssessmentStatusMeta(assessment.status);
+  const acceptedEnrollment = await getEnrollmentByAssessmentForCurrentParent(
+    params.id
+  );
 
   return (
     <section className="space-y-6">
@@ -278,7 +283,10 @@ export default async function ParentAssessmentDetailPage({
                       {outcome.recommendedPlan.name}
                     </p>
                     <p className="mt-2 text-sm text-text-secondary">
-                      {outcome.recommendedPlan.bestFor}
+                      {outcome.recommendedPlan.description}
+                    </p>
+                    <p className="mt-2 text-sm text-text-secondary">
+                      Best for: {outcome.recommendedPlan.bestFor}
                     </p>
                     <p className="mt-3 text-sm font-semibold text-deep-navy">
                       {outcome.recommendedPlan.currency}{" "}
@@ -286,22 +294,62 @@ export default async function ParentAssessmentDetailPage({
                       | {outcome.recommendedPlan.sessionsPerWeek} sessions per
                       week
                     </p>
+                    {outcome.recommendedPlan.features.length > 0 ? (
+                      <ul className="mt-4 grid gap-2 text-sm text-text-secondary sm:grid-cols-2">
+                        {outcome.recommendedPlan.features.map((feature) => (
+                          <li key={feature} className="flex items-start gap-2">
+                            <CheckCircle2 className="mt-0.5 h-4 w-4 text-success" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </div>
                 ) : null}
 
                 <div className="rounded-xl border border-warm-gold/30 bg-warm-gold/10 p-5">
                   <p className="font-semibold text-deep-navy">
-                    Plan acceptance and payment will be completed in the next
-                    step.
+                    {acceptedEnrollment
+                      ? "This recommendation has been accepted."
+                      : "Accept the recommended plan when you are ready."}
                   </p>
                   <p className="mt-2 text-sm text-text-secondary">
-                    For now, this recommendation gives you a clear direction and
-                    the proposed support plan. TopMox will guide you through
-                    accepting the plan and completing payment in the next step.
+                    {acceptedEnrollment
+                      ? "Your tutoring plan has been created. Submit payment details so TopMox can verify and activate your child's support."
+                      : "Plan acceptance creates a pending tutoring plan. Payment details are submitted separately for TopMox verification."}
                   </p>
-                  <Button disabled className="mt-4 w-full sm:w-auto">
-                    Accept Recommended Plan
-                  </Button>
+                  <div className="mt-4">
+                    {acceptedEnrollment ? (
+                      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                        <Button asChild className="w-full sm:w-auto">
+                          <Link href="/parent/enrollments">
+                            View Tutoring Plans
+                          </Link>
+                        </Button>
+                        <Button
+                          asChild
+                          variant="outline"
+                          className="w-full sm:w-auto"
+                        >
+                          <Link
+                            href={`/parent/payments/new?enrollmentId=${acceptedEnrollment.id}`}
+                          >
+                            Submit Payment Details
+                          </Link>
+                        </Button>
+                      </div>
+                    ) : outcome.recommendedPlanId ? (
+                      <AcceptRecommendedPlanButton
+                        assessmentRequestId={assessment.id}
+                        recommendedPlanId={outcome.recommendedPlanId}
+                      />
+                    ) : (
+                      <p className="text-sm text-text-secondary">
+                        TopMox will add the recommended plan before acceptance is
+                        available.
+                      </p>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

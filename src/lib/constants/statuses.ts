@@ -19,6 +19,7 @@ export const PAYMENT_STATUSES = [
 ] as const;
 
 export const ENROLLMENT_STATUSES = [
+  "PENDING_PAYMENT",
   "ACTIVE",
   "PAUSED",
   "COMPLETED",

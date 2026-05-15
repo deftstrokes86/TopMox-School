@@ -330,7 +330,9 @@ export async function getAssessmentOutcomeForCurrentParent(
     where: {
       assessmentRequestId: assessmentId,
       assessmentRequest: {
-        status: "PLAN_RECOMMENDED",
+        status: {
+          in: ["PLAN_RECOMMENDED", "CONVERTED"]
+        },
         parent: {
           userId: user.id
         }

@@ -52,6 +52,7 @@ export const ADMIN_NAV_ITEMS: NavigationItem[] = [
   { label: "Students", href: "/admin/students" },
   { label: "Tutors", href: "/admin/tutors" },
   { label: "Assessments", href: "/admin/assessments" },
+  { label: "Enrollments", href: "/admin/enrollments" },
   { label: "Lessons", href: "/admin/lessons" },
   { label: "Plans", href: "/admin/plans" },
   { label: "Payments", href: "/admin/payments" },

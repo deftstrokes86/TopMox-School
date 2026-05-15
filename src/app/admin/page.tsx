@@ -2,8 +2,10 @@ import Link from "next/link";
 import {
   ArrowRight,
   CalendarClock,
+  CalendarPlus,
   ClipboardList,
-  CreditCard
+  CreditCard,
+  UserCheck
 } from "lucide-react";
 
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -13,11 +15,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireDashboardAccess } from "@/lib/auth/dashboard-access";
 import { getAssessmentStatusMeta } from "@/lib/utils/assessment-status";
+import { getLessonStatusMeta } from "@/lib/utils/lesson-status";
 import { getPaymentStatusMeta } from "@/lib/utils/payment-status";
 import {
   getAdminAssessmentRequests,
   getAssessmentRequestCountsByStatus
 } from "@/server/queries/assessment.queries";
+import { getAdminEnrollmentSummary } from "@/server/queries/enrollment.queries";
+import { getAdminLessons } from "@/server/queries/lesson.queries";
 import {
   getAdminPayments,
   getAdminPaymentSummary
@@ -52,6 +57,14 @@ export default async function AdminDashboardPage() {
       getAdminPaymentSummary(),
       getAdminPayments({ take: 5 })
     ]);
+  const [enrollmentSummary, upcomingLessons] = await Promise.all([
+    getAdminEnrollmentSummary(),
+    getAdminLessons({
+      status: "SCHEDULED",
+      dateFrom: new Date(),
+      take: 5
+    })
+  ]);
 
   return (
     <section className="space-y-6">
@@ -70,6 +83,18 @@ export default async function AdminDashboardPage() {
               <Link href="/admin/payments">
                 <CreditCard className="mr-2 h-4 w-4" />
                 Review Payments
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full sm:w-auto">
+              <Link href="/admin/enrollments">
+                <UserCheck className="mr-2 h-4 w-4" />
+                Assign Tutors
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full sm:w-auto">
+              <Link href="/admin/lessons">
+                <CalendarPlus className="mr-2 h-4 w-4" />
+                Schedule Lessons
               </Link>
             </Button>
           </div>
@@ -132,8 +157,20 @@ export default async function AdminDashboardPage() {
         />
         <StatCard
           label="Active Enrollments"
-          value={`${paymentSummary.activeEnrollments}`}
-          context="Enrollments activated after payment approval."
+          value={`${enrollmentSummary.active}`}
+          context="Tutoring plans ready for assignment and lessons."
+        />
+        <StatCard
+          label="Need Tutor"
+          value={`${enrollmentSummary.needsTutorAssignment}`}
+          context="Active enrollments without an assigned tutor."
+          icon={<UserCheck className="h-5 w-5 text-warning" />}
+        />
+        <StatCard
+          label="Upcoming Lessons"
+          value={`${upcomingLessons.length}`}
+          context="Next scheduled lessons visible to admin."
+          icon={<CalendarPlus className="h-5 w-5 text-info" />}
         />
       </div>
 
@@ -187,6 +224,61 @@ export default async function AdminDashboardPage() {
             <p className="rounded-xl border border-dashed border-border bg-soft-cream/40 p-5 text-sm text-text-secondary">
               No assessment requests yet. New parent submissions will appear
               here.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-royal-blue/20">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-xl text-deep-navy">
+              Upcoming Lessons
+            </CardTitle>
+            <p className="mt-1 text-sm text-text-secondary">
+              Scheduled lessons ready for parent and tutor visibility.
+            </p>
+          </div>
+          <Button asChild variant="outline" className="w-full sm:w-auto">
+            <Link href="/admin/lessons">
+              View Lessons
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {upcomingLessons.length > 0 ? (
+            upcomingLessons.map((lesson) => {
+              const lessonStatus = getLessonStatusMeta(lesson.status);
+              return (
+                <div
+                  key={lesson.id}
+                  className="flex flex-col gap-3 rounded-xl border border-border/80 bg-soft-cream/35 p-4 md:flex-row md:items-center md:justify-between"
+                >
+                  <div>
+                    <p className="font-semibold text-deep-navy">
+                      {lesson.student.fullName}
+                    </p>
+                    <p className="text-sm text-text-secondary">
+                      {lesson.subject.name} with {lesson.tutor.user.name} |{" "}
+                      {formatDateTime(lesson.startTime)}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <StatusBadge
+                      label={lessonStatus.label}
+                      tone={lessonStatus.tone}
+                    />
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/admin/lessons/${lesson.id}`}>View</Link>
+                    </Button>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <p className="rounded-xl border border-dashed border-border bg-soft-cream/40 p-5 text-sm text-text-secondary">
+              No upcoming lessons have been scheduled yet.
             </p>
           )}
         </CardContent>

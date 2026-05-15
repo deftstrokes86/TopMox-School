@@ -82,9 +82,12 @@ const lessonSelect = {
 
 export type AdminLessonFilters = {
   status?: LessonStatus;
+  enrollmentId?: string;
   tutorId?: string;
   studentId?: string;
   subjectId?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
   take?: number;
 };
 
@@ -97,6 +100,10 @@ export function buildAdminLessonWhereInput(
     where.status = filters.status;
   }
 
+  if (filters.enrollmentId) {
+    where.enrollmentId = filters.enrollmentId;
+  }
+
   if (filters.tutorId) {
     where.tutorId = filters.tutorId;
   }
@@ -107,6 +114,13 @@ export function buildAdminLessonWhereInput(
 
   if (filters.subjectId) {
     where.subjectId = filters.subjectId;
+  }
+
+  if (filters.dateFrom || filters.dateTo) {
+    where.startTime = {
+      ...(filters.dateFrom ? { gte: filters.dateFrom } : {}),
+      ...(filters.dateTo ? { lte: filters.dateTo } : {})
+    };
   }
 
   return where;
@@ -193,5 +207,20 @@ export async function getCurrentTutorLessonById(lessonId: string) {
       }
     },
     select: lessonSelect
+  });
+}
+
+export async function getAdminLessonSubjects() {
+  await requireAdmin();
+
+  return db.subject.findMany({
+    select: {
+      id: true,
+      name: true,
+      slug: true
+    },
+    orderBy: {
+      name: "asc"
+    }
   });
 }

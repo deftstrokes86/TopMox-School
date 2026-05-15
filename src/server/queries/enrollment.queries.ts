@@ -1,6 +1,6 @@
-import type { Prisma } from "@prisma/client";
+import type { EnrollmentStatus, Prisma } from "@prisma/client";
 
-import { requireParent } from "@/lib/auth";
+import { requireAdmin, requireParent } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 const enrollmentSelect = {
@@ -15,6 +15,21 @@ const enrollmentSelect = {
   notes: true,
   createdAt: true,
   updatedAt: true,
+  parent: {
+    select: {
+      id: true,
+      whatsappNumber: true,
+      country: true,
+      timezone: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      }
+    }
+  },
   student: {
     select: {
       id: true,
@@ -53,6 +68,8 @@ const enrollmentSelect = {
       id: true,
       status: true,
       paymentMethod: true,
+      amount: true,
+      currency: true,
       checkoutUrl: true,
       createdAt: true
     },
@@ -62,6 +79,91 @@ const enrollmentSelect = {
     take: 1
   }
 } satisfies Prisma.EnrollmentSelect;
+
+export type AdminEnrollmentFilters = {
+  status?: EnrollmentStatus;
+  needsTutorAssignment?: boolean;
+  take?: number;
+};
+
+export function buildAdminEnrollmentWhereInput(
+  filters: AdminEnrollmentFilters = {}
+): Prisma.EnrollmentWhereInput {
+  const where: Prisma.EnrollmentWhereInput = {};
+
+  if (filters.status) {
+    where.status = filters.status;
+  }
+
+  if (filters.needsTutorAssignment) {
+    where.status = "ACTIVE";
+    where.assignedTutorId = null;
+  }
+
+  return where;
+}
+
+export async function getAdminEnrollments(
+  filters: AdminEnrollmentFilters = {}
+) {
+  await requireAdmin();
+
+  return db.enrollment.findMany({
+    where: buildAdminEnrollmentWhereInput(filters),
+    select: enrollmentSelect,
+    orderBy: {
+      createdAt: "desc"
+    },
+    take: filters.take
+  });
+}
+
+export async function getAdminEnrollmentById(enrollmentId: string) {
+  await requireAdmin();
+
+  return db.enrollment.findUnique({
+    where: {
+      id: enrollmentId
+    },
+    select: enrollmentSelect
+  });
+}
+
+export async function getAdminEnrollmentSummary() {
+  await requireAdmin();
+
+  const [active, needsTutorAssignment] = await Promise.all([
+    db.enrollment.count({
+      where: {
+        status: "ACTIVE"
+      }
+    }),
+    db.enrollment.count({
+      where: buildAdminEnrollmentWhereInput({
+        needsTutorAssignment: true
+      })
+    })
+  ]);
+
+  return {
+    active,
+    needsTutorAssignment
+  };
+}
+
+export async function getActiveEnrollmentsForLessonScheduling() {
+  await requireAdmin();
+
+  return db.enrollment.findMany({
+    where: {
+      status: "ACTIVE"
+    },
+    select: enrollmentSelect,
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+}
 
 export async function getCurrentParentEnrollments() {
   const user = await requireParent();

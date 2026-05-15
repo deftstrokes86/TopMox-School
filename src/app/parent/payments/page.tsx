@@ -6,7 +6,10 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getPaymentStatusMeta } from "@/lib/utils/payment-status";
+import {
+  getParentPaymentStatusDescription,
+  getPaymentStatusMeta
+} from "@/lib/utils/payment-status";
 import { getCurrentParentPayments } from "@/server/queries/payment.queries";
 
 export const dynamic = "force-dynamic";
@@ -81,7 +84,10 @@ function PaymentCard({ payment }: { payment: PaymentListItem }) {
         </div>
 
         <p className="rounded-xl border border-royal-blue/20 bg-soft-blue/20 p-4 text-sm text-text-secondary">
-          {status.parentDescription}
+          {getParentPaymentStatusDescription({
+            paymentMethod: payment.paymentMethod,
+            status: payment.status
+          })}
         </p>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">

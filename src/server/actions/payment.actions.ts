@@ -29,7 +29,7 @@ import {
   getParentPaymentSubmittedNotificationPayload,
   validateEnrollmentPaymentRequest,
   validateManualPaymentSubmission,
-  validatePaymentReview
+  validateManualPaymentReview
 } from "@/server/services/payment.service";
 
 type PaymentFieldErrors = Partial<
@@ -575,7 +575,7 @@ export async function createManualPaymentAction(
   }
 }
 
-export async function reviewPaymentAction(
+export async function reviewManualPaymentAction(
   payload: ReviewPaymentInput
 ): Promise<PaymentActionResult> {
   try {
@@ -605,6 +605,8 @@ export async function reviewPaymentAction(
           id: true,
           enrollmentId: true,
           status: true,
+          paymentMethod: true,
+          provider: true,
           parent: {
             select: {
               userId: true
@@ -632,8 +634,10 @@ export async function reviewPaymentAction(
         };
       }
 
-      const review = validatePaymentReview({
+      const review = validateManualPaymentReview({
         currentRole: user.role,
+        paymentMethod: payment.paymentMethod,
+        provider: payment.provider,
         paymentStatus: payment.status,
         enrollmentStatus: payment.enrollment?.status ?? null,
         decision: parsed.data.decision
@@ -763,6 +767,12 @@ export async function reviewPaymentAction(
 
     throw error;
   }
+}
+
+export async function reviewPaymentAction(
+  payload: ReviewPaymentInput
+): Promise<PaymentActionResult> {
+  return reviewManualPaymentAction(payload);
 }
 
 export async function updatePaymentAdminNoteAction(

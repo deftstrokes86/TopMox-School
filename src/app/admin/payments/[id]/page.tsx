@@ -76,7 +76,7 @@ export default async function AdminPaymentDetailPage({
     <section className="space-y-6">
       <PageHeader
         title="Payment Review"
-        description="Verify payment details, approve confirmed payments, or reject unclear submissions while keeping the parent informed."
+        description="Review manual transfers, inspect provider verification status, and keep the parent informed without bypassing gateway safety."
         actions={
           <Button asChild variant="outline" className="w-full sm:w-auto">
             <Link href="/admin/payments">
@@ -110,8 +110,17 @@ export default async function AdminPaymentDetailPage({
             label="Payment method"
             value={formatEnumLabel(payment.paymentMethod)}
           />
+          <DetailItem label="Provider" value={formatEnumLabel(payment.provider)} />
           <DetailItem label="Submitted" value={formatDate(payment.createdAt)} />
           <DetailItem label="Reference" value={payment.reference} />
+          <DetailItem
+            label="Provider reference"
+            value={payment.providerReference}
+          />
+          <DetailItem
+            label="Provider transaction"
+            value={payment.providerTransactionId}
+          />
           <DetailItem label="Paid date" value={formatDate(payment.paidAt)} />
           <DetailItem label="Parent country" value={payment.parent.country} />
         </CardContent>
@@ -216,13 +225,15 @@ export default async function AdminPaymentDetailPage({
         <Card className="border-royal-blue/20">
           <CardHeader>
             <CardTitle className="text-xl text-deep-navy">
-              Review Actions
+              Manual Review Actions
             </CardTitle>
           </CardHeader>
           <CardContent>
             <PaymentReviewActions
               paymentId={payment.id}
               status={payment.status}
+              paymentMethod={payment.paymentMethod}
+              provider={payment.provider}
               initialAdminNote={payment.adminNote}
             />
           </CardContent>

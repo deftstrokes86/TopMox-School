@@ -182,7 +182,8 @@ function PaymentCard({ payment }: { payment: PaymentListItem }) {
               {payment.currency} {payment.amount.toString()}
             </p>
             <p className="text-xs text-text-muted">
-              {formatEnumLabel(payment.paymentMethod)}
+              {formatEnumLabel(payment.paymentMethod)} /{" "}
+              {formatEnumLabel(payment.provider)}
             </p>
           </div>
           <div className="rounded-lg border border-border/70 bg-soft-cream/50 p-3">
@@ -201,7 +202,10 @@ function PaymentCard({ payment }: { payment: PaymentListItem }) {
           </p>
           <Button asChild variant="outline" className="w-full sm:w-auto">
             <Link href={`/admin/payments/${payment.id}`}>
-              Review
+              {payment.paymentMethod === "MANUAL_TRANSFER" &&
+              payment.status === "AWAITING_VERIFICATION"
+                ? "Review"
+                : "View Details"}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
@@ -227,7 +231,7 @@ export default async function AdminPaymentsPage({
     <section className="space-y-6">
       <PageHeader
         title="Payments"
-        description="Review manual payment submissions, approve verified payments, and activate enrollments once payment is confirmed."
+        description="Review manual transfer submissions and monitor Flutterwave payments that are verified through callback or webhook."
       />
 
       <div className="grid gap-4 md:grid-cols-3">

@@ -6,7 +6,10 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getPaymentStatusMeta } from "@/lib/utils/payment-status";
+import {
+  getParentPaymentStatusDescription,
+  getPaymentStatusMeta
+} from "@/lib/utils/payment-status";
 import { getPaymentForCurrentParent } from "@/server/queries/payment.queries";
 
 export const dynamic = "force-dynamic";
@@ -89,7 +92,10 @@ export default async function ParentPaymentDetailPage({
             <StatusBadge label={status.label} tone={status.tone} />
           </div>
           <p className="max-w-3xl text-sm text-text-secondary">
-            {status.parentDescription}
+            {getParentPaymentStatusDescription({
+              paymentMethod: payment.paymentMethod,
+              status: payment.status
+            })}
           </p>
         </CardHeader>
         <CardContent className="space-y-5">

@@ -1,5 +1,6 @@
 import type { StatusTone } from "@/lib/constants/statuses";
 import { PAYMENT_STATUSES } from "@/lib/constants/statuses";
+import type { PaymentMethod } from "@prisma/client";
 
 export type PaymentStatusValue = (typeof PAYMENT_STATUSES)[number];
 
@@ -48,4 +49,42 @@ export function getPaymentStatusMeta(
   status: PaymentStatusValue
 ): PaymentStatusMeta {
   return PAYMENT_STATUS_META[status];
+}
+
+export function getParentPaymentStatusDescription({
+  paymentMethod,
+  status
+}: {
+  paymentMethod: PaymentMethod;
+  status: PaymentStatusValue;
+}): string {
+  if (paymentMethod === "MANUAL_TRANSFER") {
+    if (status === "AWAITING_VERIFICATION") {
+      return "TopMox is reviewing your payment details.";
+    }
+
+    if (status === "PAID") {
+      return "Payment approved. Your tutoring plan is active.";
+    }
+
+    if (status === "FAILED") {
+      return "Payment could not be verified. Please contact TopMox.";
+    }
+  }
+
+  if (paymentMethod === "FLUTTERWAVE") {
+    if (status === "PENDING") {
+      return "Checkout pending. Continue payment.";
+    }
+
+    if (status === "PAID") {
+      return "Payment confirmed. Your tutoring plan is active.";
+    }
+
+    if (status === "FAILED") {
+      return "Payment was not completed or could not be verified.";
+    }
+  }
+
+  return PAYMENT_STATUS_META[status].parentDescription;
 }

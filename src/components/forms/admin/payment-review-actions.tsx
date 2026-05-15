@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { CheckCircle2, Loader2, Save, XCircle } from "lucide-react";
+import type { PaymentMethod, PaymentProvider } from "@prisma/client";
 
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { PaymentStatusValue } from "@/lib/utils/payment-status";
 import {
-  reviewPaymentAction,
+  reviewManualPaymentAction,
   updatePaymentAdminNoteAction,
   type PaymentActionResult
 } from "@/server/actions/payment.actions";
@@ -18,6 +19,8 @@ import {
 type PaymentReviewActionsProps = {
   paymentId: string;
   status: PaymentStatusValue;
+  paymentMethod: PaymentMethod;
+  provider: PaymentProvider;
   initialAdminNote?: string | null;
 };
 
@@ -26,6 +29,8 @@ type PendingReviewAction = "approve" | "reject" | null;
 export function PaymentReviewActions({
   paymentId,
   status,
+  paymentMethod,
+  provider,
   initialAdminNote
 }: PaymentReviewActionsProps) {
   const router = useRouter();
@@ -34,14 +39,19 @@ export function PaymentReviewActions({
     useState<PendingReviewAction>(null);
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<PaymentActionResult | null>(null);
-  const canReview = status === "AWAITING_VERIFICATION";
+  const canReview =
+    paymentMethod === "MANUAL_TRANSFER" &&
+    provider === "MANUAL" &&
+    status === "AWAITING_VERIFICATION";
+  const isFlutterwavePayment =
+    paymentMethod === "FLUTTERWAVE" || provider === "FLUTTERWAVE";
 
   const runReview = (action: Exclude<PendingReviewAction, null>) => {
     setResult(null);
     setPendingReviewAction(null);
 
     startTransition(async () => {
-      const actionResult = await reviewPaymentAction({
+      const actionResult = await reviewManualPaymentAction({
         paymentId,
         decision: action === "approve" ? "APPROVE" : "REJECT",
         adminNote
@@ -137,10 +147,16 @@ export function PaymentReviewActions({
               Reject Payment
             </Button>
           </>
+        ) : isFlutterwavePayment ? (
+          <p className="rounded-lg border border-royal-blue/20 bg-soft-blue/20 p-3 text-sm text-text-secondary">
+            Flutterwave payments are verified through the provider callback or
+            webhook. Normal admin approval is disabled to protect the payment
+            workflow.
+          </p>
         ) : (
           <p className="rounded-lg border border-border bg-soft-cream/50 p-3 text-sm text-text-secondary">
-            This payment has already been reviewed. Further approval or
-            rejection actions are disabled.
+            Manual review actions are only available while a manual transfer is
+            awaiting verification.
           </p>
         )}
       </div>

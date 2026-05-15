@@ -1,5 +1,6 @@
 import type {
   EnrollmentStatus,
+  PaymentMethod,
   PaymentProvider,
   PaymentStatus,
   Prisma
@@ -222,6 +223,11 @@ export type PaymentReviewInput = {
   decision: ReviewPaymentInput["decision"];
 };
 
+export type ManualPaymentReviewInput = PaymentReviewInput & {
+  paymentMethod: PaymentMethod;
+  provider: PaymentProvider;
+};
+
 export type EnrollmentPaymentRequestInput = {
   currentUserId: string;
   enrollmentParentUserId: string;
@@ -250,6 +256,22 @@ export type PaymentReviewResult =
       message: string;
       fieldErrors?: Partial<Record<keyof ReviewPaymentInput, string>>;
     };
+
+export function canShowManualPaymentReviewActions({
+  paymentMethod,
+  provider,
+  paymentStatus
+}: {
+  paymentMethod: PaymentMethod;
+  provider: PaymentProvider;
+  paymentStatus: PaymentStatus;
+}): boolean {
+  return (
+    paymentMethod === "MANUAL_TRANSFER" &&
+    provider === "MANUAL" &&
+    paymentStatus === "AWAITING_VERIFICATION"
+  );
+}
 
 export function validateManualPaymentSubmission({
   currentUserId,
@@ -351,6 +373,72 @@ export function validatePaymentReview({
       message: "This payment has already been reviewed.",
       fieldErrors: {
         paymentId: "Only payments awaiting verification can be reviewed."
+      }
+    };
+  }
+
+  const nextPaymentStatus = decision === "APPROVE" ? "PAID" : "FAILED";
+  assertPaymentStatusTransition(paymentStatus, nextPaymentStatus);
+
+  if (decision === "APPROVE" && enrollmentStatus !== "PENDING_PAYMENT") {
+    return {
+      success: false,
+      message: "The linked enrollment is not awaiting payment.",
+      fieldErrors: {
+        paymentId: "Linked enrollment is not awaiting payment."
+      }
+    };
+  }
+
+  return {
+    success: true,
+    nextPaymentStatus,
+    nextEnrollmentStatus: decision === "APPROVE" ? "ACTIVE" : enrollmentStatus
+  };
+}
+
+export function validateManualPaymentReview({
+  currentRole,
+  paymentMethod,
+  provider,
+  paymentStatus,
+  enrollmentStatus,
+  decision
+}: ManualPaymentReviewInput): PaymentReviewResult {
+  if (currentRole !== "ADMIN") {
+    return {
+      success: false,
+      message: "Only admins can review payments.",
+      fieldErrors: {
+        paymentId: "Only admins can review payments."
+      }
+    };
+  }
+
+  if (paymentMethod === "FLUTTERWAVE" || provider === "FLUTTERWAVE") {
+    return {
+      success: false,
+      message:
+        "Flutterwave payments must be verified through provider callback or webhook.",
+      fieldErrors: {
+        paymentId:
+          "Flutterwave payments must be verified through provider callback or webhook."
+      }
+    };
+  }
+
+  if (
+    !canShowManualPaymentReviewActions({
+      paymentMethod,
+      provider,
+      paymentStatus
+    })
+  ) {
+    return {
+      success: false,
+      message: "This manual payment has already been reviewed.",
+      fieldErrors: {
+        paymentId: "Only manual payments awaiting verification can be reviewed."
       }
     };
   }

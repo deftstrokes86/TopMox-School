@@ -19,7 +19,10 @@ import {
 } from "@/lib/validations/assessment.schema";
 import {
   AssessmentStatusTransitionError,
-  assertAssessmentStatusTransition
+  assertAssessmentStatusTransition,
+  canRecordAssessmentOutcome,
+  getPlanRecommendedNotificationPayload,
+  shouldPublishAssessmentRecommendation
 } from "@/server/services/assessment.service";
 import {
   createNotification,
@@ -635,10 +638,7 @@ export async function recordAssessmentOutcomeAction(
       };
     }
 
-    if (
-      assessment.status !== "COMPLETED" &&
-      assessment.status !== "PLAN_RECOMMENDED"
-    ) {
+    if (!canRecordAssessmentOutcome(assessment.status)) {
       return {
         success: false,
         message:
@@ -670,8 +670,10 @@ export async function recordAssessmentOutcomeAction(
       }
     }
 
-    const shouldRecommendPlan =
-      Boolean(recommendedPlanId) && assessment.status === "COMPLETED";
+    const shouldRecommendPlan = shouldPublishAssessmentRecommendation({
+      currentStatus: assessment.status,
+      recommendedPlanId
+    });
 
     if (shouldRecommendPlan) {
       assertAssessmentStatusTransition(assessment.status, "PLAN_RECOMMENDED");
@@ -732,11 +734,7 @@ export async function recordAssessmentOutcomeAction(
     if (recommendedPlanId) {
       await createNotification({
         userId: assessment.parent.userId,
-        type: "PLAN_RECOMMENDED",
-        title: "Learning recommendation ready",
-        message:
-          "TopMox has prepared a recommended learning path for your child.",
-        href: `/parent/assessments/${assessment.id}`
+        ...getPlanRecommendedNotificationPayload(assessment.id)
       });
     }
 

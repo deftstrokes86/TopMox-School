@@ -4,7 +4,10 @@ import { describe, test } from "node:test";
 import {
   AssessmentStatusTransitionError,
   assertAssessmentStatusTransition,
-  canTransitionAssessmentStatus
+  canRecordAssessmentOutcome,
+  canTransitionAssessmentStatus,
+  getPlanRecommendedNotificationPayload,
+  shouldPublishAssessmentRecommendation
 } from "@/server/services/assessment.service";
 
 describe("assessment status transitions", () => {
@@ -50,5 +53,44 @@ describe("assessment status transitions", () => {
       () => assertAssessmentStatusTransition("PENDING_REVIEW", "COMPLETED"),
       AssessmentStatusTransitionError
     );
+  });
+
+  test("outcome recording is allowed for completed and plan-recommended assessments only", () => {
+    assert.equal(canRecordAssessmentOutcome("COMPLETED"), true);
+    assert.equal(canRecordAssessmentOutcome("PLAN_RECOMMENDED"), true);
+    assert.equal(canRecordAssessmentOutcome("SCHEDULED"), false);
+    assert.equal(canRecordAssessmentOutcome("PENDING_REVIEW"), false);
+  });
+
+  test("recommendation publishing only happens from completed status with a plan", () => {
+    assert.equal(
+      shouldPublishAssessmentRecommendation({
+        currentStatus: "COMPLETED",
+        recommendedPlanId: "ckq9v7z7z0003x7p52u2v7h1p"
+      }),
+      true
+    );
+    assert.equal(
+      shouldPublishAssessmentRecommendation({
+        currentStatus: "COMPLETED",
+        recommendedPlanId: null
+      }),
+      false
+    );
+    assert.equal(
+      shouldPublishAssessmentRecommendation({
+        currentStatus: "PLAN_RECOMMENDED",
+        recommendedPlanId: "ckq9v7z7z0003x7p52u2v7h1p"
+      }),
+      false
+    );
+  });
+
+  test("plan recommended notification payload points parents to the assessment", () => {
+    const payload = getPlanRecommendedNotificationPayload("assessment_123");
+
+    assert.equal(payload.type, "PLAN_RECOMMENDED");
+    assert.equal(payload.title, "Learning recommendation ready");
+    assert.equal(payload.href, "/parent/assessments/assessment_123");
   });
 });

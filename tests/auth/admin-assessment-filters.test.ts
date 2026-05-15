@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { buildAdminAssessmentWhereInput } from "@/server/queries/assessment.queries";
+import {
+  assessmentOutcomeParentSelect,
+  buildAdminAssessmentWhereInput
+} from "@/server/queries/assessment.queries";
 
 describe("admin assessment query filters", () => {
   test("builds status filter for admin assessment list", () => {
@@ -47,5 +50,8 @@ describe("admin assessment query filters", () => {
       }
     ]);
   });
-});
 
+  test("parent outcome select does not include internal admin notes", () => {
+    assert.equal("internalAdminNotes" in assessmentOutcomeParentSelect, false);
+  });
+});

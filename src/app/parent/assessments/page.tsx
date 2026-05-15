@@ -119,9 +119,15 @@ function AssessmentCard({ assessment }: { assessment: AssessmentListItem }) {
           </p>
         </div>
 
-        <Button asChild variant="outline" className="w-full sm:w-auto">
+        <Button
+          asChild
+          variant={assessment.status === "PLAN_RECOMMENDED" ? "default" : "outline"}
+          className="w-full sm:w-auto"
+        >
           <Link href={`/parent/assessments/${assessment.id}`}>
-            View Assessment Details
+            {assessment.status === "PLAN_RECOMMENDED"
+              ? "View Learning Recommendation"
+              : "View Assessment Details"}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>
@@ -171,4 +177,3 @@ export default async function ParentAssessmentsPage() {
     </section>
   );
 }
-

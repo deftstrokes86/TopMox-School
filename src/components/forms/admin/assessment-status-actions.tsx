@@ -92,8 +92,16 @@ export function AssessmentStatusActions({
 
         {status === "COMPLETED" ? (
           <Button asChild variant="outline" className="w-full sm:w-auto">
-            <Link href={`/admin/assessments/${assessmentRequestId}`}>
-              Record outcome in Phase 6D
+            <Link href={`/admin/assessments/${assessmentRequestId}/outcome`}>
+              Record Outcome
+            </Link>
+          </Button>
+        ) : null}
+
+        {status === "PLAN_RECOMMENDED" ? (
+          <Button asChild variant="outline" className="w-full sm:w-auto">
+            <Link href={`/admin/assessments/${assessmentRequestId}/outcome`}>
+              Edit Recommendation
             </Link>
           </Button>
         ) : null}
@@ -151,4 +159,3 @@ export function AssessmentStatusActions({
     </div>
   );
 }
-

@@ -34,3 +34,26 @@ export function assertAssessmentStatusTransition(
     throw new AssessmentStatusTransitionError(currentStatus, nextStatus);
   }
 }
+
+export function canRecordAssessmentOutcome(status: AssessmentStatus): boolean {
+  return status === "COMPLETED" || status === "PLAN_RECOMMENDED";
+}
+
+export function shouldPublishAssessmentRecommendation({
+  currentStatus,
+  recommendedPlanId
+}: {
+  currentStatus: AssessmentStatus;
+  recommendedPlanId: string | null;
+}): boolean {
+  return currentStatus === "COMPLETED" && Boolean(recommendedPlanId);
+}
+
+export function getPlanRecommendedNotificationPayload(assessmentId: string) {
+  return {
+    type: "PLAN_RECOMMENDED" as const,
+    title: "Learning recommendation ready",
+    message: "TopMox has prepared a recommended learning path for your child.",
+    href: `/parent/assessments/${assessmentId}`
+  };
+}

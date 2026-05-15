@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
 import {
+  assessmentOutcomeSchema,
   createAssessmentRequestSchema,
   scheduleAssessmentSchema
 } from "@/lib/validations/assessment.schema";
@@ -9,6 +10,7 @@ import {
 const studentId = "ckq9v7z7z0000x7p52u2v7h1l";
 const subjectId = "ckq9v7z7z0001x7p52u2v7h1m";
 const assessmentRequestId = "ckq9v7z7z0002x7p52u2v7h1n";
+const planId = "ckq9v7z7z0003x7p52u2v7h1p";
 
 const validAssessmentRequest = {
   studentId,
@@ -18,6 +20,20 @@ const validAssessmentRequest = {
   preferredAssessmentTime: "5:00 PM WAT",
   timezone: "Africa/Lagos",
   notes: "Parent prefers weekday follow-up."
+};
+
+const validOutcome = {
+  assessmentRequestId,
+  academicLevelSummary:
+    "The student understands basic concepts but needs more structured practice.",
+  strengths: "Shows effort and responds well to guided examples.",
+  weakAreas: "Needs support with multi-step questions and confidence.",
+  recommendedSubjects: ["Mathematics"],
+  recommendedPlanId: planId,
+  recommendedWeeklyLessonCount: 2,
+  parentFacingSummary:
+    "A structured weekly plan is recommended to build consistency and close key gaps.",
+  internalAdminNotes: "Parent prefers weekday lessons."
 };
 
 describe("assessment validation schemas", () => {
@@ -77,5 +93,26 @@ describe("assessment validation schemas", () => {
     });
 
     assert.equal(result.success, true);
+  });
+
+  test("outcome schema requires academic summary, strengths, weak areas, and parent summary", () => {
+    const result = assessmentOutcomeSchema.safeParse({
+      ...validOutcome,
+      academicLevelSummary: "",
+      strengths: "",
+      weakAreas: "",
+      parentFacingSummary: ""
+    });
+
+    assert.equal(result.success, false);
+  });
+
+  test("outcome schema requires at least one recommended subject", () => {
+    const result = assessmentOutcomeSchema.safeParse({
+      ...validOutcome,
+      recommendedSubjects: []
+    });
+
+    assert.equal(result.success, false);
   });
 });

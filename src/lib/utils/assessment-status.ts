@@ -93,7 +93,7 @@ export function getParentAssessmentNextAction(
       };
     case "PLAN_RECOMMENDED":
       return {
-        label: "View Recommended Plan",
+        label: "View Learning Recommendation",
         href: detailHref,
         description:
           "Review the recommended tutoring path. Plan acceptance comes in a later phase."
@@ -114,4 +114,3 @@ export function getParentAssessmentNextAction(
       };
   }
 }
-

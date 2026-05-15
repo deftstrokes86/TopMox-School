@@ -1,13 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ExternalLink } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAssessmentStatusMeta } from "@/lib/utils/assessment-status";
-import { getAssessmentRequestForCurrentParent } from "@/server/queries/assessment.queries";
+import {
+  getAssessmentOutcomeForCurrentParent,
+  getAssessmentRequestForCurrentParent
+} from "@/server/queries/assessment.queries";
 
 export const dynamic = "force-dynamic";
 
@@ -61,7 +64,10 @@ function DetailItem({
 export default async function ParentAssessmentDetailPage({
   params
 }: ParentAssessmentDetailPageProps) {
-  const assessment = await getAssessmentRequestForCurrentParent(params.id);
+  const [assessment, outcome] = await Promise.all([
+    getAssessmentRequestForCurrentParent(params.id),
+    getAssessmentOutcomeForCurrentParent(params.id)
+  ]);
 
   if (!assessment) {
     notFound();
@@ -177,21 +183,143 @@ export default async function ParentAssessmentDetailPage({
             </CardContent>
           </Card>
 
-          <Card className="border-royal-blue/20 bg-soft-blue/20 shadow-none">
-            <CardContent className="space-y-2 p-5">
-              <p className="font-semibold text-deep-navy">
-                Recommended plan
-              </p>
-              <p className="text-sm text-text-secondary">
-                Plan recommendation and acceptance will be connected in the next
-                assessment phase. For now, this page keeps the parent informed
-                about assessment status and scheduling.
-              </p>
-            </CardContent>
-          </Card>
+          {outcome ? (
+            <Card className="border-success/25 bg-success/10 shadow-none">
+              <CardHeader>
+                <CardTitle className="text-2xl text-deep-navy">
+                  Your child&apos;s learning recommendation is ready.
+                </CardTitle>
+                <p className="text-sm text-text-secondary">
+                  Based on the assessment details, TopMox has prepared a
+                  structured learning direction to help your child receive the
+                  right support.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="rounded-xl border border-success/25 bg-white p-5">
+                  <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.08em] text-success">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Clarity for the next step
+                  </p>
+                  <p className="mt-3 text-sm text-text-secondary">
+                    You no longer have to guess where to begin. TopMox has
+                    mapped a focused direction from the assessment details.
+                  </p>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="rounded-xl border border-border/80 bg-white p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
+                      Academic level summary
+                    </p>
+                    <p className="mt-2 text-sm text-text-secondary">
+                      {outcome.academicLevelSummary}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border/80 bg-white p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
+                      Weekly lesson recommendation
+                    </p>
+                    <p className="mt-2 text-sm font-medium text-deep-navy">
+                      {outcome.recommendedWeeklyLessonCount} lesson
+                      {outcome.recommendedWeeklyLessonCount === 1 ? "" : "s"}{" "}
+                      per week
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border/80 bg-white p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
+                      Strengths
+                    </p>
+                    <p className="mt-2 text-sm text-text-secondary">
+                      {outcome.strengths}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-border/80 bg-white p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
+                      Areas needing improvement
+                    </p>
+                    <p className="mt-2 text-sm text-text-secondary">
+                      {outcome.weakAreas}
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
+                    Recommended subjects
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {outcome.recommendedSubjects.map((subject) => (
+                      <span
+                        key={subject}
+                        className="rounded-full bg-soft-blue/60 px-3 py-1 text-xs font-medium text-royal-blue"
+                      >
+                        {subject}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-border/80 bg-white p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
+                    Parent summary
+                  </p>
+                  <p className="mt-2 text-sm text-text-secondary">
+                    {outcome.parentFacingSummary}
+                  </p>
+                </div>
+
+                {outcome.recommendedPlan ? (
+                  <div className="rounded-xl border border-royal-blue/25 bg-soft-blue/25 p-5">
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-royal-blue">
+                      Recommended plan
+                    </p>
+                    <p className="mt-2 text-xl font-semibold text-deep-navy">
+                      {outcome.recommendedPlan.name}
+                    </p>
+                    <p className="mt-2 text-sm text-text-secondary">
+                      {outcome.recommendedPlan.bestFor}
+                    </p>
+                    <p className="mt-3 text-sm font-semibold text-deep-navy">
+                      {outcome.recommendedPlan.currency}{" "}
+                      {outcome.recommendedPlan.monthlyPrice.toString()} monthly
+                      | {outcome.recommendedPlan.sessionsPerWeek} sessions per
+                      week
+                    </p>
+                  </div>
+                ) : null}
+
+                <div className="rounded-xl border border-warm-gold/30 bg-warm-gold/10 p-5">
+                  <p className="font-semibold text-deep-navy">
+                    Plan acceptance and payment will be completed in the next
+                    step.
+                  </p>
+                  <p className="mt-2 text-sm text-text-secondary">
+                    For now, this recommendation gives you a clear direction and
+                    the proposed support plan. TopMox will guide you through
+                    accepting the plan and completing payment in the next step.
+                  </p>
+                  <Button disabled className="mt-4 w-full sm:w-auto">
+                    Accept Recommended Plan
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-royal-blue/20 bg-soft-blue/20 shadow-none">
+              <CardContent className="space-y-2 p-5">
+                <p className="font-semibold text-deep-navy">
+                  Recommended plan
+                </p>
+                <p className="text-sm text-text-secondary">
+                  TopMox will show the learning recommendation here after the
+                  assessment outcome has been recorded.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </CardContent>
       </Card>
     </section>
   );
 }
-

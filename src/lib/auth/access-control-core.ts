@@ -59,6 +59,19 @@ export type PaymentAccessDbClient = {
   };
 };
 
+export type LessonAccessDbClient = {
+  lesson: {
+    findFirst: (args: {
+      where: {
+        id?: string;
+        parent?: { userId: string };
+        tutor?: { userId: string };
+      };
+      select: { id: true };
+    }) => Promise<{ id: string } | null>;
+  };
+};
+
 export async function canAccessStudentWithClient(
   dbClient: StudentAccessDbClient,
   userId: string,
@@ -195,4 +208,43 @@ export async function canAccessPaymentWithClient(
   });
 
   return Boolean(payment);
+}
+
+export async function canAccessLessonWithClient(
+  dbClient: LessonAccessDbClient,
+  userId: string,
+  role: AppRole,
+  lessonId: string
+): Promise<boolean> {
+  if (!userId || !lessonId) {
+    return false;
+  }
+
+  if (role === "ADMIN") {
+    return true;
+  }
+
+  if (role !== "PARENT" && role !== "TUTOR") {
+    return false;
+  }
+
+  const lesson = await dbClient.lesson.findFirst({
+    where: {
+      id: lessonId,
+      ...(role === "PARENT"
+        ? {
+            parent: {
+              userId
+            }
+          }
+        : {
+            tutor: {
+              userId
+            }
+          })
+    },
+    select: { id: true }
+  });
+
+  return Boolean(lesson);
 }

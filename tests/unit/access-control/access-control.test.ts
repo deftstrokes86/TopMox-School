@@ -4,6 +4,7 @@ import { describe, test } from "node:test";
 import {
   canAccessAssessmentWithClient,
   canAccessEnrollmentWithClient,
+  canAccessLessonWithClient,
   canAccessPaymentWithClient,
   canAccessStudentWithClient
 } from "@/lib/auth/access-control-core";
@@ -58,6 +59,18 @@ function createPaymentAccessClient({
   return {
     payment: {
       findFirst: async () => (paymentFound ? { id: "payment-id" } : null)
+    }
+  };
+}
+
+function createLessonAccessClient({
+  lessonFound
+}: {
+  lessonFound: boolean;
+}): Parameters<typeof canAccessLessonWithClient>[0] {
+  return {
+    lesson: {
+      findFirst: async () => (lessonFound ? { id: "lesson-id" } : null)
     }
   };
 }
@@ -232,5 +245,62 @@ describe("canAccessPayment", () => {
     );
 
     assert.equal(access, false);
+  });
+});
+
+describe("canAccessLesson", () => {
+  test("parent can access own child's lesson", async () => {
+    const access = await canAccessLessonWithClient(
+      createLessonAccessClient({ lessonFound: true }),
+      "parent-user-id",
+      "PARENT",
+      "lesson-id"
+    );
+
+    assert.equal(access, true);
+  });
+
+  test("parent cannot access another parent's lesson", async () => {
+    const access = await canAccessLessonWithClient(
+      createLessonAccessClient({ lessonFound: false }),
+      "other-parent-user-id",
+      "PARENT",
+      "lesson-id"
+    );
+
+    assert.equal(access, false);
+  });
+
+  test("tutor can access assigned lesson", async () => {
+    const access = await canAccessLessonWithClient(
+      createLessonAccessClient({ lessonFound: true }),
+      "tutor-user-id",
+      "TUTOR",
+      "lesson-id"
+    );
+
+    assert.equal(access, true);
+  });
+
+  test("tutor cannot access unassigned lesson", async () => {
+    const access = await canAccessLessonWithClient(
+      createLessonAccessClient({ lessonFound: false }),
+      "other-tutor-user-id",
+      "TUTOR",
+      "lesson-id"
+    );
+
+    assert.equal(access, false);
+  });
+
+  test("admin can access all lessons", async () => {
+    const access = await canAccessLessonWithClient(
+      createLessonAccessClient({ lessonFound: false }),
+      "admin-user-id",
+      "ADMIN",
+      "lesson-id"
+    );
+
+    assert.equal(access, true);
   });
 });

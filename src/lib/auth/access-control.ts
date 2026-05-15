@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import {
   canAccessAssessmentWithClient,
   canAccessEnrollmentWithClient,
+  canAccessLessonWithClient,
   canAccessPaymentWithClient,
   canAccessStudentWithClient
 } from "./access-control-core";
@@ -20,28 +21,7 @@ export async function canAccessLesson(
   role: AppRole,
   lessonId: string
 ): Promise<boolean> {
-  if (!userId || !lessonId) {
-    return false;
-  }
-
-  if (role === "ADMIN") {
-    return true;
-  }
-
-  const lesson = await db.lesson.findFirst({
-    where: {
-      id: lessonId,
-      OR:
-        role === "PARENT"
-          ? [{ parent: { userId } }]
-          : role === "TUTOR"
-            ? [{ tutor: { userId } }]
-            : []
-    },
-    select: { id: true }
-  });
-
-  return Boolean(lesson);
+  return canAccessLessonWithClient(db, userId, role, lessonId);
 }
 
 export async function canAccessReport(

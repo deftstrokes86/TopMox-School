@@ -9,6 +9,11 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AppRole } from "@/lib/auth/types";
+import {
+  getAssessmentStatusMeta,
+  getParentAssessmentNextAction,
+  type AssessmentStatusValue
+} from "@/lib/utils/assessment-status";
 import { resolveParentOnboardingFlow } from "@/lib/utils/parent-onboarding-flow";
 import {
   getParentOnboardingStatusAction,
@@ -20,15 +25,36 @@ type ParentOnboardingStatePanelProps = {
   userEmail: string;
   role: AppRole;
   initialState?: OnboardingState;
+  latestAssessment?: ParentDashboardAssessmentSummary | null;
 };
 
 type OnboardingState = NonNullable<ParentOnboardingStatusActionResult["data"]>;
+
+type ParentDashboardAssessmentSummary = {
+  id: string;
+  status: AssessmentStatusValue;
+  childName: string;
+  createdAt: string;
+  scheduledAt: string | null;
+};
+
+function formatDashboardDate(value: string | null): string {
+  if (!value) {
+    return "Not scheduled yet";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(new Date(value));
+}
 
 export function ParentOnboardingStatePanel({
   userName,
   userEmail,
   role,
-  initialState
+  initialState,
+  latestAssessment
 }: ParentOnboardingStatePanelProps) {
   const [loading, setLoading] = useState(!initialState);
   const [error, setError] = useState<string | null>(null);
@@ -76,6 +102,15 @@ export function ParentOnboardingStatePanel({
   }, [initialState]);
 
   const content = state ? resolveParentOnboardingFlow(state) : null;
+  const latestAssessmentStatus = latestAssessment
+    ? getAssessmentStatusMeta(latestAssessment.status)
+    : null;
+  const latestAssessmentAction = latestAssessment
+    ? getParentAssessmentNextAction(
+        latestAssessment.status,
+        latestAssessment.id
+      )
+    : null;
 
   return (
     <section className="space-y-5">
@@ -195,14 +230,51 @@ export function ParentOnboardingStatePanel({
               <p className="mt-2 text-sm text-text-secondary">
                 {content.description}
               </p>
-              <div className="mt-4">
-                <Button asChild>
-                  <Link href={content.ctaHref}>
-                    {content.ctaLabel}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
+              {content.state === "READY_FOR_ASSESSMENT" &&
+              latestAssessment &&
+              latestAssessmentStatus &&
+              latestAssessmentAction ? (
+                <div className="mt-4 rounded-xl border border-royal-blue/20 bg-white p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
+                        Latest Assessment
+                      </p>
+                      <p className="mt-1 font-semibold text-deep-navy">
+                        {latestAssessment.childName}
+                      </p>
+                      <p className="mt-1 text-sm text-text-secondary">
+                        {latestAssessmentAction.description}
+                      </p>
+                      <p className="mt-2 text-xs text-text-muted">
+                        Scheduled:{" "}
+                        {formatDashboardDate(latestAssessment.scheduledAt)}
+                      </p>
+                    </div>
+                    <StatusBadge
+                      label={latestAssessmentStatus.label}
+                      tone={latestAssessmentStatus.tone}
+                    />
+                  </div>
+                  <div className="mt-4">
+                    <Button asChild>
+                      <Link href={latestAssessmentAction.href}>
+                        {latestAssessmentAction.label}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-4">
+                  <Button asChild>
+                    <Link href={content.ctaHref}>
+                      {content.ctaLabel}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              )}
             </div>
           ) : null}
         </CardContent>

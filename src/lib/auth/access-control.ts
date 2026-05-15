@@ -1,5 +1,8 @@
 import { db } from "@/lib/db";
-import { canAccessStudentWithClient } from "./access-control-core";
+import {
+  canAccessAssessmentWithClient,
+  canAccessStudentWithClient
+} from "./access-control-core";
 import type { AppRole } from "./types";
 
 export async function canAccessStudent(
@@ -103,27 +106,5 @@ export async function canAccessAssessment(
   role: AppRole,
   assessmentId: string
 ): Promise<boolean> {
-  if (!userId || !assessmentId) {
-    return false;
-  }
-
-  if (role === "ADMIN") {
-    return true;
-  }
-
-  if (role !== "PARENT") {
-    return false;
-  }
-
-  const assessment = await db.assessmentRequest.findFirst({
-    where: {
-      id: assessmentId,
-      parent: {
-        userId
-      }
-    },
-    select: { id: true }
-  });
-
-  return Boolean(assessment);
+  return canAccessAssessmentWithClient(db, userId, role, assessmentId);
 }

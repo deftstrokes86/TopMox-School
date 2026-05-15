@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { canAccessStudentWithClient } from "@/lib/auth/access-control-core";
+import {
+  canAccessAssessmentWithClient,
+  canAccessStudentWithClient
+} from "@/lib/auth/access-control-core";
 
 function createStudentAccessClient({
   studentFound,
@@ -16,6 +19,19 @@ function createStudentAccessClient({
     },
     lesson: {
       findFirst: async () => (tutorLessonFound ? { id: "lesson-id" } : null)
+    }
+  };
+}
+
+function createAssessmentAccessClient({
+  assessmentFound
+}: {
+  assessmentFound: boolean;
+}): Parameters<typeof canAccessAssessmentWithClient>[0] {
+  return {
+    assessmentRequest: {
+      findFirst: async () =>
+        assessmentFound ? { id: "assessment-id" } : null
     }
   };
 }
@@ -52,5 +68,51 @@ describe("canAccessStudent", () => {
     );
 
     assert.equal(access, true);
+  });
+});
+
+describe("canAccessAssessment", () => {
+  test("allows parent access to own assessment", async () => {
+    const access = await canAccessAssessmentWithClient(
+      createAssessmentAccessClient({ assessmentFound: true }),
+      "parent-user-id",
+      "PARENT",
+      "assessment-id"
+    );
+
+    assert.equal(access, true);
+  });
+
+  test("blocks parent access to another parent's assessment", async () => {
+    const access = await canAccessAssessmentWithClient(
+      createAssessmentAccessClient({ assessmentFound: false }),
+      "other-parent-user-id",
+      "PARENT",
+      "assessment-id"
+    );
+
+    assert.equal(access, false);
+  });
+
+  test("allows admin access to any assessment", async () => {
+    const access = await canAccessAssessmentWithClient(
+      createAssessmentAccessClient({ assessmentFound: false }),
+      "admin-user-id",
+      "ADMIN",
+      "assessment-id"
+    );
+
+    assert.equal(access, true);
+  });
+
+  test("blocks tutor assessment access in Phase 6A", async () => {
+    const access = await canAccessAssessmentWithClient(
+      createAssessmentAccessClient({ assessmentFound: true }),
+      "tutor-user-id",
+      "TUTOR",
+      "assessment-id"
+    );
+
+    assert.equal(access, false);
   });
 });

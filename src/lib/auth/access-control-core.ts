@@ -23,6 +23,18 @@ export type StudentAccessDbClient = {
   };
 };
 
+export type AssessmentAccessDbClient = {
+  assessmentRequest: {
+    findFirst: (args: {
+      where: {
+        id?: string;
+        parent?: { userId: string };
+      };
+      select: { id: true };
+    }) => Promise<{ id: string } | null>;
+  };
+};
+
 export async function canAccessStudentWithClient(
   dbClient: StudentAccessDbClient,
   userId: string,
@@ -66,4 +78,35 @@ export async function canAccessStudentWithClient(
   }
 
   return false;
+}
+
+export async function canAccessAssessmentWithClient(
+  dbClient: AssessmentAccessDbClient,
+  userId: string,
+  role: AppRole,
+  assessmentId: string
+): Promise<boolean> {
+  if (!userId || !assessmentId) {
+    return false;
+  }
+
+  if (role === "ADMIN") {
+    return true;
+  }
+
+  if (role !== "PARENT") {
+    return false;
+  }
+
+  const assessment = await dbClient.assessmentRequest.findFirst({
+    where: {
+      id: assessmentId,
+      parent: {
+        userId
+      }
+    },
+    select: { id: true }
+  });
+
+  return Boolean(assessment);
 }

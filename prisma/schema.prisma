@@ -1,4 +1,4 @@
-﻿generator client {
+generator client {
   provider = "prisma-client-js"
 }
 
@@ -104,6 +104,8 @@ enum PreferredContactMethod {
 enum NotificationType {
   ASSESSMENT_SUBMITTED
   ASSESSMENT_SCHEDULED
+  ASSESSMENT_COMPLETED
+  ASSESSMENT_DECLINED
   PLAN_RECOMMENDED
   PLAN_ACCEPTED
   PAYMENT_SUBMITTED
@@ -209,17 +211,17 @@ model StudentProfile {
 }
 
 model TutorProfile {
-  id                  String       @id @default(cuid())
-  userId              String       @unique
+  id                  String           @id @default(cuid())
+  userId              String           @unique
   phone               String?
   bio                 String?
   availabilityNotes   String?
-  status              TutorStatus  @default(ACTIVE)
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
-  user                User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subjects            Subject[]    @relation("TutorSubjects")
-  assignedEnrollments Enrollment[] @relation("EnrollmentAssignedTutor")
+  status              TutorStatus      @default(ACTIVE)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjects            Subject[]        @relation("TutorSubjects")
+  assignedEnrollments Enrollment[]     @relation("EnrollmentAssignedTutor")
   lessons             Lesson[]
   homework            Homework[]
   progressReports     ProgressReport[]
@@ -257,10 +259,10 @@ model TutoringPlan {
 }
 
 model AssessmentRequest {
-  id                      String            @id @default(cuid())
+  id                      String             @id @default(cuid())
   parentId                String
   studentId               String
-  status                  AssessmentStatus  @default(PENDING_REVIEW)
+  status                  AssessmentStatus   @default(PENDING_REVIEW)
   academicConcern         String
   preferredAssessmentDate DateTime?
   preferredAssessmentTime String?
@@ -269,11 +271,11 @@ model AssessmentRequest {
   scheduledAt             DateTime?
   meetingLink             String?
   internalNotes           String?
-  createdAt               DateTime          @default(now())
-  updatedAt               DateTime          @updatedAt
-  parent                  ParentProfile     @relation(fields: [parentId], references: [id], onDelete: Cascade)
-  student                 StudentProfile    @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  subjects                Subject[]         @relation("AssessmentSubjects")
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+  parent                  ParentProfile      @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  student                 StudentProfile     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subjects                Subject[]          @relation("AssessmentSubjects")
   outcome                 AssessmentOutcome?
   supportRequests         SupportRequest[]
   communicationLogs       CommunicationLog[]
@@ -328,7 +330,7 @@ model Enrollment {
 }
 
 model Lesson {
-  id                 String         @id @default(cuid())
+  id                 String             @id @default(cuid())
   parentId           String
   studentId          String
   tutorId            String
@@ -339,19 +341,19 @@ model Lesson {
   endTime            DateTime
   timezone           String
   meetingLink        String?
-  status             LessonStatus   @default(SCHEDULED)
+  status             LessonStatus       @default(SCHEDULED)
   attendanceMarkedAt DateTime?
   attended           Boolean?
   lessonNotes        String?
   concernFlag        Boolean?
   concernNote        String?
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
-  parent             ParentProfile  @relation(fields: [parentId], references: [id], onDelete: Cascade)
-  student            StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  tutor              TutorProfile   @relation(fields: [tutorId], references: [id])
-  subject            Subject        @relation(fields: [subjectId], references: [id])
-  enrollment         Enrollment?    @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  parent             ParentProfile      @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  student            StudentProfile     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  tutor              TutorProfile       @relation(fields: [tutorId], references: [id])
+  subject            Subject            @relation(fields: [subjectId], references: [id])
+  enrollment         Enrollment?        @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
   homework           Homework[]
   supportRequests    SupportRequest[]
   communicationLogs  CommunicationLog[]
@@ -387,24 +389,24 @@ model Homework {
 }
 
 model Payment {
-  id             String        @id @default(cuid())
-  parentId       String
-  studentId      String?
-  enrollmentId   String?
-  amount         Decimal       @db.Decimal(10, 2)
-  currency       String
-  status         PaymentStatus @default(PENDING)
-  paymentMethod  PaymentMethod
-  reference      String?
-  proofUrl       String?
-  adminNote      String?
-  paidAt         DateTime?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  parent         ParentProfile @relation(fields: [parentId], references: [id], onDelete: Cascade)
-  student        StudentProfile? @relation(fields: [studentId], references: [id], onDelete: SetNull)
-  enrollment     Enrollment?   @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
-  supportRequests SupportRequest[]
+  id                String             @id @default(cuid())
+  parentId          String
+  studentId         String?
+  enrollmentId      String?
+  amount            Decimal            @db.Decimal(10, 2)
+  currency          String
+  status            PaymentStatus      @default(PENDING)
+  paymentMethod     PaymentMethod
+  reference         String?
+  proofUrl          String?
+  adminNote         String?
+  paidAt            DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  parent            ParentProfile      @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  student           StudentProfile?    @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  enrollment        Enrollment?        @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  supportRequests   SupportRequest[]
   communicationLogs CommunicationLog[]
 
   @@index([parentId])
@@ -414,30 +416,30 @@ model Payment {
 }
 
 model ProgressReport {
-  id                       String         @id @default(cuid())
-  parentId                 String
-  studentId                String
-  tutorId                  String
-  enrollmentId             String?
-  reportingMonth           DateTime
-  subjectsCovered          String
-  attendanceSummary        String
-  strengths                String
-  areasNeedingImprovement  String
-  homeworkCompletion       String
-  tutorComments            String
-  recommendedNextSteps     String
-  parentActionPoints       String
-  overallProgressStatus    ProgressStatus
-  status                   ReportStatus   @default(DRAFT)
-  publishedAt              DateTime?
-  createdAt                DateTime       @default(now())
-  updatedAt                DateTime       @updatedAt
-  parent                   ParentProfile  @relation(fields: [parentId], references: [id], onDelete: Cascade)
-  student                  StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  tutor                    TutorProfile   @relation(fields: [tutorId], references: [id])
-  enrollment               Enrollment?    @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
-  linkedSubjects           Subject[]      @relation("ReportSubjects")
+  id                      String         @id @default(cuid())
+  parentId                String
+  studentId               String
+  tutorId                 String
+  enrollmentId            String?
+  reportingMonth          DateTime
+  subjectsCovered         String
+  attendanceSummary       String
+  strengths               String
+  areasNeedingImprovement String
+  homeworkCompletion      String
+  tutorComments           String
+  recommendedNextSteps    String
+  parentActionPoints      String
+  overallProgressStatus   ProgressStatus
+  status                  ReportStatus   @default(DRAFT)
+  publishedAt             DateTime?
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  parent                  ParentProfile  @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  student                 StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  tutor                   TutorProfile   @relation(fields: [tutorId], references: [id])
+  enrollment              Enrollment?    @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  linkedSubjects          Subject[]      @relation("ReportSubjects")
 
   @@index([parentId])
   @@index([studentId])
@@ -447,7 +449,7 @@ model ProgressReport {
 }
 
 model SupportRequest {
-  id                  String            @id @default(cuid())
+  id                  String             @id @default(cuid())
   parentId            String
   studentId           String?
   lessonId            String?
@@ -456,13 +458,13 @@ model SupportRequest {
   subject             String
   message             String
   adminReply          String?
-  status              SupportStatus     @default(OPEN)
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  parent              ParentProfile     @relation(fields: [parentId], references: [id], onDelete: Cascade)
-  student             StudentProfile?   @relation(fields: [studentId], references: [id], onDelete: SetNull)
-  lesson              Lesson?           @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-  payment             Payment?          @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  status              SupportStatus      @default(OPEN)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  parent              ParentProfile      @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  student             StudentProfile?    @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  lesson              Lesson?            @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  payment             Payment?           @relation(fields: [paymentId], references: [id], onDelete: SetNull)
   assessmentRequest   AssessmentRequest? @relation(fields: [assessmentRequestId], references: [id], onDelete: SetNull)
   communicationLogs   CommunicationLog[]
 

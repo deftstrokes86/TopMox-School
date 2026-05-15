@@ -531,7 +531,7 @@ async function main(): Promise<void> {
         currency: planSeed.currency,
         sessionsPerWeek: planSeed.sessionsPerWeek,
         bestFor: planSeed.bestFor,
-        features: planSeed.features,
+        features: [...planSeed.features],
         isActive: true
       },
       create: {
@@ -542,7 +542,7 @@ async function main(): Promise<void> {
         currency: planSeed.currency,
         sessionsPerWeek: planSeed.sessionsPerWeek,
         bestFor: planSeed.bestFor,
-        features: planSeed.features,
+        features: [...planSeed.features],
         isActive: true
       }
     });

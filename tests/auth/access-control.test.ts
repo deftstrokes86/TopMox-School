@@ -3,6 +3,7 @@ import { describe, test } from "node:test";
 
 import {
   canAccessAssessmentWithClient,
+  canAccessEnrollmentWithClient,
   canAccessStudentWithClient
 } from "@/lib/auth/access-control-core";
 
@@ -32,6 +33,18 @@ function createAssessmentAccessClient({
     assessmentRequest: {
       findFirst: async () =>
         assessmentFound ? { id: "assessment-id" } : null
+    }
+  };
+}
+
+function createEnrollmentAccessClient({
+  enrollmentFound
+}: {
+  enrollmentFound: boolean;
+}): Parameters<typeof canAccessEnrollmentWithClient>[0] {
+  return {
+    enrollment: {
+      findFirst: async () => (enrollmentFound ? { id: "enrollment-id" } : null)
     }
   };
 }
@@ -111,6 +124,52 @@ describe("canAccessAssessment", () => {
       "tutor-user-id",
       "TUTOR",
       "assessment-id"
+    );
+
+    assert.equal(access, false);
+  });
+});
+
+describe("canAccessEnrollment", () => {
+  test("allows parent access to own enrollment", async () => {
+    const access = await canAccessEnrollmentWithClient(
+      createEnrollmentAccessClient({ enrollmentFound: true }),
+      "parent-user-id",
+      "PARENT",
+      "enrollment-id"
+    );
+
+    assert.equal(access, true);
+  });
+
+  test("blocks parent access to another parent's enrollment", async () => {
+    const access = await canAccessEnrollmentWithClient(
+      createEnrollmentAccessClient({ enrollmentFound: false }),
+      "other-parent-user-id",
+      "PARENT",
+      "enrollment-id"
+    );
+
+    assert.equal(access, false);
+  });
+
+  test("allows admin access to any enrollment", async () => {
+    const access = await canAccessEnrollmentWithClient(
+      createEnrollmentAccessClient({ enrollmentFound: false }),
+      "admin-user-id",
+      "ADMIN",
+      "enrollment-id"
+    );
+
+    assert.equal(access, true);
+  });
+
+  test("blocks tutor enrollment access until tutor assignment phase", async () => {
+    const access = await canAccessEnrollmentWithClient(
+      createEnrollmentAccessClient({ enrollmentFound: true }),
+      "tutor-user-id",
+      "TUTOR",
+      "enrollment-id"
     );
 
     assert.equal(access, false);

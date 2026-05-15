@@ -1,5 +1,6 @@
 export {
   canAccessAssessment,
+  canAccessEnrollment,
   canAccessLesson,
   canAccessPayment,
   canAccessReport,

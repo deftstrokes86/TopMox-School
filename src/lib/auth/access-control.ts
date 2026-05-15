@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import {
   canAccessAssessmentWithClient,
+  canAccessEnrollmentWithClient,
   canAccessStudentWithClient
 } from "./access-control-core";
 import type { AppRole } from "./types";
@@ -107,4 +108,12 @@ export async function canAccessAssessment(
   assessmentId: string
 ): Promise<boolean> {
   return canAccessAssessmentWithClient(db, userId, role, assessmentId);
+}
+
+export async function canAccessEnrollment(
+  userId: string,
+  role: AppRole,
+  enrollmentId: string
+): Promise<boolean> {
+  return canAccessEnrollmentWithClient(db, userId, role, enrollmentId);
 }

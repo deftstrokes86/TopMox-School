@@ -35,6 +35,18 @@ export type AssessmentAccessDbClient = {
   };
 };
 
+export type EnrollmentAccessDbClient = {
+  enrollment: {
+    findFirst: (args: {
+      where: {
+        id?: string;
+        parent?: { userId: string };
+      };
+      select: { id: true };
+    }) => Promise<{ id: string } | null>;
+  };
+};
+
 export async function canAccessStudentWithClient(
   dbClient: StudentAccessDbClient,
   userId: string,
@@ -109,4 +121,35 @@ export async function canAccessAssessmentWithClient(
   });
 
   return Boolean(assessment);
+}
+
+export async function canAccessEnrollmentWithClient(
+  dbClient: EnrollmentAccessDbClient,
+  userId: string,
+  role: AppRole,
+  enrollmentId: string
+): Promise<boolean> {
+  if (!userId || !enrollmentId) {
+    return false;
+  }
+
+  if (role === "ADMIN") {
+    return true;
+  }
+
+  if (role !== "PARENT") {
+    return false;
+  }
+
+  const enrollment = await dbClient.enrollment.findFirst({
+    where: {
+      id: enrollmentId,
+      parent: {
+        userId
+      }
+    },
+    select: { id: true }
+  });
+
+  return Boolean(enrollment);
 }

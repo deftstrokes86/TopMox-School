@@ -15,6 +15,8 @@ onboarding, and the assessment workflow foundation:
 - Assessment ownership checks via `canAccessAssessmentWithClient`
 - Assessment notification payload helpers for submitted, scheduled, and plan-recommended events
 - Parent/admin assessment outcome data-shaping guards for internal admin notes
+- Recommended plan acceptance validation and enrollment status transitions
+- Enrollment ownership gates via `canAccessEnrollmentWithClient`
 
 ## Deferred Integration Tests
 
@@ -28,6 +30,7 @@ The following should be added in later phases when workflow actions and richer r
 - Child profile create/update/delete action integration tests
 - Prisma-backed assessment request submission with notification creation
 - Prisma-backed admin scheduling, completion, and outcome recording
+- Prisma-backed recommended plan acceptance and enrollment creation
 - Browser-level route access tests for parent, admin, and tutor assessment pages
 - End-to-end assessment-to-recommendation flow against seeded demo data
 - CSRF/session hardening checks for production auth mode

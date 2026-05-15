@@ -4,6 +4,7 @@ import { describe, test } from "node:test";
 import {
   canAccessAssessmentWithClient,
   canAccessEnrollmentWithClient,
+  canAccessPaymentWithClient,
   canAccessStudentWithClient
 } from "@/lib/auth/access-control-core";
 
@@ -45,6 +46,18 @@ function createEnrollmentAccessClient({
   return {
     enrollment: {
       findFirst: async () => (enrollmentFound ? { id: "enrollment-id" } : null)
+    }
+  };
+}
+
+function createPaymentAccessClient({
+  paymentFound
+}: {
+  paymentFound: boolean;
+}): Parameters<typeof canAccessPaymentWithClient>[0] {
+  return {
+    payment: {
+      findFirst: async () => (paymentFound ? { id: "payment-id" } : null)
     }
   };
 }
@@ -170,6 +183,52 @@ describe("canAccessEnrollment", () => {
       "tutor-user-id",
       "TUTOR",
       "enrollment-id"
+    );
+
+    assert.equal(access, false);
+  });
+});
+
+describe("canAccessPayment", () => {
+  test("allows parent access to own payment", async () => {
+    const access = await canAccessPaymentWithClient(
+      createPaymentAccessClient({ paymentFound: true }),
+      "parent-user-id",
+      "PARENT",
+      "payment-id"
+    );
+
+    assert.equal(access, true);
+  });
+
+  test("blocks parent access to another parent's payment", async () => {
+    const access = await canAccessPaymentWithClient(
+      createPaymentAccessClient({ paymentFound: false }),
+      "other-parent-user-id",
+      "PARENT",
+      "payment-id"
+    );
+
+    assert.equal(access, false);
+  });
+
+  test("allows admin access to any payment", async () => {
+    const access = await canAccessPaymentWithClient(
+      createPaymentAccessClient({ paymentFound: false }),
+      "admin-user-id",
+      "ADMIN",
+      "payment-id"
+    );
+
+    assert.equal(access, true);
+  });
+
+  test("blocks tutor payment access in the payment workflow", async () => {
+    const access = await canAccessPaymentWithClient(
+      createPaymentAccessClient({ paymentFound: true }),
+      "tutor-user-id",
+      "TUTOR",
+      "payment-id"
     );
 
     assert.equal(access, false);

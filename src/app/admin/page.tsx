@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireDashboardAccess } from "@/lib/auth/dashboard-access";
 import { getAssessmentStatusMeta } from "@/lib/utils/assessment-status";
+import { getPaymentStatusMeta } from "@/lib/utils/payment-status";
 import {
   getAdminAssessmentRequests,
   getAssessmentRequestCountsByStatus
@@ -215,6 +216,7 @@ export default async function AdminDashboardPage() {
                 payment.student?.fullName ??
                 payment.enrollment?.student.fullName ??
                 "Child";
+              const paymentStatus = getPaymentStatusMeta(payment.status);
               return (
                 <div
                   key={payment.id}
@@ -230,9 +232,15 @@ export default async function AdminDashboardPage() {
                       {formatPaymentMethod(payment.paymentMethod)}
                     </p>
                   </div>
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={`/admin/payments/${payment.id}`}>Review</Link>
-                  </Button>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <StatusBadge
+                      label={paymentStatus.label}
+                      tone={paymentStatus.tone}
+                    />
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/admin/payments/${payment.id}`}>Review</Link>
+                    </Button>
+                  </div>
                 </div>
               );
             })

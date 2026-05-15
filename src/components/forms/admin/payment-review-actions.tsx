@@ -85,6 +85,9 @@ export function PaymentReviewActions({
         <p className="text-xs text-text-muted">
           Admin notes are visible to the parent on the payment detail page.
         </p>
+        {result?.fieldErrors?.adminNote ? (
+          <p className="text-xs text-danger">{result.fieldErrors.adminNote}</p>
+        ) : null}
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -166,7 +169,7 @@ export function PaymentReviewActions({
       <ConfirmDialog
         open={pendingReviewAction === "reject"}
         title="Reject this payment?"
-        description="This marks the payment as failed. The enrollment remains pending payment so the parent can follow up with TopMox."
+        description="This marks the payment as failed. Add an admin note first so the parent knows what to review or resend."
         confirmLabel="Reject Payment"
         confirmTone="destructive"
         onCancel={() => setPendingReviewAction(null)}

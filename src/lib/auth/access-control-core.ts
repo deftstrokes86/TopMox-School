@@ -47,6 +47,18 @@ export type EnrollmentAccessDbClient = {
   };
 };
 
+export type PaymentAccessDbClient = {
+  payment: {
+    findFirst: (args: {
+      where: {
+        id?: string;
+        parent?: { userId: string };
+      };
+      select: { id: true };
+    }) => Promise<{ id: string } | null>;
+  };
+};
+
 export async function canAccessStudentWithClient(
   dbClient: StudentAccessDbClient,
   userId: string,
@@ -152,4 +164,35 @@ export async function canAccessEnrollmentWithClient(
   });
 
   return Boolean(enrollment);
+}
+
+export async function canAccessPaymentWithClient(
+  dbClient: PaymentAccessDbClient,
+  userId: string,
+  role: AppRole,
+  paymentId: string
+): Promise<boolean> {
+  if (!userId || !paymentId) {
+    return false;
+  }
+
+  if (role === "ADMIN") {
+    return true;
+  }
+
+  if (role !== "PARENT") {
+    return false;
+  }
+
+  const payment = await dbClient.payment.findFirst({
+    where: {
+      id: paymentId,
+      parent: {
+        userId
+      }
+    },
+    select: { id: true }
+  });
+
+  return Boolean(payment);
 }

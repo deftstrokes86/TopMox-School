@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import {
   canAccessAssessmentWithClient,
   canAccessEnrollmentWithClient,
+  canAccessPaymentWithClient,
   canAccessStudentWithClient
 } from "./access-control-core";
 import type { AppRole } from "./types";
@@ -77,29 +78,7 @@ export async function canAccessPayment(
   role: AppRole,
   paymentId: string
 ): Promise<boolean> {
-  if (!userId || !paymentId) {
-    return false;
-  }
-
-  if (role === "ADMIN") {
-    return true;
-  }
-
-  if (role !== "PARENT") {
-    return false;
-  }
-
-  const payment = await db.payment.findFirst({
-    where: {
-      id: paymentId,
-      parent: {
-        userId
-      }
-    },
-    select: { id: true }
-  });
-
-  return Boolean(payment);
+  return canAccessPaymentWithClient(db, userId, role, paymentId);
 }
 
 export async function canAccessAssessment(

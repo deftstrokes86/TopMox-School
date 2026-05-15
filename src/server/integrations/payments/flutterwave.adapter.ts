@@ -142,12 +142,18 @@ export function createFlutterwavePaymentAdapter(
     ): Promise<VerifyPaymentResult> {
       assertConfig(resolvedConfig);
 
-      if (!input.transactionId) {
-        throw new Error("Flutterwave transaction id is required.");
+      if (!input.transactionId && !input.txRef) {
+        throw new Error("Flutterwave transaction id or tx_ref is required.");
       }
 
+      const verificationUrl = input.transactionId
+        ? `${normalizeBaseUrl(resolvedConfig.baseUrl)}/transactions/${input.transactionId}/verify`
+        : `${normalizeBaseUrl(resolvedConfig.baseUrl)}/transactions/verify_by_reference?tx_ref=${encodeURIComponent(
+            input.txRef ?? ""
+          )}`;
+
       const response = await fetchFn(
-        `${normalizeBaseUrl(resolvedConfig.baseUrl)}/transactions/${input.transactionId}/verify`,
+        verificationUrl,
         {
           method: "GET",
           headers: {
@@ -188,12 +194,16 @@ export function createFlutterwavePaymentAdapter(
       };
       const configuredHash = resolvedConfig.secretHash;
 
-      if (configuredHash) {
-        const receivedHash = getWebhookHeader(input.headers, "verif-hash");
+      if (!configuredHash) {
+        throw new PaymentProviderConfigurationError(
+          "Flutterwave webhook secret hash is not configured."
+        );
+      }
 
-        if (receivedHash !== configuredHash) {
-          throw new Error("Flutterwave webhook verification failed.");
-        }
+      const receivedHash = getWebhookHeader(input.headers, "verif-hash");
+
+      if (receivedHash !== configuredHash) {
+        throw new Error("Flutterwave webhook verification failed.");
       }
 
       const transactionId = eventPayload.data?.id

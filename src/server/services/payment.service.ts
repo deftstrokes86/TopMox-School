@@ -17,7 +17,9 @@ import type {
   CreateCheckoutResult,
   CreateCheckoutInput,
   PaymentProviderAdapter,
+  VerifyPaymentInput,
   VerifyPaymentResult,
+  WebhookHandleInput,
   WebhookHandleResult
 } from "@/server/integrations/payments/payment-provider";
 import { assertEnrollmentStatusTransition } from "./enrollment.service";
@@ -734,6 +736,374 @@ export async function recordPaymentEvent(input: WebhookHandleResult) {
   return {
     duplicate: false,
     eventId: event.id
+  };
+}
+
+export type FlutterwavePaymentForVerification = {
+  id: string;
+  provider: PaymentProvider;
+  providerReference: string | null;
+  amount: Prisma.Decimal | number | string;
+  currency: string;
+  status: PaymentStatus;
+  parent: {
+    userId: string;
+  } | null;
+  enrollment: {
+    id: string;
+    status: EnrollmentStatus;
+  } | null;
+};
+
+export type FlutterwaveActivationResult = {
+  success: boolean;
+  activated: boolean;
+  duplicate?: boolean;
+  eventId?: string | null;
+  paymentId?: string;
+  enrollmentId?: string;
+  paymentStatus?: PaymentStatus;
+  enrollmentStatus?: EnrollmentStatus;
+  reason?: string;
+};
+
+export type FlutterwaveCallbackInput = {
+  transactionId?: string | null;
+  txRef?: string | null;
+  queryStatus?: string | null;
+};
+
+export type FlutterwaveCallbackDeps = {
+  verifyPayment(input: VerifyPaymentInput): Promise<VerifyPaymentResult>;
+  findPaymentByProviderReference(
+    providerReference: string
+  ): Promise<FlutterwavePaymentForVerification | null>;
+  markPaidAndActivate(
+    input: Parameters<typeof markPaymentPaidAndActivateEnrollment>[0]
+  ): ReturnType<typeof markPaymentPaidAndActivateEnrollment>;
+  markFailed(input: Parameters<typeof markPaymentFailed>[0]): Promise<unknown>;
+  notifyPaymentActivated?(input: {
+    paymentId: string;
+    enrollmentId: string;
+    parentUserId: string;
+  }): Promise<void>;
+};
+
+export type FlutterwaveWebhookDeps = FlutterwaveCallbackDeps & {
+  parseWebhook(input: WebhookHandleInput): Promise<WebhookHandleResult>;
+  recordPaymentEvent(input: WebhookHandleResult): Promise<{
+    duplicate: boolean;
+    eventId: string | null;
+  }>;
+};
+
+function normalizeOptionalReference(value?: string | null): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed || undefined;
+}
+
+function getVerificationReference(
+  verification: VerifyPaymentResult,
+  fallbackReference?: string | null
+) {
+  return normalizeOptionalReference(verification.providerReference) ??
+    normalizeOptionalReference(fallbackReference);
+}
+
+async function findFlutterwavePaymentByProviderReference(
+  providerReference: string
+) {
+  return db.payment.findFirst({
+    where: {
+      provider: "FLUTTERWAVE",
+      providerReference
+    },
+    select: {
+      id: true,
+      provider: true,
+      providerReference: true,
+      amount: true,
+      currency: true,
+      status: true,
+      parent: {
+        select: {
+          userId: true
+        }
+      },
+      enrollment: {
+        select: {
+          id: true,
+          status: true
+        }
+      }
+    }
+  });
+}
+
+async function createFlutterwaveActivationNotifications({
+  paymentId,
+  enrollmentId,
+  parentUserId
+}: {
+  paymentId: string;
+  enrollmentId: string;
+  parentUserId: string;
+}) {
+  await db.notification.createMany({
+    data: [
+      {
+        userId: parentUserId,
+        ...getPaymentApprovedNotificationPayload(paymentId)
+      },
+      {
+        userId: parentUserId,
+        ...getEnrollmentActivatedNotificationPayload(enrollmentId)
+      }
+    ]
+  });
+}
+
+function getDefaultFlutterwaveCallbackDeps(): FlutterwaveCallbackDeps {
+  return {
+    verifyPayment: (input) =>
+      getPaymentProviderAdapter("FLUTTERWAVE").verifyPayment(input),
+    findPaymentByProviderReference: findFlutterwavePaymentByProviderReference,
+    markPaidAndActivate: markPaymentPaidAndActivateEnrollment,
+    markFailed: markPaymentFailed,
+    notifyPaymentActivated: createFlutterwaveActivationNotifications
+  };
+}
+
+function getDefaultFlutterwaveWebhookDeps(): FlutterwaveWebhookDeps {
+  return {
+    ...getDefaultFlutterwaveCallbackDeps(),
+    parseWebhook: (input) =>
+      getPaymentProviderAdapter("FLUTTERWAVE").handleWebhook(input),
+    recordPaymentEvent
+  };
+}
+
+async function processVerifiedFlutterwavePayment({
+  payment,
+  verification,
+  fallbackReference,
+  deps
+}: {
+  payment: FlutterwavePaymentForVerification | null;
+  verification: VerifyPaymentResult;
+  fallbackReference?: string | null;
+  deps: FlutterwaveCallbackDeps;
+}): Promise<FlutterwaveActivationResult> {
+  const providerReference = getVerificationReference(
+    verification,
+    fallbackReference
+  );
+
+  if (!providerReference) {
+    return {
+      success: false,
+      activated: false,
+      reason: "Flutterwave verification did not include a transaction reference."
+    };
+  }
+
+  if (!payment) {
+    return {
+      success: false,
+      activated: false,
+      reason: "Payment reference not found."
+    };
+  }
+
+  if (payment.provider !== "FLUTTERWAVE") {
+    return {
+      success: false,
+      activated: false,
+      paymentId: payment.id,
+      reason: "Payment provider mismatch."
+    };
+  }
+
+  if (payment.providerReference !== providerReference) {
+    return {
+      success: false,
+      activated: false,
+      paymentId: payment.id,
+      reason: "Payment reference mismatch."
+    };
+  }
+
+  if (!payment.enrollment) {
+    return {
+      success: false,
+      activated: false,
+      paymentId: payment.id,
+      reason: "Payment enrollment not found."
+    };
+  }
+
+  if (verification.status === "failed") {
+    if (payment.status === "PAID" || payment.enrollment.status === "ACTIVE") {
+      return {
+        success: true,
+        activated: false,
+        paymentId: payment.id,
+        enrollmentId: payment.enrollment.id,
+        paymentStatus: payment.status,
+        enrollmentStatus: payment.enrollment.status,
+        reason: "Payment has already been processed."
+      };
+    }
+
+    await deps.markFailed({
+      paymentId: payment.id,
+      failureReason: "Flutterwave transaction was not successful.",
+      providerTransactionId: verification.providerTransactionId
+    });
+
+    return {
+      success: false,
+      activated: false,
+      paymentId: payment.id,
+      enrollmentId: payment.enrollment.id,
+      paymentStatus: "FAILED",
+      enrollmentStatus: payment.enrollment.status,
+      reason: "Flutterwave transaction was not successful."
+    };
+  }
+
+  if (verification.status !== "successful") {
+    return {
+      success: false,
+      activated: false,
+      paymentId: payment.id,
+      enrollmentId: payment.enrollment.id,
+      paymentStatus: payment.status,
+      enrollmentStatus: payment.enrollment.status,
+      reason: "Flutterwave transaction is not verified as successful yet."
+    };
+  }
+
+  try {
+    assertPaymentAmountAndCurrencyMatch({
+      expectedAmount: payment.amount,
+      expectedCurrency: payment.currency,
+      actualAmount: verification.amount,
+      actualCurrency: verification.currency
+    });
+  } catch (error) {
+    return {
+      success: false,
+      activated: false,
+      paymentId: payment.id,
+      enrollmentId: payment.enrollment.id,
+      paymentStatus: payment.status,
+      enrollmentStatus: payment.enrollment.status,
+      reason: error instanceof Error ? error.message : "Payment mismatch."
+    };
+  }
+
+  const activation = await deps.markPaidAndActivate({
+    paymentId: payment.id,
+    verifiedAmount: verification.amount,
+    verifiedCurrency: verification.currency,
+    providerTransactionId: verification.providerTransactionId,
+    providerReference,
+    rawPayload: verification.rawPayload as Prisma.InputJsonValue
+  });
+
+  if (activation.activated && payment.parent?.userId) {
+    await deps.notifyPaymentActivated?.({
+      paymentId: payment.id,
+      enrollmentId: payment.enrollment.id,
+      parentUserId: payment.parent.userId
+    });
+  }
+
+  const alreadyProcessed =
+    !activation.activated &&
+    activation.reason === "Payment has already been processed.";
+
+  return {
+    success: activation.activated || alreadyProcessed,
+    activated: activation.activated,
+    duplicate: alreadyProcessed,
+    paymentId: activation.paymentId,
+    enrollmentId: activation.enrollmentId,
+    paymentStatus: activation.paymentStatus,
+    enrollmentStatus: activation.enrollmentStatus,
+    reason: activation.reason
+  };
+}
+
+export async function processFlutterwaveCallback(
+  input: FlutterwaveCallbackInput,
+  deps: FlutterwaveCallbackDeps = getDefaultFlutterwaveCallbackDeps()
+): Promise<FlutterwaveActivationResult> {
+  const transactionId = normalizeOptionalReference(input.transactionId);
+  const txRef = normalizeOptionalReference(input.txRef);
+
+  if (!transactionId && !txRef) {
+    return {
+      success: false,
+      activated: false,
+      reason: "Flutterwave transaction id or reference is required."
+    };
+  }
+
+  const verification = await deps.verifyPayment({
+    transactionId,
+    txRef
+  });
+  const providerReference = getVerificationReference(verification, txRef);
+
+  if (!providerReference) {
+    return {
+      success: false,
+      activated: false,
+      reason: "Flutterwave verification did not include a transaction reference."
+    };
+  }
+
+  const payment = await deps.findPaymentByProviderReference(providerReference);
+
+  return processVerifiedFlutterwavePayment({
+    payment,
+    verification,
+    fallbackReference: txRef,
+    deps
+  });
+}
+
+export async function processFlutterwaveWebhook(
+  input: WebhookHandleInput,
+  deps: FlutterwaveWebhookDeps = getDefaultFlutterwaveWebhookDeps()
+): Promise<FlutterwaveActivationResult> {
+  const webhook = await deps.parseWebhook(input);
+  const event = await deps.recordPaymentEvent(webhook);
+
+  if (event.duplicate) {
+    return {
+      success: true,
+      activated: false,
+      duplicate: true,
+      eventId: event.eventId,
+      reason: "Duplicate Flutterwave webhook event ignored."
+    };
+  }
+
+  const callbackResult = await processFlutterwaveCallback(
+    {
+      transactionId: webhook.transactionId,
+      txRef: webhook.paymentReference
+    },
+    deps
+  );
+
+  return {
+    ...callbackResult,
+    duplicate: false,
+    eventId: event.eventId
   };
 }
 

@@ -33,6 +33,7 @@ export const PARENT_NAV_ITEMS: NavigationItem[] = [
   { label: "Assessments", href: "/parent/assessments" },
   { label: "Tutoring Plans", href: "/parent/enrollments" },
   { label: "Lessons", href: "/parent/lessons" },
+  { label: "Homework", href: "/parent/homework" },
   { label: "Payments", href: "/parent/payments" },
   { label: "Reports", href: "/parent/reports" },
   { label: "Support", href: "/parent/support" }

@@ -6,23 +6,26 @@ import { requireDashboardAccess } from "@/lib/auth/dashboard-access";
 import type { AssessmentStatusValue } from "@/lib/utils/assessment-status";
 import { getNextUpcomingLessonSummary } from "@/lib/utils/lesson-dashboard";
 import type { LessonStatusValue } from "@/lib/utils/lesson-status";
+import { getParentLessonVisibilitySummary } from "@/lib/utils/parent-lesson-visibility";
 import { getCurrentParentAssessmentRequests } from "@/server/queries/assessment.queries";
 import {
   getCurrentParentEnrollments,
   getEnrollmentByAssessmentForCurrentParent
 } from "@/server/queries/enrollment.queries";
+import { getCurrentParentHomework } from "@/server/queries/homework.queries";
 import { getCurrentParentLessons } from "@/server/queries/lesson.queries";
 import { getParentOnboardingStatus } from "@/server/queries/parent.queries";
 import { getCurrentParentPayments } from "@/server/queries/payment.queries";
 
 export default async function ParentPlaceholderPage() {
   const user = await requireDashboardAccess("PARENT");
-  const [onboardingStatus, assessments, enrollments, payments, lessons] = await Promise.all([
+  const [onboardingStatus, assessments, enrollments, payments, lessons, homework] = await Promise.all([
     getParentOnboardingStatus(),
     getCurrentParentAssessmentRequests(),
     getCurrentParentEnrollments(),
     getCurrentParentPayments(),
-    getCurrentParentLessons()
+    getCurrentParentLessons(),
+    getCurrentParentHomework()
   ]);
   const latestAssessment = assessments[0]
     ? {
@@ -65,6 +68,28 @@ export default async function ParentPlaceholderPage() {
         timezone: nextLessonSummary.timezone
       }
     : null;
+  const lessonVisibilitySummary = getParentLessonVisibilitySummary(
+    lessons,
+    homework
+  );
+  const lessonVisibility = {
+    recentLessonNote: lessonVisibilitySummary.recentLessonNote
+      ? {
+          ...lessonVisibilitySummary.recentLessonNote,
+          startTime:
+            lessonVisibilitySummary.recentLessonNote.startTime.toISOString()
+        }
+      : null,
+    homeworkAssignedCount: lessonVisibilitySummary.homeworkAssignedCount,
+    nextHomeworkDue: lessonVisibilitySummary.nextHomeworkDue
+      ? {
+          ...lessonVisibilitySummary.nextHomeworkDue,
+          dueDate:
+            lessonVisibilitySummary.nextHomeworkDue.dueDate?.toISOString() ??
+            null
+        }
+      : null
+  };
   let planNextStep: ParentDashboardPlanNextStep | null = null;
 
   if (activeEnrollment) {
@@ -126,6 +151,7 @@ export default async function ParentPlaceholderPage() {
       initialState={onboardingStatus}
       latestAssessment={latestAssessment}
       nextLesson={nextLesson}
+      lessonVisibility={lessonVisibility}
       planNextStep={planNextStep}
     />
   );

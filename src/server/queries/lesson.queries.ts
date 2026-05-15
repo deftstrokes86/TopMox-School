@@ -230,6 +230,10 @@ export function buildTutorLessonWhereInput(
 }
 
 export function buildParentLessonDetailView(lesson: LessonDetailViewSource) {
+  const parentCanSeeDeliveryNotes = ["COMPLETED", "MISSED"].includes(
+    lesson.status
+  );
+
   return {
     id: lesson.id,
     title: lesson.title,
@@ -241,6 +245,23 @@ export function buildParentLessonDetailView(lesson: LessonDetailViewSource) {
     timezone: lesson.timezone,
     meetingLink: lesson.meetingLink,
     status: lesson.status,
+    delivery: {
+      attendanceMarkedAt: lesson.attendanceMarkedAt,
+      attended: lesson.attended,
+      lessonNotes: parentCanSeeDeliveryNotes ? lesson.lessonNotes : null,
+      parentSafeConcernMessage: lesson.concernFlag
+        ? "Your tutor has flagged that this topic may need extra attention."
+        : null
+    },
+    homework: (lesson.homework ?? []).map((homework) => ({
+      id: homework.id,
+      title: homework.title,
+      description: homework.description,
+      dueDate: homework.dueDate,
+      status: homework.status,
+      createdAt: homework.createdAt,
+      updatedAt: homework.updatedAt
+    })),
     enrollment: lesson.enrollment
       ? {
           id: lesson.enrollment.id,

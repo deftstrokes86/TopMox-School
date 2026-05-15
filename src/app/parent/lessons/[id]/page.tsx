@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, BookOpenCheck, ExternalLink } from "lucide-react";
 
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getEnrollmentStatusMeta } from "@/lib/utils/enrollment-status";
+import { getHomeworkStatusMeta } from "@/lib/utils/homework-status";
 import { getLessonStatusMeta } from "@/lib/utils/lesson-status";
 import {
   buildParentLessonDetailView,
@@ -34,6 +35,16 @@ function formatLessonDateTime(value: Date, timezone: string): string {
       timeStyle: "short"
     }).format(value);
   }
+}
+
+function formatDate(value: Date | null): string {
+  if (!value) {
+    return "No due date";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium"
+  }).format(value);
 }
 
 function DetailItem({
@@ -176,10 +187,121 @@ export default async function ParentLessonDetailPage({
             </CardContent>
           </Card>
 
-          <p className="rounded-xl border border-border/80 bg-soft-cream/40 p-4 text-sm text-text-secondary">
-            Lesson notes and homework are not shown yet. TopMox will add those
-            parent visibility details in the next lesson workflow phases.
-          </p>
+          <Card className="border-royal-blue/20 bg-white shadow-none">
+            <CardHeader>
+              <CardTitle className="text-xl text-deep-navy">
+                Lesson Progress Notes
+              </CardTitle>
+              <p className="text-sm text-text-secondary">
+                After a lesson is completed, TopMox shows parent-safe notes so
+                you can understand what was covered and what needs follow-up.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-3 md:grid-cols-2">
+                <DetailItem
+                  label="Attendance"
+                  value={
+                    view.delivery.attended === null
+                      ? "Not marked yet"
+                      : view.delivery.attended
+                        ? "Attended"
+                        : "Missed / did not attend"
+                  }
+                />
+                <DetailItem
+                  label="Attendance Marked"
+                  value={
+                    view.delivery.attendanceMarkedAt
+                      ? formatLessonDateTime(
+                          view.delivery.attendanceMarkedAt,
+                          view.timezone
+                        )
+                      : "Not marked yet"
+                  }
+                />
+              </div>
+
+              {view.delivery.lessonNotes ? (
+                <div className="rounded-xl border border-border/80 bg-soft-cream/40 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-text-muted">
+                    Tutor Notes
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-text-secondary">
+                    {view.delivery.lessonNotes}
+                  </p>
+                </div>
+              ) : (
+                <p className="rounded-xl border border-dashed border-border bg-soft-cream/40 p-4 text-sm text-text-secondary">
+                  Tutor notes will appear here after the lesson is completed.
+                </p>
+              )}
+
+              {view.delivery.parentSafeConcernMessage ? (
+                <p className="rounded-xl border border-warm-gold/40 bg-warm-gold/10 p-4 text-sm text-text-secondary">
+                  {view.delivery.parentSafeConcernMessage}
+                </p>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          <Card className="border-warm-gold/25 bg-white shadow-none">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <BookOpenCheck className="h-5 w-5 text-warm-gold" />
+                <CardTitle className="text-xl text-deep-navy">
+                  Homework From This Lesson
+                </CardTitle>
+              </div>
+              <p className="text-sm text-text-secondary">
+                Practice work assigned by the tutor appears here so you can
+                support follow-through without guessing.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {view.homework.length > 0 ? (
+                view.homework.map((homework) => {
+                  const homeworkStatus = getHomeworkStatusMeta(homework.status);
+
+                  return (
+                    <div
+                      key={homework.id}
+                      className="rounded-xl border border-border/80 bg-soft-cream/40 p-4"
+                    >
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="font-semibold text-deep-navy">
+                            {homework.title}
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-text-secondary">
+                            {homework.description}
+                          </p>
+                          <p className="mt-2 text-xs text-text-muted">
+                            Due: {formatDate(homework.dueDate)}
+                          </p>
+                        </div>
+                        <StatusBadge
+                          label={homeworkStatus.label}
+                          tone={homeworkStatus.tone}
+                        />
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="rounded-xl border border-dashed border-border bg-soft-cream/40 p-4 text-sm text-text-secondary">
+                  No homework has been assigned from this lesson yet.
+                </p>
+              )}
+
+              <Button asChild variant="outline" className="w-full sm:w-auto">
+                <Link href="/parent/homework">
+                  View All Homework
+                  <BookOpenCheck className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
         </CardContent>
       </Card>
     </section>

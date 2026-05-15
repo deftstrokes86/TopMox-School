@@ -14,6 +14,7 @@ import {
   getParentAssessmentNextAction,
   type AssessmentStatusValue
 } from "@/lib/utils/assessment-status";
+import { getHomeworkStatusMeta } from "@/lib/utils/homework-status";
 import {
   getLessonStatusMeta,
   type LessonStatusValue
@@ -31,6 +32,7 @@ type ParentOnboardingStatePanelProps = {
   initialState?: OnboardingState;
   latestAssessment?: ParentDashboardAssessmentSummary | null;
   nextLesson?: ParentDashboardLessonSummary | null;
+  lessonVisibility?: ParentDashboardLessonVisibility | null;
   planNextStep?: ParentDashboardPlanNextStep | null;
 };
 
@@ -52,6 +54,24 @@ type ParentDashboardLessonSummary = {
   startTime: string;
   status: LessonStatusValue;
   timezone?: string;
+};
+
+type ParentDashboardLessonVisibility = {
+  recentLessonNote: {
+    lessonId: string;
+    title: string;
+    childName: string;
+    subjectName: string;
+    lessonNotes: string;
+    startTime: string;
+  } | null;
+  homeworkAssignedCount: number;
+  nextHomeworkDue: {
+    id: string;
+    title: string;
+    dueDate: string | null;
+    status: "ASSIGNED" | "SUBMITTED" | "REVIEWED" | "OVERDUE";
+  } | null;
 };
 
 export type ParentDashboardPlanNextStep = {
@@ -81,6 +101,7 @@ export function ParentOnboardingStatePanel({
   initialState,
   latestAssessment,
   nextLesson,
+  lessonVisibility,
   planNextStep
 }: ParentOnboardingStatePanelProps) {
   const [loading, setLoading] = useState(!initialState);
@@ -140,6 +161,9 @@ export function ParentOnboardingStatePanel({
     : null;
   const nextLessonStatus = nextLesson
     ? getLessonStatusMeta(nextLesson.status)
+    : null;
+  const nextHomeworkStatus = lessonVisibility?.nextHomeworkDue
+    ? getHomeworkStatusMeta(lessonVisibility.nextHomeworkDue.status)
     : null;
 
   return (
@@ -320,6 +344,91 @@ export function ParentOnboardingStatePanel({
                     <Button asChild variant="outline">
                       <Link href={`/parent/lessons/${nextLesson.id}`}>
                         View Lesson
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+              {content.state === "READY_FOR_ASSESSMENT" &&
+              lessonVisibility?.recentLessonNote ? (
+                <div className="mt-4 rounded-xl border border-royal-blue/20 bg-white p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
+                        Recent Lesson Note
+                      </p>
+                      <p className="mt-1 font-semibold text-deep-navy">
+                        {lessonVisibility.recentLessonNote.title}
+                      </p>
+                      <p className="mt-1 text-sm text-text-secondary">
+                        {lessonVisibility.recentLessonNote.childName} |{" "}
+                        {lessonVisibility.recentLessonNote.subjectName}
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-text-secondary">
+                        {lessonVisibility.recentLessonNote.lessonNotes}
+                      </p>
+                    </div>
+                    <StatusBadge label="Completed" tone="success" />
+                  </div>
+                  <div className="mt-4">
+                    <Button asChild variant="outline">
+                      <Link
+                        href={`/parent/lessons/${lessonVisibility.recentLessonNote.lessonId}`}
+                      >
+                        View Lesson Notes
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+              {content.state === "READY_FOR_ASSESSMENT" && lessonVisibility ? (
+                <div className="mt-4 rounded-xl border border-warm-gold/30 bg-warm-gold/10 p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
+                        Homework
+                      </p>
+                      <p className="mt-1 font-semibold text-deep-navy">
+                        {lessonVisibility.homeworkAssignedCount} active homework{" "}
+                        {lessonVisibility.homeworkAssignedCount === 1
+                          ? "task"
+                          : "tasks"}
+                      </p>
+                      <p className="mt-1 text-sm text-text-secondary">
+                        {lessonVisibility.nextHomeworkDue
+                          ? `Next due: ${lessonVisibility.nextHomeworkDue.title}`
+                          : "Assigned homework will appear here after lessons."}
+                      </p>
+                      {lessonVisibility.nextHomeworkDue?.dueDate ? (
+                        <p className="mt-2 text-xs text-text-muted">
+                          Due:{" "}
+                          {formatDashboardDate(
+                            lessonVisibility.nextHomeworkDue.dueDate
+                          )}
+                        </p>
+                      ) : null}
+                    </div>
+                    {nextHomeworkStatus ? (
+                      <StatusBadge
+                        label={nextHomeworkStatus.label}
+                        tone={nextHomeworkStatus.tone}
+                      />
+                    ) : (
+                      <StatusBadge label="No active homework" tone="neutral" />
+                    )}
+                  </div>
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                    <Button asChild variant="outline">
+                      <Link href="/parent/homework">
+                        View Homework
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <Link href="/parent/lessons">
+                        View Lessons
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>

@@ -19,12 +19,12 @@ const baseLesson = {
   endTime: new Date("2026-06-01T11:00:00.000Z"),
   timezone: "Africa/Lagos",
   meetingLink: "https://meet.example.com/topmox",
-  status: "SCHEDULED" as const,
-  lessonNotes: "Internal tutor preparation note",
+  status: "COMPLETED" as const,
+  lessonNotes: "Amara completed fraction examples with guided practice.",
   concernFlag: true,
   concernNote: "Internal concern note",
-  attended: null,
-  attendanceMarkedAt: null,
+  attended: true,
+  attendanceMarkedAt: new Date("2026-06-01T11:05:00.000Z"),
   parent: {
     country: "Nigeria",
     timezone: "Africa/Lagos",
@@ -58,7 +58,18 @@ const baseLesson = {
       name: "Growth Plan",
       sessionsPerWeek: 3
     }
-  }
+  },
+  homework: [
+    {
+      id: "homework-1",
+      title: "Fractions practice",
+      description: "Complete questions 1 to 10 before the next lesson.",
+      dueDate: new Date("2026-06-03T00:00:00.000Z"),
+      status: "ASSIGNED" as const,
+      createdAt: new Date("2026-06-01T11:10:00.000Z"),
+      updatedAt: new Date("2026-06-01T11:10:00.000Z")
+    }
+  ]
 };
 
 describe("parent lesson visibility", () => {
@@ -82,14 +93,31 @@ describe("parent lesson visibility", () => {
     );
   });
 
-  test("parent lesson detail view hides internal/admin-only fields", () => {
+  test("parent sees completed lesson notes for own child", () => {
     const view = buildParentLessonDetailView(baseLesson);
 
     assert.equal(view.childName, "Amara Okafor");
     assert.equal(view.tutorName, "Tutor User");
-    assert.equal("lessonNotes" in view, false);
+    assert.equal(
+      view.delivery.lessonNotes,
+      "Amara completed fraction examples with guided practice."
+    );
+    assert.equal(view.delivery.attended, true);
+  });
+
+  test("parent lesson detail view hides internal/admin-only fields", () => {
+    const view = buildParentLessonDetailView(baseLesson);
+
     assert.equal("concernNote" in view, false);
-    assert.equal("concernFlag" in view, false);
+    assert.equal(view.delivery.parentSafeConcernMessage, "Your tutor has flagged that this topic may need extra attention.");
+  });
+
+  test("parent sees homework assigned from their own lesson", () => {
+    const view = buildParentLessonDetailView(baseLesson);
+
+    assert.equal(view.homework.length, 1);
+    assert.equal(view.homework[0]?.title, "Fractions practice");
+    assert.equal(view.homework[0]?.description, "Complete questions 1 to 10 before the next lesson.");
   });
 });
 

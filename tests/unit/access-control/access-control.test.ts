@@ -6,6 +6,7 @@ import {
   canAccessEnrollmentWithClient,
   canAccessLessonWithClient,
   canAccessPaymentWithClient,
+  canAccessReportWithClient,
   canAccessStudentWithClient
 } from "@/lib/auth/access-control-core";
 
@@ -71,6 +72,18 @@ function createLessonAccessClient({
   return {
     lesson: {
       findFirst: async () => (lessonFound ? { id: "lesson-id" } : null)
+    }
+  };
+}
+
+function createReportAccessClient({
+  reportFound
+}: {
+  reportFound: boolean;
+}): Parameters<typeof canAccessReportWithClient>[0] {
+  return {
+    progressReport: {
+      findFirst: async () => (reportFound ? { id: "report-id" } : null)
     }
   };
 }
@@ -299,6 +312,52 @@ describe("canAccessLesson", () => {
       "admin-user-id",
       "ADMIN",
       "lesson-id"
+    );
+
+    assert.equal(access, true);
+  });
+});
+
+describe("canAccessReport", () => {
+  test("parent can access own published report", async () => {
+    const access = await canAccessReportWithClient(
+      createReportAccessClient({ reportFound: true }),
+      "parent-user-id",
+      "PARENT",
+      "report-id"
+    );
+
+    assert.equal(access, true);
+  });
+
+  test("parent cannot access another parent's report or draft report", async () => {
+    const access = await canAccessReportWithClient(
+      createReportAccessClient({ reportFound: false }),
+      "other-parent-user-id",
+      "PARENT",
+      "report-id"
+    );
+
+    assert.equal(access, false);
+  });
+
+  test("tutor can access reports linked to their tutor profile", async () => {
+    const access = await canAccessReportWithClient(
+      createReportAccessClient({ reportFound: true }),
+      "tutor-user-id",
+      "TUTOR",
+      "report-id"
+    );
+
+    assert.equal(access, true);
+  });
+
+  test("admin can access all reports", async () => {
+    const access = await canAccessReportWithClient(
+      createReportAccessClient({ reportFound: false }),
+      "admin-user-id",
+      "ADMIN",
+      "report-id"
     );
 
     assert.equal(access, true);

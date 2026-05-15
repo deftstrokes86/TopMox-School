@@ -4,6 +4,7 @@ import {
   canAccessEnrollmentWithClient,
   canAccessLessonWithClient,
   canAccessPaymentWithClient,
+  canAccessReportWithClient,
   canAccessStudentWithClient
 } from "./access-control-core";
 import type { AppRole } from "./types";
@@ -29,28 +30,7 @@ export async function canAccessReport(
   role: AppRole,
   reportId: string
 ): Promise<boolean> {
-  if (!userId || !reportId) {
-    return false;
-  }
-
-  if (role === "ADMIN") {
-    return true;
-  }
-
-  const report = await db.progressReport.findFirst({
-    where: {
-      id: reportId,
-      OR:
-        role === "PARENT"
-          ? [{ parent: { userId }, status: "PUBLISHED" }]
-          : role === "TUTOR"
-            ? [{ tutor: { userId } }]
-            : []
-    },
-    select: { id: true }
-  });
-
-  return Boolean(report);
+  return canAccessReportWithClient(db, userId, role, reportId);
 }
 
 export async function canAccessPayment(

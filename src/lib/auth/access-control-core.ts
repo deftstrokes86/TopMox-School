@@ -72,6 +72,20 @@ export type LessonAccessDbClient = {
   };
 };
 
+export type ReportAccessDbClient = {
+  progressReport: {
+    findFirst: (args: {
+      where: {
+        id?: string;
+        parent?: { userId: string };
+        tutor?: { userId: string };
+        status?: "PUBLISHED";
+      };
+      select: { id: true };
+    }) => Promise<{ id: string } | null>;
+  };
+};
+
 export async function canAccessStudentWithClient(
   dbClient: StudentAccessDbClient,
   userId: string,
@@ -247,4 +261,44 @@ export async function canAccessLessonWithClient(
   });
 
   return Boolean(lesson);
+}
+
+export async function canAccessReportWithClient(
+  dbClient: ReportAccessDbClient,
+  userId: string,
+  role: AppRole,
+  reportId: string
+): Promise<boolean> {
+  if (!userId || !reportId) {
+    return false;
+  }
+
+  if (role === "ADMIN") {
+    return true;
+  }
+
+  if (role !== "PARENT" && role !== "TUTOR") {
+    return false;
+  }
+
+  const report = await dbClient.progressReport.findFirst({
+    where: {
+      id: reportId,
+      ...(role === "PARENT"
+        ? {
+            parent: {
+              userId
+            },
+            status: "PUBLISHED" as const
+          }
+        : {
+            tutor: {
+              userId
+            }
+          })
+    },
+    select: { id: true }
+  });
+
+  return Boolean(report);
 }

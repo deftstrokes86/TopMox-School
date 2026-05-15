@@ -7,6 +7,7 @@ import {
   canAccessLessonWithClient,
   canAccessPaymentWithClient,
   canAccessReportWithClient,
+  canAccessSupportRequestWithClient,
   canAccessStudentWithClient
 } from "@/lib/auth/access-control-core";
 
@@ -84,6 +85,19 @@ function createReportAccessClient({
   return {
     progressReport: {
       findFirst: async () => (reportFound ? { id: "report-id" } : null)
+    }
+  };
+}
+
+function createSupportRequestAccessClient({
+  supportRequestFound
+}: {
+  supportRequestFound: boolean;
+}): Parameters<typeof canAccessSupportRequestWithClient>[0] {
+  return {
+    supportRequest: {
+      findFirst: async () =>
+        supportRequestFound ? { id: "support-request-id" } : null
     }
   };
 }
@@ -361,5 +375,51 @@ describe("canAccessReport", () => {
     );
 
     assert.equal(access, true);
+  });
+});
+
+describe("canAccessSupportRequest", () => {
+  test("parent can access own support request", async () => {
+    const access = await canAccessSupportRequestWithClient(
+      createSupportRequestAccessClient({ supportRequestFound: true }),
+      "parent-user-id",
+      "PARENT",
+      "support-request-id"
+    );
+
+    assert.equal(access, true);
+  });
+
+  test("parent cannot access another parent's support request", async () => {
+    const access = await canAccessSupportRequestWithClient(
+      createSupportRequestAccessClient({ supportRequestFound: false }),
+      "other-parent-user-id",
+      "PARENT",
+      "support-request-id"
+    );
+
+    assert.equal(access, false);
+  });
+
+  test("admin can access all support requests", async () => {
+    const access = await canAccessSupportRequestWithClient(
+      createSupportRequestAccessClient({ supportRequestFound: false }),
+      "admin-user-id",
+      "ADMIN",
+      "support-request-id"
+    );
+
+    assert.equal(access, true);
+  });
+
+  test("tutor cannot access support requests in Phase 11A", async () => {
+    const access = await canAccessSupportRequestWithClient(
+      createSupportRequestAccessClient({ supportRequestFound: true }),
+      "tutor-user-id",
+      "TUTOR",
+      "support-request-id"
+    );
+
+    assert.equal(access, false);
   });
 });

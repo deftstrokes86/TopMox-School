@@ -4,6 +4,7 @@ export {
   canAccessLesson,
   canAccessPayment,
   canAccessReport,
+  canAccessSupportRequest,
   canAccessStudent
 } from "./access-control";
 export { authOptions } from "./auth-options";

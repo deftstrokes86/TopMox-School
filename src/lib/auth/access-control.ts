@@ -5,6 +5,7 @@ import {
   canAccessLessonWithClient,
   canAccessPaymentWithClient,
   canAccessReportWithClient,
+  canAccessSupportRequestWithClient,
   canAccessStudentWithClient
 } from "./access-control-core";
 import type { AppRole } from "./types";
@@ -55,4 +56,17 @@ export async function canAccessEnrollment(
   enrollmentId: string
 ): Promise<boolean> {
   return canAccessEnrollmentWithClient(db, userId, role, enrollmentId);
+}
+
+export async function canAccessSupportRequest(
+  userId: string,
+  role: AppRole,
+  supportRequestId: string
+): Promise<boolean> {
+  return canAccessSupportRequestWithClient(
+    db,
+    userId,
+    role,
+    supportRequestId
+  );
 }

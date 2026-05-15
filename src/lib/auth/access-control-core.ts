@@ -86,6 +86,18 @@ export type ReportAccessDbClient = {
   };
 };
 
+export type SupportRequestAccessDbClient = {
+  supportRequest: {
+    findFirst: (args: {
+      where: {
+        id?: string;
+        parent?: { userId: string };
+      };
+      select: { id: true };
+    }) => Promise<{ id: string } | null>;
+  };
+};
+
 export async function canAccessStudentWithClient(
   dbClient: StudentAccessDbClient,
   userId: string,
@@ -301,4 +313,35 @@ export async function canAccessReportWithClient(
   });
 
   return Boolean(report);
+}
+
+export async function canAccessSupportRequestWithClient(
+  dbClient: SupportRequestAccessDbClient,
+  userId: string,
+  role: AppRole,
+  supportRequestId: string
+): Promise<boolean> {
+  if (!userId || !supportRequestId) {
+    return false;
+  }
+
+  if (role === "ADMIN") {
+    return true;
+  }
+
+  if (role !== "PARENT") {
+    return false;
+  }
+
+  const supportRequest = await dbClient.supportRequest.findFirst({
+    where: {
+      id: supportRequestId,
+      parent: {
+        userId
+      }
+    },
+    select: { id: true }
+  });
+
+  return Boolean(supportRequest);
 }

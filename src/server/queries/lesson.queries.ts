@@ -120,6 +120,10 @@ type LessonDetailViewSource = {
   concernFlag: boolean | null;
   concernNote: string | null;
   parent: {
+    user?: {
+      name: string;
+      email?: string;
+    };
     country: string;
     timezone: string;
   };
@@ -165,6 +169,7 @@ export type AdminLessonFilters = {
   tutorId?: string;
   studentId?: string;
   subjectId?: string;
+  concernFlagged?: boolean;
   dateFrom?: Date;
   dateTo?: Date;
   take?: number;
@@ -195,6 +200,10 @@ export function buildAdminLessonWhereInput(
     where.subjectId = filters.subjectId;
   }
 
+  if (filters.concernFlagged) {
+    where.concernFlag = true;
+  }
+
   if (filters.dateFrom || filters.dateTo) {
     where.startTime = {
       ...(filters.dateFrom ? { gte: filters.dateFrom } : {}),
@@ -203,6 +212,12 @@ export function buildAdminLessonWhereInput(
   }
 
   return where;
+}
+
+export function buildAdminLessonDeliveryWhereInput(
+  filters: AdminLessonFilters = {}
+): Prisma.LessonWhereInput {
+  return buildAdminLessonWhereInput(filters);
 }
 
 export function buildParentLessonWhereInput(
@@ -304,6 +319,46 @@ export function buildTutorLessonDetailView(lesson: LessonDetailViewSource) {
       mainAcademicChallenge: lesson.student.mainAcademicChallenge,
       academicGoal: lesson.student.academicGoal
     }
+  };
+}
+
+export function buildAdminLessonDeliveryView(lesson: LessonDetailViewSource) {
+  return {
+    id: lesson.id,
+    title: lesson.title,
+    childName: lesson.student.fullName,
+    parentName: lesson.parent.user?.name ?? "Parent not linked",
+    tutorName: lesson.tutor.user.name,
+    subjectName: lesson.subject.name,
+    startTime: lesson.startTime,
+    endTime: lesson.endTime,
+    timezone: lesson.timezone,
+    meetingLink: lesson.meetingLink,
+    status: lesson.status,
+    delivery: {
+      attendanceMarkedAt: lesson.attendanceMarkedAt,
+      attended: lesson.attended,
+      lessonNotes: lesson.lessonNotes,
+      concernFlag: Boolean(lesson.concernFlag),
+      concernNote: lesson.concernNote
+    },
+    homework: (lesson.homework ?? []).map((homework) => ({
+      id: homework.id,
+      title: homework.title,
+      description: homework.description,
+      dueDate: homework.dueDate,
+      status: homework.status,
+      createdAt: homework.createdAt,
+      updatedAt: homework.updatedAt
+    })),
+    enrollment: lesson.enrollment
+      ? {
+          id: lesson.enrollment.id,
+          status: lesson.enrollment.status,
+          planName: lesson.enrollment.tutoringPlan.name,
+          sessionsPerWeek: lesson.enrollment.tutoringPlan.sessionsPerWeek
+        }
+      : null
   };
 }
 

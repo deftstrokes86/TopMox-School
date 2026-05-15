@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { ArrowRight, BookOpenCheck, CalendarDays, ClipboardCheck } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpenCheck,
+  CalendarDays,
+  ClipboardCheck,
+  FileText,
+  Send
+} from "lucide-react";
 
 import { StatCard } from "@/components/dashboard/StatCard";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -10,8 +17,13 @@ import { requireDashboardAccess } from "@/lib/auth/dashboard-access";
 import { getTutorLessonDashboardSummary } from "@/lib/utils/lesson-dashboard";
 import { getLessonStatusMeta } from "@/lib/utils/lesson-status";
 import { getTutorLessonWorkSummary } from "@/lib/utils/tutor-lesson-delivery";
+import { getTutorReportDashboardSummary } from "@/lib/utils/tutor-report-ui";
 import { getCurrentTutorHomework } from "@/server/queries/homework.queries";
 import { getCurrentTutorLessons } from "@/server/queries/lesson.queries";
+import {
+  getCurrentTutorReports,
+  getReportsDueForTutor
+} from "@/server/queries/report.queries";
 
 export const dynamic = "force-dynamic";
 
@@ -56,12 +68,15 @@ function DashboardLessonCard({ lesson }: { lesson: TutorDashboardLesson }) {
 
 export default async function TutorDashboardPage() {
   const user = await requireDashboardAccess("TUTOR");
-  const [lessons, homework] = await Promise.all([
+  const [lessons, homework, reports, reportsDue] = await Promise.all([
     getCurrentTutorLessons(),
-    getCurrentTutorHomework()
+    getCurrentTutorHomework(),
+    getCurrentTutorReports(),
+    getReportsDueForTutor()
   ]);
   const lessonSummary = getTutorLessonDashboardSummary(lessons);
   const workSummary = getTutorLessonWorkSummary(lessons, homework);
+  const reportSummary = getTutorReportDashboardSummary(reports, reportsDue);
   const nextLessons = [
     ...lessonSummary.today,
     ...lessonSummary.upcoming.slice(0, Math.max(0, 3 - lessonSummary.today.length))
@@ -156,6 +171,56 @@ export default async function TutorDashboardPage() {
           icon={<BookOpenCheck className="h-4 w-4 text-warm-gold" />}
         />
       </div>
+
+      <Card className="border-royal-blue/20">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <CardTitle className="text-xl text-deep-navy">
+              Progress Reports
+            </CardTitle>
+            <p className="mt-1 text-sm text-text-secondary">
+              Draft monthly progress reports for assigned students and send
+              them to TopMox admin for review.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button asChild variant="outline" className="w-full sm:w-auto">
+              <Link href="/tutor/reports">
+                <FileText className="mr-2 h-4 w-4" />
+                View Reports
+              </Link>
+            </Button>
+            <Button asChild className="w-full sm:w-auto">
+              <Link href="/tutor/reports/new">
+                <Send className="mr-2 h-4 w-4" />
+                Draft Report
+              </Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            <StatCard
+              label="Draft Reports"
+              value={String(reportSummary.draftReports)}
+              context="Editable before admin review"
+              icon={<FileText className="h-4 w-4 text-warm-gold" />}
+            />
+            <StatCard
+              label="In Review"
+              value={String(reportSummary.reportsInReview)}
+              context="Submitted to TopMox admin"
+              icon={<Send className="h-4 w-4 text-royal-blue" />}
+            />
+            <StatCard
+              label="Students Needing Report"
+              value={String(reportSummary.studentsNeedingReport)}
+              context="Active assigned enrollments due this month"
+              icon={<ClipboardCheck className="h-4 w-4 text-success" />}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="border-royal-blue/20">
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

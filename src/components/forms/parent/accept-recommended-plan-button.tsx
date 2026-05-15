@@ -64,8 +64,9 @@ export function AcceptRecommendedPlanButton({
       {result?.success ? (
         <p className="inline-flex items-center rounded-lg border border-success/25 bg-success/10 px-3 py-2 text-sm text-success">
           <CheckCircle2 className="mr-2 h-4 w-4" />
-          Your plan has been accepted. Submit payment details so TopMox can
-          verify and activate your child&apos;s tutoring plan.
+          Your plan has been accepted. Choose Flutterwave checkout or manual
+          transfer details so TopMox can activate your child&apos;s tutoring plan
+          after payment is verified.
         </p>
       ) : null}
 

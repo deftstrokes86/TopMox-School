@@ -5,22 +5,29 @@ import type { PaymentStatus } from "@prisma/client";
 import { AuthError, requireAdmin, requireParent } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
+  createEnrollmentPaymentSchema,
   createManualPaymentSchema,
   reviewPaymentSchema,
   updatePaymentAdminNoteSchema,
+  type CreateEnrollmentPaymentInput,
   type CreateManualPaymentInput,
   type ReviewPaymentInput,
   type UpdatePaymentAdminNoteInput
 } from "@/lib/validations/payment.schema";
+import { PaymentProviderConfigurationError } from "@/server/integrations/payments/payment-provider";
 import { assertEnrollmentStatusTransition } from "@/server/services/enrollment.service";
 import {
   PaymentStatusTransitionError,
+  getFlutterwaveCheckoutUpdateData,
+  getFlutterwavePendingPaymentData,
   getEnrollmentActivatedNotificationPayload,
   getAdminPaymentSubmittedNotificationPayload,
   getManualPaymentData,
   getPaymentApprovedNotificationPayload,
+  getPaymentProviderAdapter,
   getPaymentRejectedNotificationPayload,
   getParentPaymentSubmittedNotificationPayload,
+  validateEnrollmentPaymentRequest,
   validateManualPaymentSubmission,
   validatePaymentReview
 } from "@/server/services/payment.service";
@@ -28,6 +35,7 @@ import {
 type PaymentFieldErrors = Partial<
   Record<
     | keyof CreateManualPaymentInput
+    | keyof CreateEnrollmentPaymentInput
     | keyof ReviewPaymentInput
     | keyof UpdatePaymentAdminNoteInput,
     string
@@ -42,6 +50,10 @@ export type PaymentActionResult = {
     paymentId: string;
     enrollmentId: string;
     status: PaymentStatus;
+    paymentMethod?: CreateEnrollmentPaymentInput["paymentMethod"];
+    redirectUrl?: string | null;
+    checkoutUrl?: string | null;
+    successRoute?: string;
   };
 };
 
@@ -68,6 +80,309 @@ function toPaymentTransitionErrorResult(error: unknown) {
   }
 
   return null;
+}
+
+function getAppBaseUrl() {
+  return (
+    process.env.APP_BASE_URL ||
+    process.env.NEXTAUTH_URL ||
+    "http://localhost:7000"
+  ).replace(/\/+$/, "");
+}
+
+function getPaymentReturnUrl() {
+  return `${getAppBaseUrl()}/parent/payments`;
+}
+
+export async function createEnrollmentPaymentAction(
+  payload: CreateEnrollmentPaymentInput
+): Promise<PaymentActionResult> {
+  try {
+    const parsed = createEnrollmentPaymentSchema.safeParse(payload);
+
+    if (!parsed.success) {
+      const flattened = parsed.error.flatten().fieldErrors;
+      return {
+        success: false,
+        message: "Please check the payment fields and try again.",
+        fieldErrors: {
+          enrollmentId: flattened.enrollmentId?.[0],
+          paymentMethod: flattened.paymentMethod?.[0],
+          reference: flattened.reference?.[0],
+          proofUrl: flattened.proofUrl?.[0]
+        }
+      };
+    }
+
+    const user = await requireParent();
+
+    const enrollment = await db.enrollment.findFirst({
+      where: {
+        id: parsed.data.enrollmentId,
+        parent: {
+          userId: user.id
+        }
+      },
+      select: {
+        id: true,
+        parentId: true,
+        studentId: true,
+        status: true,
+        parent: {
+          select: {
+            userId: true,
+            user: {
+              select: {
+                name: true,
+                email: true
+              }
+            }
+          }
+        },
+        student: {
+          select: {
+            fullName: true
+          }
+        },
+        tutoringPlan: {
+          select: {
+            name: true,
+            monthlyPrice: true,
+            currency: true
+          }
+        },
+        payments: {
+          where: {
+            status: {
+              in: ["PENDING", "AWAITING_VERIFICATION", "PAID"]
+            }
+          },
+          select: {
+            id: true
+          },
+          orderBy: {
+            createdAt: "desc"
+          },
+          take: 1
+        }
+      }
+    });
+
+    if (!enrollment) {
+      return {
+        success: false,
+        message: "Enrollment not found.",
+        fieldErrors: {
+          enrollmentId: "Enrollment not found."
+        }
+      };
+    }
+
+    const paymentAccess = validateEnrollmentPaymentRequest({
+      currentUserId: user.id,
+      enrollmentParentUserId: enrollment.parent.userId,
+      enrollmentStatus: enrollment.status,
+      existingOpenPaymentId: enrollment.payments[0]?.id ?? null
+    });
+
+    if (!paymentAccess.success) {
+      return {
+        success: false,
+        message: paymentAccess.message,
+        fieldErrors: paymentAccess.fieldErrors
+      };
+    }
+
+    if (parsed.data.paymentMethod === "MANUAL_TRANSFER") {
+      const result = await db.$transaction(async (tx) => {
+        const payment = await tx.payment.create({
+          data: getManualPaymentData({
+            parentId: enrollment.parentId,
+            studentId: enrollment.studentId,
+            enrollmentId: enrollment.id,
+            amount: enrollment.tutoringPlan.monthlyPrice,
+            currency: enrollment.tutoringPlan.currency,
+            paymentMethod: parsed.data.paymentMethod,
+            reference: parsed.data.reference,
+            proofUrl: parsed.data.proofUrl
+          }),
+          select: {
+            id: true,
+            enrollmentId: true,
+            status: true
+          }
+        });
+
+        await tx.notification.create({
+          data: {
+            userId: user.id,
+            ...getParentPaymentSubmittedNotificationPayload(payment.id)
+          },
+          select: {
+            id: true
+          }
+        });
+
+        const admins = await tx.user.findMany({
+          where: {
+            role: "ADMIN"
+          },
+          select: {
+            id: true
+          }
+        });
+
+        if (admins.length > 0) {
+          const adminPayload = getAdminPaymentSubmittedNotificationPayload({
+            parentName: enrollment.parent.user.name,
+            childName: enrollment.student.fullName,
+            planName: enrollment.tutoringPlan.name
+          });
+
+          await tx.notification.createMany({
+            data: admins.map((admin) => ({
+              userId: admin.id,
+              ...adminPayload
+            }))
+          });
+        }
+
+        return payment;
+      });
+
+      return {
+        success: true,
+        message:
+          "Your manual transfer details have been submitted for TopMox review.",
+        data: {
+          paymentId: result.id,
+          enrollmentId: result.enrollmentId ?? parsed.data.enrollmentId,
+          status: result.status,
+          paymentMethod: parsed.data.paymentMethod,
+          successRoute: "/parent/payments?submitted=1"
+        }
+      };
+    }
+
+    const callbackUrl = getPaymentReturnUrl();
+    const payment = await db.payment.create({
+      data: getFlutterwavePendingPaymentData({
+        parentId: enrollment.parentId,
+        studentId: enrollment.studentId,
+        enrollmentId: enrollment.id,
+        amount: enrollment.tutoringPlan.monthlyPrice,
+        currency: enrollment.tutoringPlan.currency,
+        callbackUrl,
+        metadata: {
+          source: "parent_checkout",
+          enrollmentId: enrollment.id,
+          parentId: enrollment.parentId,
+          studentId: enrollment.studentId
+        }
+      }),
+      select: {
+        id: true,
+        parentId: true,
+        studentId: true,
+        enrollmentId: true,
+        amount: true,
+        currency: true,
+        status: true
+      }
+    });
+
+    try {
+      const checkout = await getPaymentProviderAdapter(
+        "FLUTTERWAVE"
+      ).createCheckout({
+        paymentId: payment.id,
+        enrollmentId: payment.enrollmentId ?? enrollment.id,
+        parentId: payment.parentId,
+        studentId: payment.studentId ?? enrollment.studentId,
+        amount: payment.amount.toString(),
+        currency: payment.currency,
+        redirectUrl: callbackUrl,
+        customer: {
+          email: user.email,
+          name: user.name ?? enrollment.parent.user.name ?? "TopMox Parent"
+        }
+      });
+
+      const updatedPayment = await db.payment.update({
+        where: {
+          id: payment.id
+        },
+        data: getFlutterwaveCheckoutUpdateData(checkout),
+        select: {
+          id: true,
+          enrollmentId: true,
+          status: true,
+          checkoutUrl: true
+        }
+      });
+
+      if (!updatedPayment.checkoutUrl) {
+        return {
+          success: false,
+          message: "Flutterwave checkout could not be created."
+        };
+      }
+
+      return {
+        success: true,
+        message: "Redirecting to Flutterwave checkout.",
+        data: {
+          paymentId: updatedPayment.id,
+          enrollmentId: updatedPayment.enrollmentId ?? parsed.data.enrollmentId,
+          status: updatedPayment.status,
+          paymentMethod: parsed.data.paymentMethod,
+          redirectUrl: updatedPayment.checkoutUrl,
+          checkoutUrl: updatedPayment.checkoutUrl
+        }
+      };
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Flutterwave checkout could not be created.";
+
+      await db.payment.update({
+        where: {
+          id: payment.id
+        },
+        data: {
+          status: "FAILED",
+          failureReason: message
+        },
+        select: {
+          id: true
+        }
+      });
+
+      if (error instanceof PaymentProviderConfigurationError) {
+        return {
+          success: false,
+          message:
+            "Flutterwave is not configured yet. Please use manual transfer or contact TopMox."
+        };
+      }
+
+      return {
+        success: false,
+        message
+      };
+    }
+  } catch (error) {
+    const authResult = toAuthErrorResult(
+      error,
+      "You do not have permission to start payment for this plan."
+    );
+    if (authResult) {
+      return authResult;
+    }
+
+    throw error;
+  }
 }
 
 export async function createManualPaymentAction(

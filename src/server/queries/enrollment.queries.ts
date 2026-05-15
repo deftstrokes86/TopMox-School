@@ -52,6 +52,8 @@ const enrollmentSelect = {
     select: {
       id: true,
       status: true,
+      paymentMethod: true,
+      checkoutUrl: true,
       createdAt: true
     },
     orderBy: {
@@ -146,7 +148,7 @@ export async function getCurrentParentPendingPaymentEnrollments() {
       payments: {
         none: {
           status: {
-            in: ["AWAITING_VERIFICATION", "PAID"]
+            in: ["PENDING", "AWAITING_VERIFICATION", "PAID"]
           }
         }
       }

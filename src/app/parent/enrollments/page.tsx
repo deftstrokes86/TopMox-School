@@ -27,6 +27,19 @@ function getEnrollmentAction(enrollment: EnrollmentListItem) {
 
   if (
     enrollment.status === "PENDING_PAYMENT" &&
+    latestPayment?.status === "PENDING" &&
+    latestPayment.checkoutUrl
+  ) {
+    return {
+      label: "Continue Checkout",
+      href: latestPayment.checkoutUrl,
+      description:
+        "Flutterwave checkout has started. Continue checkout to complete payment securely."
+    };
+  }
+
+  if (
+    enrollment.status === "PENDING_PAYMENT" &&
     latestPayment?.status === "AWAITING_VERIFICATION"
   ) {
     return {
@@ -39,10 +52,10 @@ function getEnrollmentAction(enrollment: EnrollmentListItem) {
   switch (enrollment.status) {
     case "PENDING_PAYMENT":
       return {
-        label: "Submit Payment",
+        label: "Choose Payment Method",
         href: `/parent/payments/new?enrollmentId=${enrollment.id}`,
         description:
-          "Submit payment details so TopMox can verify and activate this plan."
+          "Choose Flutterwave checkout or submit manual transfer details for TopMox review."
       };
     case "ACTIVE":
       return {
@@ -189,14 +202,15 @@ export default async function ParentEnrollmentsPage({
                 Your plan has been accepted.
               </p>
               <p className="text-sm text-text-secondary">
-                Submit payment details so TopMox can verify and activate your
-                child&apos;s tutoring plan.
+                Choose Flutterwave checkout or submit manual transfer details
+                so TopMox can activate your child&apos;s tutoring plan after
+                payment is verified.
               </p>
             </div>
             <Button asChild className="w-full sm:w-auto">
               <Link href="/parent/payments/new">
                 <CreditCard className="mr-2 h-4 w-4" />
-                Submit Payment Details
+                Choose Payment Method
               </Link>
             </Button>
           </CardContent>

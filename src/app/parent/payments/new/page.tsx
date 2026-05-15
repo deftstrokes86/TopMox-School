@@ -47,8 +47,8 @@ export default async function NewParentPaymentPage({
   return (
     <section className="space-y-6">
       <PageHeader
-        title="Submit Payment Details"
-        description="Share payment information for a pending tutoring plan. TopMox will review the details before activation."
+        title="Choose Payment Method"
+        description="Start Flutterwave checkout or submit manual transfer details for a pending tutoring plan."
         actions={
           <Button asChild variant="outline" className="w-full sm:w-auto">
             <Link href="/parent/payments">
@@ -62,7 +62,7 @@ export default async function NewParentPaymentPage({
       {enrollmentOptions.length === 0 ? (
         <EmptyState
           title="No plan awaiting payment"
-          description="There is no pending tutoring plan ready for payment submission. Accept a recommended plan first, or wait for TopMox to prepare a recommendation."
+          description="There is no pending tutoring plan ready for payment. Accept a recommended plan first, or wait for TopMox to prepare a recommendation."
           action={
             <Button asChild>
               <Link href="/parent/enrollments">View Tutoring Plans</Link>

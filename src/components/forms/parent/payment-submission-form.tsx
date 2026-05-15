@@ -10,11 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  createManualPaymentSchema,
-  type CreateManualPaymentInput
+  createEnrollmentPaymentSchema,
+  type CreateEnrollmentPaymentInput
 } from "@/lib/validations/payment.schema";
 import {
-  createManualPaymentAction,
+  createEnrollmentPaymentAction,
   type PaymentActionResult
 } from "@/server/actions/payment.actions";
 
@@ -29,8 +29,12 @@ export type PaymentEnrollmentOption = {
 
 const paymentMethodOptions = [
   {
+    value: "FLUTTERWAVE",
+    label: "Pay with Flutterwave"
+  },
+  {
     value: "MANUAL_TRANSFER",
-    label: "Bank transfer"
+    label: "Submit manual transfer details"
   }
 ] as const;
 
@@ -64,7 +68,7 @@ export function PaymentSubmissionForm({
   const defaultValues = useMemo(
     () => ({
       enrollmentId: getDefaultEnrollmentId(enrollments, defaultEnrollmentId),
-      paymentMethod: "MANUAL_TRANSFER" as const,
+      paymentMethod: "FLUTTERWAVE" as const,
       reference: "",
       proofUrl: ""
     }),
@@ -77,27 +81,28 @@ export function PaymentSubmissionForm({
     setError,
     watch,
     formState: { errors }
-  } = useForm<CreateManualPaymentInput>({
-    resolver: zodResolver(createManualPaymentSchema),
+  } = useForm<CreateEnrollmentPaymentInput>({
+    resolver: zodResolver(createEnrollmentPaymentSchema),
     defaultValues
   });
 
   const selectedEnrollmentId = watch("enrollmentId");
+  const selectedPaymentMethod = watch("paymentMethod");
   const selectedEnrollment = enrollments.find(
     (enrollment) => enrollment.id === selectedEnrollmentId
   );
 
-  const onSubmit = (values: CreateManualPaymentInput) => {
+  const onSubmit = (values: CreateEnrollmentPaymentInput) => {
     setResult(null);
 
     startTransition(async () => {
-      const actionResult = await createManualPaymentAction(values);
+      const actionResult = await createEnrollmentPaymentAction(values);
 
       setResult(actionResult);
 
       if (!actionResult.success && actionResult.fieldErrors) {
         const fieldEntries = Object.entries(actionResult.fieldErrors) as Array<
-          [keyof CreateManualPaymentInput, string | undefined]
+          [keyof CreateEnrollmentPaymentInput, string | undefined]
         >;
 
         fieldEntries.forEach(([field, message]) => {
@@ -107,8 +112,13 @@ export function PaymentSubmissionForm({
         });
       }
 
+      if (actionResult.success && actionResult.data?.redirectUrl) {
+        window.location.assign(actionResult.data.redirectUrl);
+        return;
+      }
+
       if (actionResult.success) {
-        router.push("/parent/payments?submitted=1");
+        router.push(actionResult.data?.successRoute ?? "/parent/payments");
       }
     });
   };
@@ -117,11 +127,12 @@ export function PaymentSubmissionForm({
     <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
       <div className="rounded-xl border border-warm-gold/35 bg-warm-gold/10 p-4 text-sm text-text-secondary">
         <p className="font-medium text-deep-navy">
-          TopMox payment instructions will be confirmed by the admin team.
+          Choose the payment path that works best for your family.
         </p>
         <p className="mt-2">
-          Submit the reference or proof link you have available. TopMox will
-          verify the details before activating the tutoring plan.
+          Flutterwave is the primary secure checkout option. Manual transfer is
+          available as a fallback when TopMox has provided payment instructions
+          or offline verification is preferred.
         </p>
       </div>
 
@@ -177,29 +188,58 @@ export function PaymentSubmissionForm({
           ) : null}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="payment-reference">Reference optional</Label>
-          <Input
-            id="payment-reference"
-            placeholder="Example: transfer reference or receipt number"
-            {...register("reference")}
-          />
-          {errors.reference ? (
-            <p className="text-xs text-danger">{errors.reference.message}</p>
-          ) : null}
-        </div>
+        {selectedPaymentMethod === "FLUTTERWAVE" ? (
+          <div className="rounded-xl border border-success/25 bg-success/10 p-4 md:col-span-2">
+            <p className="text-sm font-semibold text-deep-navy">
+              Pay securely with Flutterwave.
+            </p>
+            <p className="mt-2 text-sm text-text-secondary">
+              Supports local and international payment options depending on
+              your currency, location, and Flutterwave availability.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="rounded-xl border border-royal-blue/20 bg-soft-blue/20 p-4 md:col-span-2">
+              <p className="text-sm font-semibold text-deep-navy">
+                Manual transfer fallback
+              </p>
+              <p className="mt-2 text-sm text-text-secondary">
+                Use manual transfer if TopMox has provided payment instructions
+                or if offline verification is preferred. Do not enter bank
+                details here.
+              </p>
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="payment-proof-url">Proof URL optional</Label>
-          <Input
-            id="payment-proof-url"
-            placeholder="Example: secure receipt link"
-            {...register("proofUrl")}
-          />
-          {errors.proofUrl ? (
-            <p className="text-xs text-danger">{errors.proofUrl.message}</p>
-          ) : null}
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="payment-reference">Reference optional</Label>
+              <Input
+                id="payment-reference"
+                placeholder="Example: transfer reference or receipt number"
+                {...register("reference")}
+              />
+              {errors.reference ? (
+                <p className="text-xs text-danger">
+                  {errors.reference.message}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="payment-proof-url">Proof URL optional</Label>
+              <Input
+                id="payment-proof-url"
+                placeholder="Example: secure receipt link"
+                {...register("proofUrl")}
+              />
+              {errors.proofUrl ? (
+                <p className="text-xs text-danger">
+                  {errors.proofUrl.message}
+                </p>
+              ) : null}
+            </div>
+          </>
+        )}
       </div>
 
       {result?.success ? (
@@ -219,10 +259,12 @@ export function PaymentSubmissionForm({
         {isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Submitting payment...
+            Starting payment...
           </>
+        ) : selectedPaymentMethod === "FLUTTERWAVE" ? (
+          "Continue to Flutterwave"
         ) : (
-          "Submit Payment Details"
+          "Submit Manual Transfer Details"
         )}
       </Button>
     </form>

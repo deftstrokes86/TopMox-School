@@ -106,7 +106,32 @@ export default async function ParentPaymentDetailPage({
             <DetailItem label="Reference" value={payment.reference} />
             <DetailItem label="Verified At" value={formatDate(payment.paidAt)} />
             <DetailItem label="Admin Note" value={payment.adminNote} />
+            <DetailItem label="Failure Reason" value={payment.failureReason} />
           </div>
+
+          {payment.status === "PENDING" && payment.checkoutUrl ? (
+            <Card className="border-success/25 bg-success/10 shadow-none">
+              <CardContent className="space-y-3 p-5">
+                <p className="font-semibold text-deep-navy">
+                  Flutterwave checkout is ready.
+                </p>
+                <p className="text-sm text-text-secondary">
+                  Continue to Flutterwave to complete payment securely. Your
+                  tutoring plan will only activate after payment is verified.
+                </p>
+                <Button asChild className="w-full sm:w-auto">
+                  <a
+                    href={payment.checkoutUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Continue Checkout
+                    <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : null}
 
           {payment.proofUrl ? (
             <Button asChild variant="outline" className="w-full sm:w-auto">

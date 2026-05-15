@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CreditCard } from "lucide-react";
+import { ArrowRight, CreditCard, ExternalLink } from "lucide-react";
 
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -84,12 +84,22 @@ function PaymentCard({ payment }: { payment: PaymentListItem }) {
           {status.parentDescription}
         </p>
 
-        <Button asChild variant="outline" className="w-full sm:w-auto">
-          <Link href={`/parent/payments/${payment.id}`}>
-            View Payment
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          {payment.status === "PENDING" && payment.checkoutUrl ? (
+            <Button asChild className="w-full sm:w-auto">
+              <a href={payment.checkoutUrl} target="_blank" rel="noreferrer">
+                Continue Checkout
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </a>
+            </Button>
+          ) : null}
+          <Button asChild variant="outline" className="w-full sm:w-auto">
+            <Link href={`/parent/payments/${payment.id}`}>
+              View Payment
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
@@ -109,7 +119,7 @@ export default async function ParentPaymentsPage({
           <Button asChild className="w-full sm:w-auto">
             <Link href="/parent/payments/new">
               <CreditCard className="mr-2 h-4 w-4" />
-              Submit Payment Details
+              Choose Payment Method
             </Link>
           </Button>
         }

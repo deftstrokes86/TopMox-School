@@ -6,6 +6,7 @@ import type {
 } from "@prisma/client";
 
 import type {
+  CreateEnrollmentPaymentInput,
   CreateManualPaymentInput,
   ReviewPaymentInput
 } from "@/lib/validations/payment.schema";
@@ -13,6 +14,7 @@ import { db } from "@/lib/db";
 import { createFlutterwavePaymentAdapter } from "@/server/integrations/payments/flutterwave.adapter";
 import { createManualPaymentAdapter } from "@/server/integrations/payments/manual.adapter";
 import type {
+  CreateCheckoutResult,
   CreateCheckoutInput,
   PaymentProviderAdapter,
   VerifyPaymentResult,
@@ -218,6 +220,23 @@ export type PaymentReviewInput = {
   decision: ReviewPaymentInput["decision"];
 };
 
+export type EnrollmentPaymentRequestInput = {
+  currentUserId: string;
+  enrollmentParentUserId: string;
+  enrollmentStatus: EnrollmentStatus;
+  existingOpenPaymentId?: string | null;
+};
+
+export type EnrollmentPaymentRequestResult =
+  | {
+      success: true;
+    }
+  | {
+      success: false;
+      message: string;
+      fieldErrors?: Partial<Record<keyof CreateEnrollmentPaymentInput, string>>;
+    };
+
 export type PaymentReviewResult =
   | {
       success: true;
@@ -262,6 +281,45 @@ export function validateManualPaymentSubmission({
       message: "Payment details have already been submitted for this plan.",
       fieldErrors: {
         enrollmentId: "Payment is already under review for this plan."
+      }
+    };
+  }
+
+  return { success: true };
+}
+
+export function validateEnrollmentPaymentRequest({
+  currentUserId,
+  enrollmentParentUserId,
+  enrollmentStatus,
+  existingOpenPaymentId
+}: EnrollmentPaymentRequestInput): EnrollmentPaymentRequestResult {
+  if (currentUserId !== enrollmentParentUserId) {
+    return {
+      success: false,
+      message: "Enrollment not found.",
+      fieldErrors: {
+        enrollmentId: "Enrollment not found."
+      }
+    };
+  }
+
+  if (enrollmentStatus !== "PENDING_PAYMENT") {
+    return {
+      success: false,
+      message: "Payment can only be started for plans awaiting payment.",
+      fieldErrors: {
+        enrollmentId: "This tutoring plan is not awaiting payment."
+      }
+    };
+  }
+
+  if (existingOpenPaymentId) {
+    return {
+      success: false,
+      message: "A payment is already in progress for this plan.",
+      fieldErrors: {
+        enrollmentId: "Payment is already in progress for this plan."
       }
     };
   }
@@ -384,6 +442,22 @@ export function getFlutterwavePendingPaymentData({
   };
 }
 
+export function getFlutterwaveCheckoutUpdateData(
+  checkout: CreateCheckoutResult
+) {
+  return {
+    checkoutUrl: checkout.checkoutUrl,
+    providerReference: checkout.providerReference,
+    reference: checkout.providerReference,
+    metadata: {
+      checkoutProvider: checkout.provider,
+      checkoutUrl: checkout.checkoutUrl,
+      providerReference: checkout.providerReference,
+      checkoutStatus: checkout.status
+    } satisfies Prisma.InputJsonObject
+  };
+}
+
 export function getPaymentEventData({
   provider,
   providerEventId,
@@ -459,17 +533,7 @@ export async function createFlutterwaveCheckoutForEnrollment(input: {
     where: {
       id: payment.id
     },
-    data: {
-      checkoutUrl: checkout.checkoutUrl,
-      providerReference: checkout.providerReference,
-      reference: checkout.providerReference,
-      metadata: {
-        checkoutProvider: checkout.provider,
-        checkoutUrl: checkout.checkoutUrl,
-        providerReference: checkout.providerReference,
-        checkoutStatus: checkout.status
-      }
-    }
+    data: getFlutterwaveCheckoutUpdateData(checkout)
   });
 }
 

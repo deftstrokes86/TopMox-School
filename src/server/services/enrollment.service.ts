@@ -148,8 +148,8 @@ export function getParentPlanAcceptedNotificationPayload(enrollmentId: string) {
     type: "PLAN_ACCEPTED" as const,
     title: "Recommended plan accepted.",
     message:
-      "Your recommended tutoring plan has been accepted. Payment tracking is the next step before lessons begin.",
-    href: `/parent/payments?enrollmentId=${enrollmentId}`
+      "Your recommended tutoring plan has been accepted. Choose a payment method before lessons begin.",
+    href: `/parent/payments/new?enrollmentId=${enrollmentId}`
   };
 }
 

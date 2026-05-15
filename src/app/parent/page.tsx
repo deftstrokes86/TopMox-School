@@ -43,6 +43,9 @@ export default async function ParentPlaceholderPage() {
   const paymentUnderReview = payments.find(
     (payment) => payment.status === "AWAITING_VERIFICATION"
   );
+  const pendingGatewayPayment = payments.find(
+    (payment) => payment.status === "PENDING" && payment.checkoutUrl
+  );
   const pendingEnrollment = enrollments.find(
     (enrollment) => enrollment.status === "PENDING_PAYMENT"
   );
@@ -67,14 +70,24 @@ export default async function ParentPlaceholderPage() {
       ctaLabel: "View Payment",
       ctaHref: `/parent/payments/${paymentUnderReview.id}`
     };
+  } else if (pendingGatewayPayment) {
+    planNextStep = {
+      title: "Continue Flutterwave checkout",
+      description:
+        "Flutterwave checkout has started. Complete checkout so TopMox can verify payment and activate the plan.",
+      badgeLabel: "Checkout pending",
+      badgeTone: "info",
+      ctaLabel: "Continue Checkout",
+      ctaHref: `/parent/payments/${pendingGatewayPayment.id}`
+    };
   } else if (pendingEnrollment) {
     planNextStep = {
-      title: "Submit payment details",
+      title: "Choose payment method",
       description:
-        "Your recommended plan has been accepted. Submit payment details so TopMox can verify and activate tutoring.",
+        "Your recommended plan has been accepted. Choose Flutterwave checkout or manual transfer details as the next step.",
       badgeLabel: "Pending payment",
       badgeTone: "warning",
-      ctaLabel: "Submit Payment",
+      ctaLabel: "Choose Payment Method",
       ctaHref: `/parent/payments/new?enrollmentId=${pendingEnrollment.id}`
     };
   } else if (latestRecommendedAssessment && !recommendationEnrollment) {

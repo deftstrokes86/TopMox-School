@@ -315,8 +315,8 @@ export default async function ParentAssessmentDetailPage({
                   </p>
                   <p className="mt-2 text-sm text-text-secondary">
                     {acceptedEnrollment
-                      ? "Your tutoring plan has been created. Submit payment details so TopMox can verify and activate your child's support."
-                      : "Plan acceptance creates a pending tutoring plan. Payment details are submitted separately for TopMox verification."}
+                      ? "Your tutoring plan has been created. Choose Flutterwave checkout or manual transfer details as the next payment step."
+                      : "Plan acceptance creates a pending tutoring plan. Payment is completed separately and only activates after verification."}
                   </p>
                   <div className="mt-4">
                     {acceptedEnrollment ? (
@@ -334,7 +334,7 @@ export default async function ParentAssessmentDetailPage({
                           <Link
                             href={`/parent/payments/new?enrollmentId=${acceptedEnrollment.id}`}
                           >
-                            Submit Payment Details
+                            Choose Payment Method
                           </Link>
                         </Button>
                       </div>

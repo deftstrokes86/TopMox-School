@@ -13,7 +13,8 @@ const PAYMENT_STATUS_META: Record<PaymentStatusValue, PaymentStatusMeta> = {
   PENDING: {
     label: "Pending",
     tone: "neutral",
-    parentDescription: "Payment details have not been submitted yet."
+    parentDescription:
+      "Flutterwave checkout has started. Complete checkout so TopMox can verify the payment."
   },
   AWAITING_VERIFICATION: {
     label: "Awaiting verification",

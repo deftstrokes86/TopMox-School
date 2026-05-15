@@ -40,6 +40,16 @@ export const createManualPaymentSchema = z.object({
   proofUrl: optionalUrlSchema
 });
 
+export const createEnrollmentPaymentSchema = z.object({
+  enrollmentId: cuidSchema("Enrollment"),
+  paymentMethod: z.enum(PAYMENT_METHODS, {
+    required_error: "Payment method is required",
+    invalid_type_error: "Payment method is required"
+  }),
+  reference: optionalTrimmedString,
+  proofUrl: optionalUrlSchema
+});
+
 export const paymentCurrencySchema = z.enum(SUPPORTED_PAYMENT_CURRENCIES, {
   required_error: "Currency is required",
   invalid_type_error: "Currency is required"
@@ -72,6 +82,9 @@ export const updatePaymentAdminNoteSchema = z.object({
 
 export type CreateManualPaymentInput = z.infer<
   typeof createManualPaymentSchema
+>;
+export type CreateEnrollmentPaymentInput = z.infer<
+  typeof createEnrollmentPaymentSchema
 >;
 export type ReviewPaymentInput = z.infer<typeof reviewPaymentSchema>;
 export type UpdatePaymentAdminNoteInput = z.infer<

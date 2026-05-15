@@ -1,36 +1,87 @@
-# Test Coverage
+# Test Strategy
 
-The current suite uses minimal, fast unit tests for auth hardening,
-onboarding, and the assessment workflow foundation:
+The current suite uses Node's built-in test runner through `tsx`.
 
-- Role route mapping (`getDashboardPathForRole`)
-- Auth schema validation (`loginSchema`, `registerSchema`)
-- Public registration role lock (`buildParentRegistrationData`)
-- Protected-route redirect decisions (`getDashboardRedirectPath`)
-- Demo-login env flag behavior (`parseDemoLoginEnabled`, `isDemoLoginEnabled`)
+This keeps the TDD loop fast for the logic-heavy parts of the MVP:
+
+- Zod validation schemas
+- Role routing helpers
+- Status transition helpers
+- Access-control helpers
+- Workflow service guards
+- Pure data-shaping helpers
+
+## Commands
+
+```bash
+npm run test
+npm run test:watch
+npm run test:coverage
+```
+
+Run the full verification set before reporting a phase as complete:
+
+```bash
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+```
+
+## Folder Structure
+
+```txt
+tests/
+  unit/
+    access-control/
+    auth/
+    queries/
+    services/
+    validations/
+  integration/
+  components/
+```
+
+Use `tests/unit` for fast tests that do not require a real database or browser.
+
+Use `tests/integration` for Prisma-backed workflow tests once a reliable test database is configured.
+
+Use `tests/components` for React component tests once a component test environment such as React Testing Library plus jsdom is added.
+
+## Current Coverage Areas
+
+- Role route mapping through `getDashboardPathForRole`
+- Auth schema validation through `loginSchema` and `registerSchema`
+- Public registration role lock through `buildParentRegistrationData`
+- Protected-route redirect decisions through `getDashboardRedirectPath`
+- Demo-login env flag behavior
 - Parent and child onboarding validation schemas
-- Parent-student ownership gate behavior via `canAccessStudentWithClient`
-- Assessment request, schedule, and outcome validation schemas
-- Assessment status transition helpers for scheduling, completion, recommendation, and decline paths
-- Assessment ownership checks via `canAccessAssessmentWithClient`
-- Assessment notification payload helpers for submitted, scheduled, and plan-recommended events
-- Parent/admin assessment outcome data-shaping guards for internal admin notes
-- Recommended plan acceptance validation and enrollment status transitions
-- Enrollment ownership gates via `canAccessEnrollmentWithClient`
+- Parent-student ownership behavior through `canAccessStudentWithClient`
+- Assessment validation, status transitions, ownership, and notification payload helpers
+- Parent/admin assessment outcome data-shaping guards
+- Recommended plan acceptance and enrollment status transitions
+- Payment submission, review, status transitions, and activation helpers
+- Payment and enrollment access-control helpers
 
-## Deferred Integration Tests
+## TDD Expectations
 
-The following should be added in later phases when workflow actions and richer route logic are implemented:
+Every feature phase should begin by adding or updating tests for the behavior being introduced.
 
-- Full login flow against seeded demo users and hashed users
-- Server redirect behavior from actual protected layouts/pages
-- End-to-end registration + login + dashboard redirect
-- Ownership isolation tests against Prisma-backed records
-- Parent profile upsert action integration tests
-- Child profile create/update/delete action integration tests
-- Prisma-backed assessment request submission with notification creation
-- Prisma-backed admin scheduling, completion, and outcome recording
-- Prisma-backed recommended plan acceptance and enrollment creation
-- Browser-level route access tests for parent, admin, and tutor assessment pages
-- End-to-end assessment-to-recommendation flow against seeded demo data
-- CSRF/session hardening checks for production auth mode
+The phase report should include:
+
+- Tests written before implementation
+- Initial failing test result
+- Implementation summary
+- Final passing test result
+- Remaining test gaps
+
+Do not delete failing tests to make the suite pass. Fix the behavior or document the missing infrastructure honestly.
+
+## Deferred Test Infrastructure
+
+The following are intentionally deferred until the project needs them:
+
+- React Testing Library and jsdom for component tests
+- Prisma-backed integration test database setup
+- Browser-level route tests with Playwright
+- End-to-end seeded-data workflow tests

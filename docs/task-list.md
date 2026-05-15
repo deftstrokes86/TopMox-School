@@ -27,6 +27,22 @@ Complete each layer before moving to the next.
 
 ---
 
+## TDD Build Rule
+
+Every implementation phase must begin with tests for the expected behavior before feature code is written.
+
+Each phase report must include:
+
+- Tests written before implementation.
+- Initial failing test result.
+- Implementation summary.
+- Final passing test result.
+- Any test gaps.
+
+Do not remove failing tests just to make the build pass. If test infrastructure is missing, create the missing test foundation before continuing feature work.
+
+---
+
 ## Phase 0: Project Setup
 
 ### Tasks

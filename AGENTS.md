@@ -1,0 +1,41 @@
+# TopMox Agent Instructions
+
+This repository is the TopMox Global Tutoring Next.js application.
+
+## TDD Build Rule
+
+Every new feature phase must follow test-driven development:
+
+1. Write or update tests first.
+2. Run tests and confirm the new tests fail for the expected reason.
+3. Implement the smallest feature code required.
+4. Run tests and confirm they pass.
+5. Run lint, typecheck, and build.
+6. Report failing tests honestly.
+
+Do not claim TDD was followed unless tests were written before implementation.
+
+Do not remove failing tests to make the build pass.
+
+If a test cannot be written because infrastructure is missing, state exactly why and create the missing test infrastructure first.
+
+## Required Verification
+
+Before reporting a feature phase as complete, run:
+
+```bash
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+```
+
+If any command cannot run because of environment configuration, report the missing variable or external dependency exactly.
+
+## Current Test Setup
+
+The current suite uses Node's built-in test runner through `tsx`.
+
+Use the existing `tests/unit` structure for fast schema, service, status-transition, and access-control tests.
+
+Add integration tests under `tests/integration` only when the workflow requires database-backed behavior.

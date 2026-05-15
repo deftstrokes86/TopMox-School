@@ -2,21 +2,36 @@
 
 import type { PaymentStatus } from "@prisma/client";
 
-import { AuthError, requireParent } from "@/lib/auth";
+import { AuthError, requireAdmin, requireParent } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
   createManualPaymentSchema,
-  type CreateManualPaymentInput
+  reviewPaymentSchema,
+  updatePaymentAdminNoteSchema,
+  type CreateManualPaymentInput,
+  type ReviewPaymentInput,
+  type UpdatePaymentAdminNoteInput
 } from "@/lib/validations/payment.schema";
+import { assertEnrollmentStatusTransition } from "@/server/services/enrollment.service";
 import {
+  PaymentStatusTransitionError,
+  getEnrollmentActivatedNotificationPayload,
   getAdminPaymentSubmittedNotificationPayload,
   getManualPaymentData,
+  getPaymentApprovedNotificationPayload,
+  getPaymentRejectedNotificationPayload,
   getParentPaymentSubmittedNotificationPayload,
-  validateManualPaymentSubmission
+  validateManualPaymentSubmission,
+  validatePaymentReview
 } from "@/server/services/payment.service";
 
 type PaymentFieldErrors = Partial<
-  Record<keyof CreateManualPaymentInput, string>
+  Record<
+    | keyof CreateManualPaymentInput
+    | keyof ReviewPaymentInput
+    | keyof UpdatePaymentAdminNoteInput,
+    string
+  >
 >;
 
 export type PaymentActionResult = {
@@ -38,6 +53,17 @@ function toAuthErrorResult(error: unknown, deniedMessage: string) {
         error.code === "UNAUTHENTICATED"
           ? "Authentication required."
           : deniedMessage
+    } satisfies PaymentActionResult;
+  }
+
+  return null;
+}
+
+function toPaymentTransitionErrorResult(error: unknown) {
+  if (error instanceof PaymentStatusTransitionError) {
+    return {
+      success: false,
+      message: error.message
     } satisfies PaymentActionResult;
   }
 
@@ -225,6 +251,271 @@ export async function createManualPaymentAction(
     const authResult = toAuthErrorResult(
       error,
       "You do not have permission to submit payment details."
+    );
+    if (authResult) {
+      return authResult;
+    }
+
+    throw error;
+  }
+}
+
+export async function reviewPaymentAction(
+  payload: ReviewPaymentInput
+): Promise<PaymentActionResult> {
+  try {
+    const parsed = reviewPaymentSchema.safeParse(payload);
+
+    if (!parsed.success) {
+      const flattened = parsed.error.flatten().fieldErrors;
+      return {
+        success: false,
+        message: "Please check the payment review fields and try again.",
+        fieldErrors: {
+          paymentId: flattened.paymentId?.[0],
+          decision: flattened.decision?.[0],
+          adminNote: flattened.adminNote?.[0]
+        }
+      };
+    }
+
+    const user = await requireAdmin();
+
+    const result = await db.$transaction(async (tx) => {
+      const payment = await tx.payment.findUnique({
+        where: {
+          id: parsed.data.paymentId
+        },
+        select: {
+          id: true,
+          enrollmentId: true,
+          status: true,
+          parent: {
+            select: {
+              userId: true
+            }
+          },
+          enrollment: {
+            select: {
+              id: true,
+              status: true
+            }
+          }
+        }
+      });
+
+      if (!payment) {
+        return {
+          kind: "error" as const,
+          result: {
+            success: false,
+            message: "Payment not found.",
+            fieldErrors: {
+              paymentId: "Payment not found."
+            }
+          } satisfies PaymentActionResult
+        };
+      }
+
+      const review = validatePaymentReview({
+        currentRole: user.role,
+        paymentStatus: payment.status,
+        enrollmentStatus: payment.enrollment?.status ?? null,
+        decision: parsed.data.decision
+      });
+
+      if (!review.success) {
+        return {
+          kind: "error" as const,
+          result: {
+            success: false,
+            message: review.message,
+            fieldErrors: review.fieldErrors
+          } satisfies PaymentActionResult
+        };
+      }
+
+      if (
+        parsed.data.decision === "APPROVE" &&
+        payment.enrollment?.status === "PENDING_PAYMENT"
+      ) {
+        assertEnrollmentStatusTransition(payment.enrollment.status, "ACTIVE");
+      }
+
+      const updatedPayment = await tx.payment.update({
+        where: {
+          id: payment.id
+        },
+        data: {
+          status: review.nextPaymentStatus,
+          adminNote: parsed.data.adminNote?.trim() || null,
+          paidAt: parsed.data.decision === "APPROVE" ? new Date() : null
+        },
+        select: {
+          id: true,
+          enrollmentId: true,
+          status: true
+        }
+      });
+
+      if (
+        parsed.data.decision === "APPROVE" &&
+        payment.enrollmentId &&
+        review.nextEnrollmentStatus === "ACTIVE"
+      ) {
+        await tx.enrollment.update({
+          where: {
+            id: payment.enrollmentId
+          },
+          data: {
+            status: "ACTIVE",
+            startDate: new Date()
+          },
+          select: {
+            id: true
+          }
+        });
+      }
+
+      if (parsed.data.decision === "APPROVE") {
+        await tx.notification.createMany({
+          data: [
+            {
+              userId: payment.parent.userId,
+              ...getPaymentApprovedNotificationPayload(payment.id)
+            },
+            ...(payment.enrollmentId
+              ? [
+                  {
+                    userId: payment.parent.userId,
+                    ...getEnrollmentActivatedNotificationPayload(
+                      payment.enrollmentId
+                    )
+                  }
+                ]
+              : [])
+          ]
+        });
+      } else {
+        await tx.notification.create({
+          data: {
+            userId: payment.parent.userId,
+            ...getPaymentRejectedNotificationPayload(payment.id)
+          },
+          select: {
+            id: true
+          }
+        });
+      }
+
+      return {
+        kind: "success" as const,
+        payment: updatedPayment
+      };
+    });
+
+    if (result.kind === "error") {
+      return result.result;
+    }
+
+    return {
+      success: true,
+      message:
+        parsed.data.decision === "APPROVE"
+          ? "Payment approved and enrollment activated."
+          : "Payment rejected. Enrollment remains pending payment.",
+      data: {
+        paymentId: result.payment.id,
+        enrollmentId: result.payment.enrollmentId ?? "",
+        status: result.payment.status
+      }
+    };
+  } catch (error) {
+    const authResult = toAuthErrorResult(
+      error,
+      "You do not have permission to review payments."
+    );
+    if (authResult) {
+      return authResult;
+    }
+
+    const transitionResult = toPaymentTransitionErrorResult(error);
+    if (transitionResult) {
+      return transitionResult;
+    }
+
+    throw error;
+  }
+}
+
+export async function updatePaymentAdminNoteAction(
+  payload: UpdatePaymentAdminNoteInput
+): Promise<PaymentActionResult> {
+  try {
+    const parsed = updatePaymentAdminNoteSchema.safeParse(payload);
+
+    if (!parsed.success) {
+      const flattened = parsed.error.flatten().fieldErrors;
+      return {
+        success: false,
+        message: "Please check the admin note fields and try again.",
+        fieldErrors: {
+          paymentId: flattened.paymentId?.[0],
+          adminNote: flattened.adminNote?.[0]
+        }
+      };
+    }
+
+    await requireAdmin();
+
+    const payment = await db.payment.findUnique({
+      where: {
+        id: parsed.data.paymentId
+      },
+      select: {
+        id: true,
+        enrollmentId: true,
+        status: true
+      }
+    });
+
+    if (!payment) {
+      return {
+        success: false,
+        message: "Payment not found.",
+        fieldErrors: {
+          paymentId: "Payment not found."
+        }
+      };
+    }
+
+    const updatedPayment = await db.payment.update({
+      where: {
+        id: parsed.data.paymentId
+      },
+      data: {
+        adminNote: parsed.data.adminNote?.trim() || null
+      },
+      select: {
+        id: true,
+        enrollmentId: true,
+        status: true
+      }
+    });
+
+    return {
+      success: true,
+      message: "Payment admin note saved.",
+      data: {
+        paymentId: updatedPayment.id,
+        enrollmentId: updatedPayment.enrollmentId ?? "",
+        status: updatedPayment.status
+      }
+    };
+  } catch (error) {
+    const authResult = toAuthErrorResult(
+      error,
+      "You do not have permission to update payment notes."
     );
     if (authResult) {
       return authResult;

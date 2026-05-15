@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, CalendarClock, ClipboardList } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarClock,
+  ClipboardList,
+  CreditCard
+} from "lucide-react";
 
 import { StatCard } from "@/components/dashboard/StatCard";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -12,6 +17,10 @@ import {
   getAdminAssessmentRequests,
   getAssessmentRequestCountsByStatus
 } from "@/server/queries/assessment.queries";
+import {
+  getAdminPayments,
+  getAdminPaymentSummary
+} from "@/server/queries/payment.queries";
 
 export const dynamic = "force-dynamic";
 
@@ -26,12 +35,22 @@ function formatDateTime(value: Date | null): string {
   }).format(value);
 }
 
+function formatPaymentMethod(value: string): string {
+  return value
+    .split("_")
+    .map((part) => part.charAt(0) + part.slice(1).toLowerCase())
+    .join(" ");
+}
+
 export default async function AdminDashboardPage() {
   const user = await requireDashboardAccess("ADMIN");
-  const [counts, recentAssessments] = await Promise.all([
-    getAssessmentRequestCountsByStatus(),
-    getAdminAssessmentRequests({ take: 5 })
-  ]);
+  const [counts, recentAssessments, paymentSummary, recentPayments] =
+    await Promise.all([
+      getAssessmentRequestCountsByStatus(),
+      getAdminAssessmentRequests({ take: 5 }),
+      getAdminPaymentSummary(),
+      getAdminPayments({ take: 5 })
+    ]);
 
   return (
     <section className="space-y-6">
@@ -39,12 +58,20 @@ export default async function AdminDashboardPage() {
         title="Admin Dashboard"
         description="TopMox operations dashboard will manage assessments, parents, tutors, lessons, payments, reports, and revenue visibility."
         actions={
-          <Button asChild className="w-full sm:w-auto">
-            <Link href="/admin/assessments">
-              <ClipboardList className="mr-2 h-4 w-4" />
-              Manage Assessments
-            </Link>
-          </Button>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button asChild className="w-full sm:w-auto">
+              <Link href="/admin/assessments">
+                <ClipboardList className="mr-2 h-4 w-4" />
+                Manage Assessments
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full sm:w-auto">
+              <Link href="/admin/payments">
+                <CreditCard className="mr-2 h-4 w-4" />
+                Review Payments
+              </Link>
+            </Button>
+          </div>
         }
       />
 
@@ -95,6 +122,17 @@ export default async function AdminDashboardPage() {
           label="Plan Recommended"
           value={`${counts.PLAN_RECOMMENDED}`}
           context="Awaiting the next commercial workflow phase."
+        />
+        <StatCard
+          label="Payments Awaiting"
+          value={`${paymentSummary.awaitingVerification}`}
+          context="Manual payment submissions needing admin review."
+          icon={<CreditCard className="h-5 w-5 text-warning" />}
+        />
+        <StatCard
+          label="Active Enrollments"
+          value={`${paymentSummary.activeEnrollments}`}
+          context="Enrollments activated after payment approval."
         />
       </div>
 
@@ -152,7 +190,60 @@ export default async function AdminDashboardPage() {
           )}
         </CardContent>
       </Card>
+
+      <Card className="border-royal-blue/20">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-xl text-deep-navy">
+              Recent Payment Submissions
+            </CardTitle>
+            <p className="mt-1 text-sm text-text-secondary">
+              Latest manual payment records submitted for verification.
+            </p>
+          </div>
+          <Button asChild variant="outline" className="w-full sm:w-auto">
+            <Link href="/admin/payments">
+              View Payments
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {recentPayments.length > 0 ? (
+            recentPayments.map((payment) => {
+              const childName =
+                payment.student?.fullName ??
+                payment.enrollment?.student.fullName ??
+                "Child";
+              return (
+                <div
+                  key={payment.id}
+                  className="flex flex-col gap-3 rounded-xl border border-border/80 bg-soft-cream/35 p-4 md:flex-row md:items-center md:justify-between"
+                >
+                  <div>
+                    <p className="font-semibold text-deep-navy">
+                      {payment.parent.user.name}
+                    </p>
+                    <p className="text-sm text-text-secondary">
+                      {childName} | {payment.currency}{" "}
+                      {payment.amount.toString()} |{" "}
+                      {formatPaymentMethod(payment.paymentMethod)}
+                    </p>
+                  </div>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={`/admin/payments/${payment.id}`}>Review</Link>
+                  </Button>
+                </div>
+              );
+            })
+          ) : (
+            <p className="rounded-xl border border-dashed border-border bg-soft-cream/40 p-5 text-sm text-text-secondary">
+              No payment submissions yet. New parent payment records will appear
+              here.
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </section>
   );
 }
-

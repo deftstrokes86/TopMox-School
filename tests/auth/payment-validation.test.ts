@@ -1,9 +1,13 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { createManualPaymentSchema } from "@/lib/validations/payment.schema";
+import {
+  createManualPaymentSchema,
+  reviewPaymentSchema
+} from "@/lib/validations/payment.schema";
 
 const enrollmentId = "ckq9v7z7z0004x7p52u2v7h1q";
+const paymentId = "ckq9v7z7z0005x7p52u2v7h1r";
 
 describe("manual payment validation schema", () => {
   test("requires enrollmentId", () => {
@@ -47,5 +51,35 @@ describe("manual payment validation schema", () => {
     if (result.success) {
       assert.equal("amount" in result.data, false);
     }
+  });
+});
+
+describe("payment review validation schema", () => {
+  test("requires paymentId", () => {
+    const result = reviewPaymentSchema.safeParse({
+      paymentId: undefined,
+      decision: "APPROVE"
+    });
+
+    assert.equal(result.success, false);
+  });
+
+  test("requires approve or reject decision", () => {
+    const result = reviewPaymentSchema.safeParse({
+      paymentId,
+      decision: "MAYBE"
+    });
+
+    assert.equal(result.success, false);
+  });
+
+  test("rejection expects an admin note", () => {
+    const result = reviewPaymentSchema.safeParse({
+      paymentId,
+      decision: "REJECT",
+      adminNote: ""
+    });
+
+    assert.equal(result.success, false);
   });
 });

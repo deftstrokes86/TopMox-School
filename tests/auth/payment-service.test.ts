@@ -2,10 +2,17 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
 import {
+  PaymentStatusTransitionError,
+  assertPaymentStatusTransition,
+  canTransitionPaymentStatus,
+  getEnrollmentActivatedNotificationPayload,
   getAdminPaymentSubmittedNotificationPayload,
   getManualPaymentData,
+  getPaymentApprovedNotificationPayload,
+  getPaymentRejectedNotificationPayload,
   getParentPaymentSubmittedNotificationPayload,
-  validateManualPaymentSubmission
+  validateManualPaymentSubmission,
+  validatePaymentReview
 } from "@/server/services/payment.service";
 
 const validSubmission = {
@@ -88,5 +95,110 @@ describe("manual payment submission guard", () => {
     assert.match(parentPayload.href, /payment-id/);
     assert.equal(adminPayload.type, "PAYMENT_SUBMITTED");
     assert.match(adminPayload.message, /Growth Plan/);
+  });
+});
+
+describe("payment review status transitions", () => {
+  test("awaiting verification can transition to paid or failed", () => {
+    assert.equal(
+      canTransitionPaymentStatus("AWAITING_VERIFICATION", "PAID"),
+      true
+    );
+    assert.equal(
+      canTransitionPaymentStatus("AWAITING_VERIFICATION", "FAILED"),
+      true
+    );
+  });
+
+  test("paid can transition to refunded", () => {
+    assert.equal(canTransitionPaymentStatus("PAID", "REFUNDED"), true);
+  });
+
+  test("invalid payment transitions are blocked", () => {
+    assert.equal(canTransitionPaymentStatus("PAID", "FAILED"), false);
+    assert.throws(
+      () => assertPaymentStatusTransition("PAID", "FAILED"),
+      PaymentStatusTransitionError
+    );
+  });
+});
+
+describe("payment review guard", () => {
+  const validReview = {
+    currentRole: "ADMIN" as const,
+    paymentStatus: "AWAITING_VERIFICATION" as const,
+    enrollmentStatus: "PENDING_PAYMENT" as const,
+    decision: "APPROVE" as const
+  };
+
+  test("admin can approve an awaiting verification payment", () => {
+    const result = validatePaymentReview(validReview);
+
+    assert.equal(result.success, true);
+
+    if (result.success) {
+      assert.equal(result.nextPaymentStatus, "PAID");
+      assert.equal(result.nextEnrollmentStatus, "ACTIVE");
+    }
+  });
+
+  test("payment approval activates enrollment", () => {
+    const result = validatePaymentReview(validReview);
+
+    assert.equal(result.success, true);
+
+    if (result.success) {
+      assert.equal(result.nextEnrollmentStatus, "ACTIVE");
+    }
+  });
+
+  test("payment rejection does not activate enrollment", () => {
+    const result = validatePaymentReview({
+      ...validReview,
+      decision: "REJECT"
+    });
+
+    assert.equal(result.success, true);
+
+    if (result.success) {
+      assert.equal(result.nextPaymentStatus, "FAILED");
+      assert.equal(result.nextEnrollmentStatus, "PENDING_PAYMENT");
+    }
+  });
+
+  test("non-admin cannot approve payment", () => {
+    const result = validatePaymentReview({
+      ...validReview,
+      currentRole: "PARENT"
+    });
+
+    assert.equal(result.success, false);
+    assert.equal(result.fieldErrors?.paymentId, "Only admins can review payments.");
+  });
+
+  test("already reviewed payment cannot be approved again", () => {
+    const result = validatePaymentReview({
+      ...validReview,
+      paymentStatus: "PAID"
+    });
+
+    assert.equal(result.success, false);
+    assert.equal(
+      result.fieldErrors?.paymentId,
+      "Only payments awaiting verification can be reviewed."
+    );
+  });
+
+  test("payment approval notifications describe activation", () => {
+    const approvedPayload = getPaymentApprovedNotificationPayload("payment-id");
+    const activatedPayload =
+      getEnrollmentActivatedNotificationPayload("enrollment-id");
+    const rejectedPayload = getPaymentRejectedNotificationPayload("payment-id");
+
+    assert.equal(approvedPayload.type, "PAYMENT_APPROVED");
+    assert.match(approvedPayload.message, /active/);
+    assert.equal(activatedPayload.type, "ENROLLMENT_ACTIVATED");
+    assert.match(activatedPayload.href, /enrollments/);
+    assert.equal(rejectedPayload.type, "PAYMENT_REJECTED");
   });
 });

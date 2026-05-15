@@ -18,19 +18,18 @@ const PAYMENT_STATUS_META: Record<PaymentStatusValue, PaymentStatusMeta> = {
   AWAITING_VERIFICATION: {
     label: "Awaiting verification",
     tone: "warning",
-    parentDescription:
-      "TopMox is reviewing the submitted payment details before activation."
+    parentDescription: "TopMox is reviewing your payment."
   },
   PAID: {
     label: "Paid",
     tone: "success",
-    parentDescription: "This payment has been verified by TopMox."
+    parentDescription: "Payment approved. Tutoring plan active."
   },
   FAILED: {
     label: "Failed",
     tone: "danger",
     parentDescription:
-      "This payment could not be verified. Contact TopMox for guidance."
+      "Payment could not be verified. Please review the admin note or contact TopMox."
   },
   CANCELLED: {
     label: "Cancelled",

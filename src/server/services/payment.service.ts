@@ -1,6 +1,44 @@
-import type { EnrollmentStatus, Prisma } from "@prisma/client";
+import type { EnrollmentStatus, PaymentStatus, Prisma } from "@prisma/client";
 
-import type { CreateManualPaymentInput } from "@/lib/validations/payment.schema";
+import type {
+  CreateManualPaymentInput,
+  ReviewPaymentInput
+} from "@/lib/validations/payment.schema";
+
+export class PaymentStatusTransitionError extends Error {
+  constructor(currentStatus: PaymentStatus, nextStatus: PaymentStatus) {
+    super(`Cannot transition payment from ${currentStatus} to ${nextStatus}.`);
+    this.name = "PaymentStatusTransitionError";
+  }
+}
+
+export const PAYMENT_STATUS_TRANSITIONS: Record<
+  PaymentStatus,
+  PaymentStatus[]
+> = {
+  PENDING: [],
+  AWAITING_VERIFICATION: ["PAID", "FAILED"],
+  PAID: ["REFUNDED"],
+  FAILED: [],
+  CANCELLED: [],
+  REFUNDED: []
+};
+
+export function canTransitionPaymentStatus(
+  currentStatus: PaymentStatus,
+  nextStatus: PaymentStatus
+): boolean {
+  return PAYMENT_STATUS_TRANSITIONS[currentStatus].includes(nextStatus);
+}
+
+export function assertPaymentStatusTransition(
+  currentStatus: PaymentStatus,
+  nextStatus: PaymentStatus
+): void {
+  if (!canTransitionPaymentStatus(currentStatus, nextStatus)) {
+    throw new PaymentStatusTransitionError(currentStatus, nextStatus);
+  }
+}
 
 export type ManualPaymentSubmissionInput = {
   currentUserId: string;
@@ -17,6 +55,25 @@ export type ManualPaymentSubmissionResult =
       success: false;
       message: string;
       fieldErrors?: Partial<Record<keyof CreateManualPaymentInput, string>>;
+    };
+
+export type PaymentReviewInput = {
+  currentRole: "ADMIN" | "TUTOR" | "PARENT";
+  paymentStatus: PaymentStatus;
+  enrollmentStatus: EnrollmentStatus | null;
+  decision: ReviewPaymentInput["decision"];
+};
+
+export type PaymentReviewResult =
+  | {
+      success: true;
+      nextPaymentStatus: PaymentStatus;
+      nextEnrollmentStatus: EnrollmentStatus | null;
+    }
+  | {
+      success: false;
+      message: string;
+      fieldErrors?: Partial<Record<keyof ReviewPaymentInput, string>>;
     };
 
 export function validateManualPaymentSubmission({
@@ -56,6 +113,52 @@ export function validateManualPaymentSubmission({
   }
 
   return { success: true };
+}
+
+export function validatePaymentReview({
+  currentRole,
+  paymentStatus,
+  enrollmentStatus,
+  decision
+}: PaymentReviewInput): PaymentReviewResult {
+  if (currentRole !== "ADMIN") {
+    return {
+      success: false,
+      message: "Only admins can review payments.",
+      fieldErrors: {
+        paymentId: "Only admins can review payments."
+      }
+    };
+  }
+
+  if (paymentStatus !== "AWAITING_VERIFICATION") {
+    return {
+      success: false,
+      message: "This payment has already been reviewed.",
+      fieldErrors: {
+        paymentId: "Only payments awaiting verification can be reviewed."
+      }
+    };
+  }
+
+  const nextPaymentStatus = decision === "APPROVE" ? "PAID" : "FAILED";
+  assertPaymentStatusTransition(paymentStatus, nextPaymentStatus);
+
+  if (decision === "APPROVE" && enrollmentStatus !== "PENDING_PAYMENT") {
+    return {
+      success: false,
+      message: "The linked enrollment is not awaiting payment.",
+      fieldErrors: {
+        paymentId: "Linked enrollment is not awaiting payment."
+      }
+    };
+  }
+
+  return {
+    success: true,
+    nextPaymentStatus,
+    nextEnrollmentStatus: decision === "APPROVE" ? "ACTIVE" : enrollmentStatus
+  };
 }
 
 function normalizeOptionalText(value: string | undefined): string | null {
@@ -119,5 +222,34 @@ export function getAdminPaymentSubmittedNotificationPayload({
     title: "Payment submitted for verification.",
     message: `${parentName || "A parent"} submitted payment details for ${childName}'s ${planName}.`,
     href: "/admin/payments"
+  };
+}
+
+export function getPaymentApprovedNotificationPayload(paymentId: string) {
+  return {
+    type: "PAYMENT_APPROVED" as const,
+    title: "Your payment has been approved.",
+    message: "Payment approved. Tutoring plan active.",
+    href: `/parent/payments/${paymentId}`
+  };
+}
+
+export function getEnrollmentActivatedNotificationPayload(enrollmentId: string) {
+  return {
+    type: "ENROLLMENT_ACTIVATED" as const,
+    title: "Your child's tutoring plan is now active.",
+    message:
+      "Your child's tutoring plan is now active. Lessons will appear after scheduling.",
+    href: `/parent/enrollments?enrollmentId=${enrollmentId}`
+  };
+}
+
+export function getPaymentRejectedNotificationPayload(paymentId: string) {
+  return {
+    type: "PAYMENT_REJECTED" as const,
+    title: "Your payment could not be verified.",
+    message:
+      "Payment could not be verified. Please review the admin note or contact TopMox.",
+    href: `/parent/payments/${paymentId}`
   };
 }

@@ -26,6 +26,10 @@ describe("assessment status transitions", () => {
     assert.equal(canTransitionAssessmentStatus("SCHEDULED", "COMPLETED"), true);
   });
 
+  test("SCHEDULED can transition to DECLINED for admin cancellation", () => {
+    assert.equal(canTransitionAssessmentStatus("SCHEDULED", "DECLINED"), true);
+  });
+
   test("COMPLETED can transition to PLAN_RECOMMENDED", () => {
     assert.equal(
       canTransitionAssessmentStatus("COMPLETED", "PLAN_RECOMMENDED"),
@@ -41,9 +45,9 @@ describe("assessment status transitions", () => {
   });
 
   test("invalid transitions are blocked", () => {
-    assert.equal(canTransitionAssessmentStatus("SCHEDULED", "DECLINED"), false);
+    assert.equal(canTransitionAssessmentStatus("PENDING_REVIEW", "COMPLETED"), false);
     assert.throws(
-      () => assertAssessmentStatusTransition("SCHEDULED", "DECLINED"),
+      () => assertAssessmentStatusTransition("PENDING_REVIEW", "COMPLETED"),
       AssessmentStatusTransitionError
     );
   });

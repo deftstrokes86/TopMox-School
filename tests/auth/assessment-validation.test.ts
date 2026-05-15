@@ -59,6 +59,16 @@ describe("assessment validation schemas", () => {
     assert.equal(result.success, false);
   });
 
+  test("schedule schema requires scheduled date and time", () => {
+    const result = scheduleAssessmentSchema.safeParse({
+      assessmentRequestId,
+      scheduledAt: undefined,
+      meetingLink: ""
+    });
+
+    assert.equal(result.success, false);
+  });
+
   test("schedule schema accepts optional meeting link", () => {
     const result = scheduleAssessmentSchema.safeParse({
       assessmentRequestId,

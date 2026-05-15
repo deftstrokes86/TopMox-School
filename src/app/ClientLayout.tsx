@@ -2,6 +2,7 @@
 
 import { useEffect, type ReactNode } from "react";
 
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { logError } from "@/lib/utils/logger";
 
 type ClientLayoutProps = {
@@ -47,6 +48,5 @@ export function ClientLayout({ children }: ClientLayoutProps) {
     };
   }, []);
 
-  return <>{children}</>;
+  return <ErrorBoundary>{children}</ErrorBoundary>;
 }
-

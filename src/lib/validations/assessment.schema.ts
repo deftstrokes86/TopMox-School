@@ -76,6 +76,11 @@ export const updateAssessmentStatusSchema = z.object({
   internalNotes: optionalTrimmedString
 });
 
+export const updateAssessmentInternalNotesSchema = z.object({
+  assessmentRequestId: cuidSchema("Assessment request"),
+  internalNotes: optionalTrimmedString
+});
+
 export const assessmentOutcomeSchema = z.object({
   assessmentRequestId: cuidSchema("Assessment request"),
   academicLevelSummary: nonEmptyString("Academic level summary"),
@@ -102,5 +107,8 @@ export type CreateAssessmentRequestInput = z.infer<
 export type ScheduleAssessmentInput = z.infer<typeof scheduleAssessmentSchema>;
 export type UpdateAssessmentStatusInput = z.infer<
   typeof updateAssessmentStatusSchema
+>;
+export type UpdateAssessmentInternalNotesInput = z.infer<
+  typeof updateAssessmentInternalNotesSchema
 >;
 export type AssessmentOutcomeInput = z.infer<typeof assessmentOutcomeSchema>;

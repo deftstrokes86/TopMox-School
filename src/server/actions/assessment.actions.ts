@@ -7,10 +7,14 @@ import { SUPPORT_SUBJECT_OPTIONS } from "@/lib/constants/subjects";
 import { db } from "@/lib/db";
 import {
   createAssessmentRequestSchema,
+  assessmentOutcomeSchema,
   scheduleAssessmentSchema,
+  updateAssessmentInternalNotesSchema,
   updateAssessmentStatusSchema,
+  type AssessmentOutcomeInput,
   type CreateAssessmentRequestInput,
   type ScheduleAssessmentInput,
+  type UpdateAssessmentInternalNotesInput,
   type UpdateAssessmentStatusInput
 } from "@/lib/validations/assessment.schema";
 import {
@@ -26,6 +30,8 @@ type AssessmentFieldErrors = Partial<
   Record<
     | keyof CreateAssessmentRequestInput
     | keyof ScheduleAssessmentInput
+    | keyof AssessmentOutcomeInput
+    | keyof UpdateAssessmentInternalNotesInput
     | keyof UpdateAssessmentStatusInput,
     string
   >
@@ -38,6 +44,7 @@ export type AssessmentActionResult = {
   data?: {
     assessmentRequestId: string;
     status?: AssessmentStatus;
+    outcomeId?: string;
   };
 };
 
@@ -515,4 +522,249 @@ export async function markAssessmentCompletedAction(
     assessmentRequestId,
     status: "COMPLETED"
   });
+}
+
+export async function updateAssessmentInternalNotesAction(
+  payload: UpdateAssessmentInternalNotesInput
+): Promise<AssessmentActionResult> {
+  try {
+    const parsed = updateAssessmentInternalNotesSchema.safeParse(payload);
+
+    if (!parsed.success) {
+      const flattened = parsed.error.flatten().fieldErrors;
+      return {
+        success: false,
+        message: "Please check the internal notes fields and try again.",
+        fieldErrors: {
+          assessmentRequestId: flattened.assessmentRequestId?.[0],
+          internalNotes: flattened.internalNotes?.[0]
+        }
+      };
+    }
+
+    await requireAdmin();
+    const assessment = await db.assessmentRequest.findUnique({
+      where: { id: parsed.data.assessmentRequestId },
+      select: { id: true, status: true }
+    });
+
+    if (!assessment) {
+      return {
+        success: false,
+        message: "Assessment request not found."
+      };
+    }
+
+    const updatedAssessment = await db.assessmentRequest.update({
+      where: { id: assessment.id },
+      data: {
+        internalNotes: normalizeOptionalText(parsed.data.internalNotes)
+      },
+      select: {
+        id: true,
+        status: true
+      }
+    });
+
+    return {
+      success: true,
+      message: "Internal notes saved successfully.",
+      data: {
+        assessmentRequestId: updatedAssessment.id,
+        status: updatedAssessment.status
+      }
+    };
+  } catch (error) {
+    const authResult = toAuthErrorResult(
+      error,
+      "You do not have permission to update internal notes."
+    );
+    if (authResult) {
+      return authResult;
+    }
+
+    throw error;
+  }
+}
+
+export async function recordAssessmentOutcomeAction(
+  payload: AssessmentOutcomeInput
+): Promise<AssessmentActionResult> {
+  try {
+    const parsed = assessmentOutcomeSchema.safeParse(payload);
+
+    if (!parsed.success) {
+      const flattened = parsed.error.flatten().fieldErrors;
+      return {
+        success: false,
+        message: "Please check the assessment outcome fields and try again.",
+        fieldErrors: {
+          assessmentRequestId: flattened.assessmentRequestId?.[0],
+          academicLevelSummary: flattened.academicLevelSummary?.[0],
+          strengths: flattened.strengths?.[0],
+          weakAreas: flattened.weakAreas?.[0],
+          recommendedSubjects: flattened.recommendedSubjects?.[0],
+          recommendedPlanId: flattened.recommendedPlanId?.[0],
+          recommendedWeeklyLessonCount:
+            flattened.recommendedWeeklyLessonCount?.[0],
+          parentFacingSummary: flattened.parentFacingSummary?.[0],
+          internalAdminNotes: flattened.internalAdminNotes?.[0]
+        }
+      };
+    }
+
+    await requireAdmin();
+
+    const assessment = await db.assessmentRequest.findUnique({
+      where: { id: parsed.data.assessmentRequestId },
+      select: {
+        id: true,
+        status: true,
+        parent: {
+          select: {
+            userId: true
+          }
+        }
+      }
+    });
+
+    if (!assessment) {
+      return {
+        success: false,
+        message: "Assessment request not found."
+      };
+    }
+
+    if (
+      assessment.status !== "COMPLETED" &&
+      assessment.status !== "PLAN_RECOMMENDED"
+    ) {
+      return {
+        success: false,
+        message:
+          "Assessment outcomes can only be recorded after an assessment is completed."
+      };
+    }
+
+    const recommendedPlanId = parsed.data.recommendedPlanId?.trim() || null;
+
+    if (recommendedPlanId) {
+      const recommendedPlan = await db.tutoringPlan.findFirst({
+        where: {
+          id: recommendedPlanId,
+          isActive: true
+        },
+        select: {
+          id: true
+        }
+      });
+
+      if (!recommendedPlan) {
+        return {
+          success: false,
+          message: "Recommended plan not found or inactive.",
+          fieldErrors: {
+            recommendedPlanId: "Choose an active tutoring plan."
+          }
+        };
+      }
+    }
+
+    const shouldRecommendPlan =
+      Boolean(recommendedPlanId) && assessment.status === "COMPLETED";
+
+    if (shouldRecommendPlan) {
+      assertAssessmentStatusTransition(assessment.status, "PLAN_RECOMMENDED");
+    }
+
+    const outcome = await db.$transaction(async (tx) => {
+      const savedOutcome = await tx.assessmentOutcome.upsert({
+        where: {
+          assessmentRequestId: assessment.id
+        },
+        create: {
+          assessmentRequestId: assessment.id,
+          recommendedPlanId,
+          academicLevelSummary: parsed.data.academicLevelSummary.trim(),
+          strengths: parsed.data.strengths.trim(),
+          weakAreas: parsed.data.weakAreas.trim(),
+          recommendedSubjects: parsed.data.recommendedSubjects.map((subject) =>
+            subject.trim()
+          ),
+          recommendedWeeklyLessonCount:
+            parsed.data.recommendedWeeklyLessonCount,
+          parentFacingSummary: parsed.data.parentFacingSummary.trim(),
+          internalAdminNotes: parsed.data.internalAdminNotes?.trim() || ""
+        },
+        update: {
+          recommendedPlanId,
+          academicLevelSummary: parsed.data.academicLevelSummary.trim(),
+          strengths: parsed.data.strengths.trim(),
+          weakAreas: parsed.data.weakAreas.trim(),
+          recommendedSubjects: parsed.data.recommendedSubjects.map((subject) =>
+            subject.trim()
+          ),
+          recommendedWeeklyLessonCount:
+            parsed.data.recommendedWeeklyLessonCount,
+          parentFacingSummary: parsed.data.parentFacingSummary.trim(),
+          internalAdminNotes: parsed.data.internalAdminNotes?.trim() || ""
+        },
+        select: {
+          id: true
+        }
+      });
+
+      if (shouldRecommendPlan) {
+        await tx.assessmentRequest.update({
+          where: { id: assessment.id },
+          data: {
+            status: "PLAN_RECOMMENDED"
+          },
+          select: {
+            id: true
+          }
+        });
+      }
+
+      return savedOutcome;
+    });
+
+    if (recommendedPlanId) {
+      await createNotification({
+        userId: assessment.parent.userId,
+        type: "PLAN_RECOMMENDED",
+        title: "Learning recommendation ready",
+        message:
+          "TopMox has prepared a recommended learning path for your child.",
+        href: `/parent/assessments/${assessment.id}`
+      });
+    }
+
+    return {
+      success: true,
+      message: recommendedPlanId
+        ? "Assessment outcome saved and plan recommended."
+        : "Assessment outcome saved. Add a plan when ready to publish the recommendation.",
+      data: {
+        assessmentRequestId: assessment.id,
+        status: recommendedPlanId ? "PLAN_RECOMMENDED" : assessment.status,
+        outcomeId: outcome.id
+      }
+    };
+  } catch (error) {
+    const authResult = toAuthErrorResult(
+      error,
+      "You do not have permission to record assessment outcomes."
+    );
+    if (authResult) {
+      return authResult;
+    }
+
+    const transitionResult = toTransitionErrorResult(error);
+    if (transitionResult) {
+      return transitionResult;
+    }
+
+    throw error;
+  }
 }

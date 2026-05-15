@@ -121,10 +121,20 @@ export function getReportPublishedNotificationPayload(reportId: string) {
   };
 }
 
-type ReportPublishingClient = Pick<
-  Prisma.TransactionClient,
-  "progressReport" | "notification"
->;
+type ReportPublishingClient = {
+  progressReport: {
+    update: (
+      args: Prisma.ProgressReportUpdateArgs
+    ) => Promise<{
+      id: string;
+      status: ReportStatus;
+      publishedAt: Date | null;
+    }>;
+  };
+  notification: {
+    create: (args: Prisma.NotificationCreateArgs) => Promise<unknown>;
+  };
+};
 
 export async function publishProgressReport(
   client: ReportPublishingClient,

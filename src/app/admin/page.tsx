@@ -7,6 +7,7 @@ import {
   CalendarPlus,
   ClipboardList,
   CreditCard,
+  FileText,
   UserCheck
 } from "lucide-react";
 
@@ -17,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireDashboardAccess } from "@/lib/auth/dashboard-access";
 import { getAdminLessonDeliveryDashboardSummary } from "@/lib/utils/admin-lesson-delivery";
+import { getAdminReportDashboardSummary } from "@/lib/utils/admin-report-ui";
 import { getAssessmentStatusMeta } from "@/lib/utils/assessment-status";
 import { getLessonStatusMeta } from "@/lib/utils/lesson-status";
 import { getPaymentStatusMeta } from "@/lib/utils/payment-status";
@@ -31,6 +33,10 @@ import {
   getAdminPayments,
   getAdminPaymentSummary
 } from "@/server/queries/payment.queries";
+import {
+  getAdminReports,
+  getReportsDueForAdmin
+} from "@/server/queries/report.queries";
 
 export const dynamic = "force-dynamic";
 
@@ -61,8 +67,14 @@ export default async function AdminDashboardPage() {
       getAdminPaymentSummary(),
       getAdminPayments({ take: 5 })
     ]);
-  const [enrollmentSummary, upcomingLessons, deliveryLessons, adminHomework] =
-    await Promise.all([
+  const [
+    enrollmentSummary,
+    upcomingLessons,
+    deliveryLessons,
+    adminHomework,
+    adminReports,
+    reportsDue
+  ] = await Promise.all([
       getAdminEnrollmentSummary(),
       getAdminLessons({
         status: "SCHEDULED",
@@ -70,11 +82,17 @@ export default async function AdminDashboardPage() {
         take: 5
       }),
       getAdminLessons(),
-      getAdminHomework()
+      getAdminHomework(),
+      getAdminReports(),
+      getReportsDueForAdmin()
     ]);
   const deliverySummary = getAdminLessonDeliveryDashboardSummary(
     deliveryLessons,
     adminHomework
+  );
+  const reportSummary = getAdminReportDashboardSummary(
+    adminReports,
+    reportsDue
   );
 
   return (
@@ -112,6 +130,12 @@ export default async function AdminDashboardPage() {
               <Link href="/admin/homework">
                 <BookOpenCheck className="mr-2 h-4 w-4" />
                 Review Homework
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full sm:w-auto">
+              <Link href="/admin/reports">
+                <FileText className="mr-2 h-4 w-4" />
+                Review Reports
               </Link>
             </Button>
           </div>
@@ -212,6 +236,24 @@ export default async function AdminDashboardPage() {
           value={`${deliverySummary.homeworkAssigned}`}
           context="Active homework currently assigned to students."
           icon={<BookOpenCheck className="h-5 w-5 text-info" />}
+        />
+        <StatCard
+          label="Reports in Review"
+          value={`${reportSummary.reportsInReview}`}
+          context="Tutor reports waiting for admin publishing."
+          icon={<FileText className="h-5 w-5 text-warning" />}
+        />
+        <StatCard
+          label="Published This Month"
+          value={`${reportSummary.publishedThisMonth}`}
+          context="Progress reports released to parents this month."
+          icon={<FileText className="h-5 w-5 text-success" />}
+        />
+        <StatCard
+          label="Reports Due"
+          value={`${reportSummary.reportsDue}`}
+          context="Active assigned enrollments missing this month's report."
+          icon={<ClipboardList className="h-5 w-5 text-info" />}
         />
       </div>
 

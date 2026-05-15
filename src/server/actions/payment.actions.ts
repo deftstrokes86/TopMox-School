@@ -202,7 +202,7 @@ export async function createEnrollmentPaymentAction(
             enrollmentId: enrollment.id,
             amount: enrollment.tutoringPlan.monthlyPrice,
             currency: enrollment.tutoringPlan.currency,
-            paymentMethod: parsed.data.paymentMethod,
+            paymentMethod: "MANUAL_TRANSFER",
             reference: parsed.data.reference,
             proofUrl: parsed.data.proofUrl
           }),
@@ -445,7 +445,7 @@ export async function createManualPaymentAction(
           payments: {
             where: {
               status: {
-                in: ["AWAITING_VERIFICATION", "PAID"]
+                in: ["PENDING", "AWAITING_VERIFICATION", "PAID"]
               }
             },
             select: {

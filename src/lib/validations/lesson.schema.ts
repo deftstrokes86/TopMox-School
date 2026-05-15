@@ -51,5 +51,27 @@ export const updateLessonStatusSchema = z.object({
   })
 });
 
+export const completeTutorLessonSchema = z
+  .object({
+    lessonId: idSchema("Lesson"),
+    attended: z.boolean({
+      required_error: "Attendance is required",
+      invalid_type_error: "Attendance is required"
+    }),
+    lessonNotes: z.string().trim().optional(),
+    concernFlag: z.boolean().default(false),
+    concernNote: z.string().trim().optional()
+  })
+  .superRefine((value, context) => {
+    if (value.concernFlag && !value.concernNote) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["concernNote"],
+        message: "Concern note is required when a concern is flagged"
+      });
+    }
+  });
+
 export type CreateLessonInput = z.infer<typeof createLessonSchema>;
 export type UpdateLessonStatusInput = z.infer<typeof updateLessonStatusSchema>;
+export type CompleteTutorLessonInput = z.infer<typeof completeTutorLessonSchema>;

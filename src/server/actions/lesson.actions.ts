@@ -2,11 +2,13 @@
 
 import type { LessonStatus } from "@prisma/client";
 
-import { AuthError, requireAdmin } from "@/lib/auth";
+import { AuthError, requireAdmin, requireTutor } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
+  completeTutorLessonSchema,
   createLessonSchema,
   updateLessonStatusSchema,
+  type CompleteTutorLessonInput,
   type CreateLessonInput,
   type UpdateLessonStatusInput
 } from "@/lib/validations/lesson.schema";
@@ -21,7 +23,10 @@ import {
 } from "@/server/services/lesson.service";
 
 type LessonFieldErrors = Partial<
-  Record<keyof CreateLessonInput | keyof UpdateLessonStatusInput, string>
+  Record<
+    keyof CreateLessonInput | keyof UpdateLessonStatusInput | keyof CompleteTutorLessonInput,
+    string
+  >
 >;
 
 export type LessonActionResult = {
@@ -347,6 +352,144 @@ export async function updateLessonStatusAction(
     const authResult = toAuthErrorResult(
       error,
       "Only admins can update lesson status."
+    );
+    if (authResult) {
+      return authResult;
+    }
+
+    const lessonResult = toLessonErrorResult(error);
+    if (lessonResult) {
+      return lessonResult;
+    }
+
+    throw error;
+  }
+}
+
+export async function completeTutorLessonAction(
+  payload: unknown
+): Promise<LessonActionResult> {
+  try {
+    const parsed = completeTutorLessonSchema.safeParse(payload);
+
+    if (!parsed.success) {
+      const flattened = parsed.error.flatten().fieldErrors;
+      return {
+        success: false,
+        message: "Please check the lesson completion fields and try again.",
+        fieldErrors: {
+          lessonId: flattened.lessonId?.[0],
+          attended: flattened.attended?.[0],
+          lessonNotes: flattened.lessonNotes?.[0],
+          concernFlag: flattened.concernFlag?.[0],
+          concernNote: flattened.concernNote?.[0]
+        }
+      };
+    }
+
+    const user = await requireTutor();
+
+    const result = await db.$transaction(async (tx) => {
+      const lesson = await tx.lesson.findFirst({
+        where: {
+          id: parsed.data.lessonId,
+          tutor: {
+            userId: user.id
+          }
+        },
+        select: {
+          id: true,
+          status: true,
+          parent: {
+            select: {
+              userId: true
+            }
+          }
+        }
+      });
+
+      if (!lesson) {
+        return {
+          kind: "error" as const,
+          result: {
+            success: false,
+            message: "Lesson not found.",
+            fieldErrors: {
+              lessonId: "Lesson not found."
+            }
+          } satisfies LessonActionResult
+        };
+      }
+
+      if (!["SCHEDULED", "RESCHEDULED"].includes(lesson.status)) {
+        return {
+          kind: "error" as const,
+          result: {
+            success: false,
+            message: "Only scheduled or rescheduled lessons can be completed by tutors."
+          } satisfies LessonActionResult
+        };
+      }
+
+      const nextStatus = parsed.data.attended ? "COMPLETED" : "MISSED";
+      assertLessonStatusTransition(lesson.status, nextStatus);
+
+      const updatedLesson = await tx.lesson.update({
+        where: {
+          id: lesson.id
+        },
+        data: {
+          status: nextStatus,
+          attendanceMarkedAt: new Date(),
+          attended: parsed.data.attended,
+          lessonNotes: parsed.data.lessonNotes?.trim() || null,
+          concernFlag: parsed.data.concernFlag,
+          concernNote: parsed.data.concernFlag
+            ? parsed.data.concernNote?.trim() || null
+            : null
+        },
+        select: {
+          id: true,
+          status: true
+        }
+      });
+
+      const notification = getLessonStatusNotificationPayload(
+        updatedLesson.id,
+        updatedLesson.status
+      );
+
+      if (notification) {
+        await tx.notification.create({
+          data: {
+            userId: lesson.parent.userId,
+            ...notification
+          }
+        });
+      }
+
+      return {
+        kind: "success" as const,
+        lesson: updatedLesson
+      };
+    });
+
+    if (result.kind === "error") {
+      return result.result;
+    }
+
+    return {
+      success: true,
+      message: result.lesson.status === "COMPLETED" ? "Lesson completed." : "Lesson marked missed.",
+      data: {
+        lessonId: result.lesson.id,
+        status: result.lesson.status
+      }
+    };
+  } catch (error) {
+    const authResult = toAuthErrorResult(
+      error,
+      "Only assigned tutors can complete lessons."
     );
     if (authResult) {
       return authResult;

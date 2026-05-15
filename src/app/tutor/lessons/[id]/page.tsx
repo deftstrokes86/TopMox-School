@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, BookOpenCheck, ExternalLink } from "lucide-react";
 
+import { HomeworkAssignmentForm } from "@/components/forms/tutor/homework-assignment-form";
+import { LessonCompletionForm } from "@/components/forms/tutor/lesson-completion-form";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getHomeworkStatusMeta } from "@/lib/utils/homework-status";
 import { getLessonStatusMeta } from "@/lib/utils/lesson-status";
+import { getTutorLessonDeliveryPanelState } from "@/lib/utils/tutor-lesson-delivery";
 import {
   buildTutorLessonDetailView,
   getCurrentTutorLessonById
@@ -35,6 +39,16 @@ function formatLessonDateTime(value: Date, timezone: string): string {
   }
 }
 
+function formatDate(value: Date | null): string {
+  if (!value) {
+    return "No due date";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium"
+  }).format(value);
+}
+
 function DetailItem({
   label,
   value
@@ -54,6 +68,59 @@ function DetailItem({
   );
 }
 
+function CompletionSummary({
+  delivery
+}: {
+  delivery: {
+    attendanceMarkedAt: Date | null;
+    attended: boolean | null;
+    lessonNotes: string | null;
+    concernFlag: boolean;
+    concernNote: string | null;
+  };
+}) {
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      <DetailItem
+        label="Attendance"
+        value={
+          delivery.attended === null
+            ? "Not marked"
+            : delivery.attended
+              ? "Attended"
+              : "Missed / did not attend"
+        }
+      />
+      <DetailItem
+        label="Marked At"
+        value={
+          delivery.attendanceMarkedAt
+            ? formatLessonDateTime(delivery.attendanceMarkedAt, "UTC")
+            : "Not marked"
+        }
+      />
+      <div className="rounded-lg border border-border/70 bg-soft-cream/50 p-4 md:col-span-2">
+        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-text-muted">
+          Lesson Notes
+        </p>
+        <p className="mt-2 text-sm text-text-secondary">
+          {delivery.lessonNotes || "No lesson notes recorded."}
+        </p>
+      </div>
+      {delivery.concernFlag ? (
+        <div className="rounded-lg border border-warm-gold/40 bg-warm-gold/10 p-4 md:col-span-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-text-muted">
+            Concern Note
+          </p>
+          <p className="mt-2 text-sm text-text-secondary">
+            {delivery.concernNote || "A concern was flagged without a note."}
+          </p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default async function TutorLessonDetailPage({
   params
 }: TutorLessonDetailPageProps) {
@@ -65,6 +132,10 @@ export default async function TutorLessonDetailPage({
 
   const view = buildTutorLessonDetailView(lesson);
   const lessonStatus = getLessonStatusMeta(view.status);
+  const deliveryState = getTutorLessonDeliveryPanelState({
+    isAssignedTutor: true,
+    lessonStatus: view.status
+  });
 
   return (
     <section className="space-y-6">
@@ -175,10 +246,89 @@ export default async function TutorLessonDetailPage({
             </CardContent>
           </Card>
 
-          <p className="rounded-xl border border-border/80 bg-soft-cream/40 p-4 text-sm text-text-secondary">
-            Lesson note submission, homework assignment, and completion actions
-            are intentionally reserved for the next lesson workflow phases.
-          </p>
+          <Card className="border-royal-blue/20 bg-white shadow-none">
+            <CardHeader>
+              <CardTitle className="text-xl text-deep-navy">
+                Lesson Delivery
+              </CardTitle>
+              <p className="text-sm text-text-secondary">
+                Mark attendance, add clear teaching notes, and flag concerns
+                where TopMox should follow up.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {deliveryState.canShowCompletionForm ? (
+                <LessonCompletionForm lessonId={view.id} />
+              ) : deliveryState.showReadOnlyCompletionSummary ? (
+                <CompletionSummary delivery={view.delivery} />
+              ) : (
+                <p className="rounded-xl border border-dashed border-border bg-soft-cream/40 p-4 text-sm text-text-secondary">
+                  {deliveryState.message}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="border-warm-gold/25 bg-white shadow-none">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <BookOpenCheck className="h-5 w-5 text-warm-gold" />
+                <CardTitle className="text-xl text-deep-navy">
+                  Homework
+                </CardTitle>
+              </div>
+              <p className="text-sm text-text-secondary">
+                Assign focused follow-up work from this lesson and keep the
+                parent journey visible.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {view.homework.length > 0 ? (
+                <div className="space-y-3">
+                  {view.homework.map((homework) => {
+                    const homeworkStatus = getHomeworkStatusMeta(homework.status);
+
+                    return (
+                      <div
+                        key={homework.id}
+                        className="rounded-xl border border-border/80 bg-soft-cream/40 p-4"
+                      >
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <p className="font-semibold text-deep-navy">
+                              {homework.title}
+                            </p>
+                            <p className="mt-1 text-sm text-text-secondary">
+                              {homework.description}
+                            </p>
+                            <p className="mt-2 text-xs text-text-muted">
+                              Due: {formatDate(homework.dueDate)}
+                            </p>
+                          </div>
+                          <StatusBadge
+                            label={homeworkStatus.label}
+                            tone={homeworkStatus.tone}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="rounded-xl border border-dashed border-border bg-soft-cream/40 p-4 text-sm text-text-secondary">
+                  No homework has been assigned from this lesson yet.
+                </p>
+              )}
+
+              {deliveryState.canAssignHomework ? (
+                <HomeworkAssignmentForm lessonId={view.id} />
+              ) : (
+                <p className="rounded-xl border border-border bg-soft-cream/50 p-4 text-sm text-text-secondary">
+                  Homework assignment is unavailable for this lesson state.
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </CardContent>
       </Card>
     </section>

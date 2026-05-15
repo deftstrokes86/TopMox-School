@@ -1,4 +1,9 @@
-import type { EnrollmentStatus, LessonStatus, Prisma } from "@prisma/client";
+import type {
+  EnrollmentStatus,
+  HomeworkStatus,
+  LessonStatus,
+  Prisma
+} from "@prisma/client";
 
 import { requireAdmin, requireParent, requireTutor } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -80,6 +85,20 @@ const lessonSelect = {
         }
       }
     }
+  },
+  homework: {
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      dueDate: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
   }
 } satisfies Prisma.LessonSelect;
 
@@ -95,6 +114,11 @@ type LessonDetailViewSource = {
   timezone: string;
   meetingLink: string | null;
   status: LessonStatus;
+  attendanceMarkedAt: Date | null;
+  attended: boolean | null;
+  lessonNotes: string | null;
+  concernFlag: boolean | null;
+  concernNote: string | null;
   parent: {
     country: string;
     timezone: string;
@@ -124,6 +148,15 @@ type LessonDetailViewSource = {
       sessionsPerWeek: number;
     };
   } | null;
+  homework?: Array<{
+    id: string;
+    title: string;
+    description: string;
+    dueDate: Date | null;
+    status: HomeworkStatus;
+    createdAt: Date;
+    updatedAt: Date;
+  }>;
 };
 
 export type AdminLessonFilters = {
@@ -234,6 +267,14 @@ export function buildTutorLessonDetailView(lesson: LessonDetailViewSource) {
       country: lesson.parent.country,
       timezone: lesson.parent.timezone
     },
+    delivery: {
+      attendanceMarkedAt: lesson.attendanceMarkedAt,
+      attended: lesson.attended,
+      lessonNotes: lesson.lessonNotes,
+      concernFlag: Boolean(lesson.concernFlag),
+      concernNote: lesson.concernNote
+    },
+    homework: lesson.homework ?? [],
     learningContext: {
       age: lesson.student.age,
       classYearGroup: lesson.student.classYearGroup,

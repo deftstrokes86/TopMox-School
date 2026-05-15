@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, CalendarDays } from "lucide-react";
+import { ArrowRight, BookOpenCheck, CalendarDays, ClipboardCheck } from "lucide-react";
 
+import { StatCard } from "@/components/dashboard/StatCard";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireDashboardAccess } from "@/lib/auth/dashboard-access";
 import { getTutorLessonDashboardSummary } from "@/lib/utils/lesson-dashboard";
 import { getLessonStatusMeta } from "@/lib/utils/lesson-status";
+import { getTutorLessonWorkSummary } from "@/lib/utils/tutor-lesson-delivery";
+import { getCurrentTutorHomework } from "@/server/queries/homework.queries";
 import { getCurrentTutorLessons } from "@/server/queries/lesson.queries";
 
 export const dynamic = "force-dynamic";
@@ -53,12 +56,30 @@ function DashboardLessonCard({ lesson }: { lesson: TutorDashboardLesson }) {
 
 export default async function TutorDashboardPage() {
   const user = await requireDashboardAccess("TUTOR");
-  const lessons = await getCurrentTutorLessons();
+  const [lessons, homework] = await Promise.all([
+    getCurrentTutorLessons(),
+    getCurrentTutorHomework()
+  ]);
   const lessonSummary = getTutorLessonDashboardSummary(lessons);
+  const workSummary = getTutorLessonWorkSummary(lessons, homework);
   const nextLessons = [
     ...lessonSummary.today,
     ...lessonSummary.upcoming.slice(0, Math.max(0, 3 - lessonSummary.today.length))
   ].slice(0, 3);
+  const recentlyCompletedLessons = lessons
+    .filter((lesson) => lesson.status === "COMPLETED")
+    .sort((left, right) => right.startTime.getTime() - left.startTime.getTime())
+    .slice(0, 3)
+    .map((lesson) => ({
+      id: lesson.id,
+      title: lesson.title,
+      childName: lesson.student.fullName,
+      subjectName: lesson.subject.name,
+      startTime: lesson.startTime,
+      status: lesson.status,
+      timezone: lesson.timezone,
+      meetingLink: lesson.meetingLink
+    }));
 
   return (
     <section className="space-y-6">
@@ -81,8 +102,8 @@ export default async function TutorDashboardPage() {
             Signed-in Account
           </CardTitle>
           <p className="text-sm text-text-secondary">
-            This is your protected tutor workspace. Lesson notes and homework
-            actions are coming in later phases.
+            This is your protected tutor workspace for assigned lessons,
+            delivery notes, and homework follow-through.
           </p>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
@@ -108,6 +129,33 @@ export default async function TutorDashboardPage() {
           </div>
         </CardContent>
       </Card>
+
+      <div className="grid gap-4 md:grid-cols-4">
+        <StatCard
+          label="Lessons Needing Notes"
+          value={String(workSummary.lessonsNeedingNotes)}
+          context="Scheduled lessons at or before now"
+          icon={<ClipboardCheck className="h-4 w-4 text-royal-blue" />}
+        />
+        <StatCard
+          label="Upcoming Lessons"
+          value={String(workSummary.upcomingLessons)}
+          context="Assigned future lessons"
+          icon={<CalendarDays className="h-4 w-4 text-royal-blue" />}
+        />
+        <StatCard
+          label="Recently Completed"
+          value={String(workSummary.recentlyCompletedLessons)}
+          context="Completed lesson records"
+          icon={<ClipboardCheck className="h-4 w-4 text-success" />}
+        />
+        <StatCard
+          label="Homework Assigned"
+          value={String(workSummary.activeHomework)}
+          context="Active homework follow-up"
+          icon={<BookOpenCheck className="h-4 w-4 text-warm-gold" />}
+        />
+      </div>
 
       <Card className="border-royal-blue/20">
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -135,6 +183,38 @@ export default async function TutorDashboardPage() {
               No assigned lessons are scheduled yet. When TopMox assigns a
               lesson to you, it will appear here with the student and subject
               context.
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-warm-gold/25">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <CardTitle className="text-xl text-deep-navy">
+              Recently Completed Lessons
+            </CardTitle>
+            <p className="mt-1 text-sm text-text-secondary">
+              Completed lesson records give you a quick trail of recent teaching
+              activity.
+            </p>
+          </div>
+          <Button asChild variant="outline" className="w-full sm:w-auto">
+            <Link href="/tutor/homework">
+              <BookOpenCheck className="mr-2 h-4 w-4" />
+              View Homework
+            </Link>
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {recentlyCompletedLessons.length > 0 ? (
+            recentlyCompletedLessons.map((lesson) => (
+              <DashboardLessonCard key={lesson.id} lesson={lesson} />
+            ))
+          ) : (
+            <div className="rounded-xl border border-dashed border-border bg-soft-cream/40 p-6 text-sm text-text-secondary">
+              Completed lessons will appear here after you mark assigned lessons
+              delivered.
             </div>
           )}
         </CardContent>

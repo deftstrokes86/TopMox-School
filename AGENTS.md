@@ -39,3 +39,15 @@ The current suite uses Node's built-in test runner through `tsx`.
 Use the existing `tests/unit` structure for fast schema, service, status-transition, and access-control tests.
 
 Add integration tests under `tests/integration` only when the workflow requires database-backed behavior.
+
+## Payment Rules
+
+All payment work must use TDD.
+
+Flutterwave is the primary live gateway. Manual transfer remains as fallback. Do not introduce Stripe.
+
+Do not activate an enrollment from callback data alone. Flutterwave payments must be verified, webhooks must be checked, and amount, currency, transaction reference, payment ownership, and enrollment ownership must match before activation.
+
+Manual payments can only activate enrollment through admin approval.
+
+Payment event processing must be idempotent so duplicate callbacks or webhooks do not create duplicate state transitions.

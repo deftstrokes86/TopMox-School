@@ -40,10 +40,13 @@ enum PaymentStatus {
 }
 
 enum PaymentMethod {
-  BANK_TRANSFER
-  CASH
-  CARD
-  PAYMENT_GATEWAY_PLACEHOLDER
+  MANUAL_TRANSFER
+  FLUTTERWAVE
+}
+
+enum PaymentProvider {
+  MANUAL
+  FLUTTERWAVE
 }
 
 enum EnrollmentStatus {
@@ -389,30 +392,62 @@ model Homework {
 }
 
 model Payment {
-  id                String             @id @default(cuid())
-  parentId          String
-  studentId         String?
-  enrollmentId      String?
-  amount            Decimal            @db.Decimal(10, 2)
-  currency          String
-  status            PaymentStatus      @default(PENDING)
-  paymentMethod     PaymentMethod
-  reference         String?
-  proofUrl          String?
-  adminNote         String?
-  paidAt            DateTime?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  parent            ParentProfile      @relation(fields: [parentId], references: [id], onDelete: Cascade)
-  student           StudentProfile?    @relation(fields: [studentId], references: [id], onDelete: SetNull)
-  enrollment        Enrollment?        @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
-  supportRequests   SupportRequest[]
-  communicationLogs CommunicationLog[]
+  id                    String             @id @default(cuid())
+  parentId              String
+  studentId             String?
+  enrollmentId          String?
+  amount                Decimal            @db.Decimal(10, 2)
+  currency              String
+  status                PaymentStatus      @default(PENDING)
+  paymentMethod         PaymentMethod
+  provider              PaymentProvider    @default(MANUAL)
+  reference             String?
+  providerReference     String?
+  providerTransactionId String?
+  checkoutUrl           String?
+  callbackUrl           String?
+  proofUrl              String?
+  adminNote             String?
+  failureReason         String?
+  metadata              Json?
+  verifiedAt            DateTime?
+  paidAt                DateTime?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  parent                ParentProfile      @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  student               StudentProfile?    @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  enrollment            Enrollment?        @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  events                PaymentEvent[]
+  supportRequests       SupportRequest[]
+  communicationLogs     CommunicationLog[]
 
   @@index([parentId])
   @@index([enrollmentId])
   @@index([status])
+  @@index([provider])
+  @@index([providerReference])
+  @@index([providerTransactionId])
   @@index([createdAt])
+}
+
+model PaymentEvent {
+  id              String          @id @default(cuid())
+  provider        PaymentProvider
+  providerEventId String
+  paymentId       String?
+  eventType       String
+  rawPayload      Json
+  processedAt     DateTime?
+  status          String
+  errorMessage    String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  payment         Payment?        @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  @@unique([provider, providerEventId])
+  @@index([provider])
+  @@index([providerEventId])
+  @@index([paymentId])
 }
 
 model ProgressReport {

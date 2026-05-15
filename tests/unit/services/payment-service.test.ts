@@ -72,7 +72,7 @@ describe("manual payment submission guard", () => {
       enrollmentId: "enrollment-id",
       amount: "75000.00",
       currency: "NGN",
-      paymentMethod: "BANK_TRANSFER",
+      paymentMethod: "MANUAL_TRANSFER",
       reference: "TMX-001",
       proofUrl: ""
     });

@@ -43,6 +43,23 @@ Do not remove failing tests just to make the build pass. If test infrastructure 
 
 ---
 
+## Payment Build Rule
+
+Payment work must follow strict TDD and must protect enrollment activation.
+
+- Flutterwave is the primary live payment gateway.
+- Manual transfer remains available as fallback.
+- Stripe is not part of the active payment stack.
+- Support NGN, USD, GBP, EUR, and CAD where available.
+- Do not assume Flutterwave methods are Nigeria-only or universally available.
+- Never trust callback status alone.
+- Verify webhooks before processing.
+- Check amount, currency, provider reference, transaction id, ownership, and enrollment state before activation.
+- Treat duplicate payment events idempotently.
+- Activate enrollment only after verified successful Flutterwave payment or admin-approved manual payment.
+
+---
+
 ## Phase 0: Project Setup
 
 ### Tasks

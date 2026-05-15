@@ -29,16 +29,8 @@ export type PaymentEnrollmentOption = {
 
 const paymentMethodOptions = [
   {
-    value: "BANK_TRANSFER",
+    value: "MANUAL_TRANSFER",
     label: "Bank transfer"
-  },
-  {
-    value: "CASH",
-    label: "Cash"
-  },
-  {
-    value: "CARD",
-    label: "Card"
   }
 ] as const;
 
@@ -72,7 +64,7 @@ export function PaymentSubmissionForm({
   const defaultValues = useMemo(
     () => ({
       enrollmentId: getDefaultEnrollmentId(enrollments, defaultEnrollmentId),
-      paymentMethod: "BANK_TRANSFER" as const,
+      paymentMethod: "MANUAL_TRANSFER" as const,
       reference: "",
       proofUrl: ""
     }),

@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-export const PAYMENT_METHODS = [
-  "BANK_TRANSFER",
-  "CASH",
-  "CARD",
-  "PAYMENT_GATEWAY_PLACEHOLDER"
-] as const;
+import {
+  ACTIVE_PAYMENT_METHODS,
+  SUPPORTED_PAYMENT_CURRENCIES
+} from "@/lib/constants/payments";
+
+export const PAYMENT_METHODS = ACTIVE_PAYMENT_METHODS;
 
 export const PAYMENT_REVIEW_DECISIONS = ["APPROVE", "REJECT"] as const;
 
@@ -32,12 +32,17 @@ const optionalUrlSchema = z.preprocess(
 
 export const createManualPaymentSchema = z.object({
   enrollmentId: cuidSchema("Enrollment"),
-  paymentMethod: z.enum(PAYMENT_METHODS, {
+  paymentMethod: z.literal("MANUAL_TRANSFER", {
     required_error: "Payment method is required",
     invalid_type_error: "Payment method is required"
   }),
   reference: optionalTrimmedString,
   proofUrl: optionalUrlSchema
+});
+
+export const paymentCurrencySchema = z.enum(SUPPORTED_PAYMENT_CURRENCIES, {
+  required_error: "Currency is required",
+  invalid_type_error: "Currency is required"
 });
 
 export const reviewPaymentSchema = z

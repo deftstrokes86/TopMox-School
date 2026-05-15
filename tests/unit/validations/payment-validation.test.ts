@@ -13,7 +13,7 @@ describe("manual payment validation schema", () => {
   test("requires enrollmentId", () => {
     const result = createManualPaymentSchema.safeParse({
       enrollmentId: undefined,
-      paymentMethod: "BANK_TRANSFER"
+      paymentMethod: "MANUAL_TRANSFER"
     });
 
     assert.equal(result.success, false);
@@ -28,10 +28,19 @@ describe("manual payment validation schema", () => {
     assert.equal(result.success, false);
   });
 
+  test("rejects invalid manual payment method", () => {
+    const result = createManualPaymentSchema.safeParse({
+      enrollmentId,
+      paymentMethod: "FLUTTERWAVE"
+    });
+
+    assert.equal(result.success, false);
+  });
+
   test("accepts optional reference and proofUrl", () => {
     const result = createManualPaymentSchema.safeParse({
       enrollmentId,
-      paymentMethod: "BANK_TRANSFER",
+      paymentMethod: "MANUAL_TRANSFER",
       reference: "TMX-001",
       proofUrl: "https://example.com/proof"
     });
@@ -42,7 +51,7 @@ describe("manual payment validation schema", () => {
   test("does not accept client-submitted amount as trusted input", () => {
     const result = createManualPaymentSchema.safeParse({
       enrollmentId,
-      paymentMethod: "BANK_TRANSFER",
+      paymentMethod: "MANUAL_TRANSFER",
       amount: "1.00"
     });
 

@@ -170,6 +170,7 @@ The MVP should not include:
 - AI tutor.
 - Mobile app.
 - Complex subscription billing.
+- Stripe integration.
 - Parent community.
 - Multi-school franchise system.
 - Advanced automated timetable engine.
@@ -177,6 +178,23 @@ The MVP should not include:
 - Complex exam question bank.
 
 These can come later after the core tutoring business workflow is proven.
+
+---
+
+## 7.1 Payment Gateway Direction
+
+Flutterwave is the primary live payment gateway for TopMox Global Tutoring.
+
+Manual transfer remains available as a fallback path when a parent cannot or should not use live checkout.
+
+The payment layer must support NGN and foreign currencies such as USD, GBP, EUR, and CAD where available. Actual Flutterwave payment methods can vary by country, currency, merchant KYC, and Flutterwave account configuration, so the product must not assume Nigeria-only payment behavior.
+
+Enrollment activation must only happen after:
+
+- A verified successful Flutterwave transaction, or
+- Admin approval of a manual payment fallback.
+
+Callback status alone must never activate an enrollment. Webhooks must be verified, and amount, currency, transaction reference, and ownership must be checked before payment success changes enrollment status.
 
 ---
 

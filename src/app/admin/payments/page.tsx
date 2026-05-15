@@ -36,10 +36,8 @@ const STATUS_OPTIONS: PaymentStatus[] = [
 ];
 
 const PAYMENT_METHOD_OPTIONS: PaymentMethod[] = [
-  "BANK_TRANSFER",
-  "CASH",
-  "CARD",
-  "PAYMENT_GATEWAY_PLACEHOLDER"
+  "MANUAL_TRANSFER",
+  "FLUTTERWAVE"
 ];
 
 function parseStatus(value?: string): PaymentStatus | undefined {

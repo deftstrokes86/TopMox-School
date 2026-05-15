@@ -342,6 +342,7 @@ export async function reviewPaymentAction(
         assertEnrollmentStatusTransition(payment.enrollment.status, "ACTIVE");
       }
 
+      const reviewedAt = new Date();
       const updatedPayment = await tx.payment.update({
         where: {
           id: payment.id
@@ -349,7 +350,8 @@ export async function reviewPaymentAction(
         data: {
           status: review.nextPaymentStatus,
           adminNote: parsed.data.adminNote?.trim() || null,
-          paidAt: parsed.data.decision === "APPROVE" ? new Date() : null
+          verifiedAt: parsed.data.decision === "APPROVE" ? reviewedAt : null,
+          paidAt: parsed.data.decision === "APPROVE" ? reviewedAt : null
         },
         select: {
           id: true,
@@ -369,7 +371,7 @@ export async function reviewPaymentAction(
           },
           data: {
             status: "ACTIVE",
-            startDate: new Date()
+            startDate: reviewedAt
           },
           select: {
             id: true

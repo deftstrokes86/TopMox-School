@@ -226,17 +226,36 @@ Tutor can:
 
 ### 5.4 Payment Workflow
 
-MVP payment is manual or placeholder.
+Flutterwave is the primary live payment gateway. Manual transfer remains as a fallback.
 
-1. Parent sees payment instructions.
-2. Parent creates payment record.
-3. Parent uploads proof placeholder or enters reference.
-4. Payment status becomes `AWAITING_VERIFICATION`.
-5. Admin reviews payment.
-6. Admin approves or rejects payment.
-7. If approved, payment becomes `PAID`.
-8. Related enrollment becomes `ACTIVE`.
-9. Parent sees updated payment and enrollment status.
+#### Flutterwave Path
+
+1. Parent accepts a recommended plan.
+2. System creates an enrollment with `PENDING_PAYMENT`.
+3. Parent starts Flutterwave checkout.
+4. System creates a payment record with `PENDING` status.
+5. Parent completes or abandons checkout outside the app.
+6. Callback may return the parent to TopMox, but callback status alone is never trusted.
+7. System verifies the transaction with Flutterwave and/or processes a verified webhook.
+8. System checks amount, currency, provider reference, transaction id, parent ownership, and enrollment ownership.
+9. If verification succeeds, payment becomes `PAID`.
+10. Related enrollment becomes `ACTIVE`.
+11. Parent sees updated payment and enrollment status.
+
+#### Manual Fallback Path
+
+1. Parent sees manual payment instructions or receives them from the admin team.
+2. Parent creates a manual payment record and provides reference/proof if available.
+3. Payment status becomes `AWAITING_VERIFICATION`.
+4. Admin reviews payment.
+5. Admin approves or rejects payment.
+6. If approved, payment becomes `PAID`.
+7. Related enrollment becomes `ACTIVE`.
+8. If rejected, payment becomes `FAILED` and enrollment remains `PENDING_PAYMENT`.
+
+Payment methods and currencies available through Flutterwave can vary by country, currency, merchant KYC, and account configuration. The system must support NGN, USD, GBP, EUR, and CAD where available without assuming Nigeria-only behavior.
+
+Payment event handling must be idempotent. Duplicate callbacks or webhooks must not activate an enrollment twice.
 
 ### 5.5 Tutor Assignment Workflow
 
@@ -354,9 +373,19 @@ Allowed transitions:
 
 - `PENDING` → `AWAITING_VERIFICATION`
 - `PENDING` → `CANCELLED`
+- `PENDING` → `PAID` only after verified successful Flutterwave payment
+- `PENDING` → `FAILED` after verified failed Flutterwave payment
 - `AWAITING_VERIFICATION` → `PAID`
 - `AWAITING_VERIFICATION` → `FAILED`
 - `PAID` → `REFUNDED`
+
+Safety rules:
+
+- Flutterwave callback status alone is not enough to move payment to `PAID`.
+- Webhooks must be verified before processing.
+- Amount, currency, transaction reference, and ownership must match the payment and enrollment.
+- Manual payments can only become `PAID` through admin approval.
+- Duplicate provider events must be treated idempotently.
 
 ### 6.3 Enrollment Status
 

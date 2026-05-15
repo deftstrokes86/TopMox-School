@@ -1,9 +1,24 @@
-import type { EnrollmentStatus, PaymentStatus, Prisma } from "@prisma/client";
+import type {
+  EnrollmentStatus,
+  PaymentProvider,
+  PaymentStatus,
+  Prisma
+} from "@prisma/client";
 
 import type {
   CreateManualPaymentInput,
   ReviewPaymentInput
 } from "@/lib/validations/payment.schema";
+import { db } from "@/lib/db";
+import { createFlutterwavePaymentAdapter } from "@/server/integrations/payments/flutterwave.adapter";
+import { createManualPaymentAdapter } from "@/server/integrations/payments/manual.adapter";
+import type {
+  CreateCheckoutInput,
+  PaymentProviderAdapter,
+  VerifyPaymentResult,
+  WebhookHandleResult
+} from "@/server/integrations/payments/payment-provider";
+import { assertEnrollmentStatusTransition } from "./enrollment.service";
 
 export class PaymentStatusTransitionError extends Error {
   constructor(currentStatus: PaymentStatus, nextStatus: PaymentStatus) {
@@ -16,7 +31,7 @@ export const PAYMENT_STATUS_TRANSITIONS: Record<
   PaymentStatus,
   PaymentStatus[]
 > = {
-  PENDING: [],
+  PENDING: ["PAID", "FAILED", "CANCELLED"],
   AWAITING_VERIFICATION: ["PAID", "FAILED"],
   PAID: ["REFUNDED"],
   FAILED: [],
@@ -38,6 +53,145 @@ export function assertPaymentStatusTransition(
   if (!canTransitionPaymentStatus(currentStatus, nextStatus)) {
     throw new PaymentStatusTransitionError(currentStatus, nextStatus);
   }
+}
+
+export class PaymentSafetyError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "PaymentSafetyError";
+  }
+}
+
+export function getPaymentProviderAdapter(
+  provider: PaymentProvider | string
+): PaymentProviderAdapter {
+  if (provider === "FLUTTERWAVE") {
+    return createFlutterwavePaymentAdapter();
+  }
+
+  if (provider === "MANUAL") {
+    return createManualPaymentAdapter();
+  }
+
+  throw new PaymentSafetyError(`Unsupported payment provider: ${provider}`);
+}
+
+function normalizeMoney(value: Prisma.Decimal | number | string): string {
+  const numericValue = Number(value.toString());
+
+  if (!Number.isFinite(numericValue)) {
+    throw new PaymentSafetyError("Payment amount is invalid.");
+  }
+
+  return numericValue.toFixed(2);
+}
+
+function normalizeCurrency(value: string): string {
+  return value.trim().toUpperCase();
+}
+
+export function assertPaymentAmountAndCurrencyMatch({
+  expectedAmount,
+  expectedCurrency,
+  actualAmount,
+  actualCurrency
+}: {
+  expectedAmount: Prisma.Decimal | number | string;
+  expectedCurrency: string;
+  actualAmount: Prisma.Decimal | number | string;
+  actualCurrency: string;
+}): void {
+  if (normalizeMoney(expectedAmount) !== normalizeMoney(actualAmount)) {
+    throw new PaymentSafetyError("Payment amount mismatch.");
+  }
+
+  if (normalizeCurrency(expectedCurrency) !== normalizeCurrency(actualCurrency)) {
+    throw new PaymentSafetyError("Payment currency mismatch.");
+  }
+}
+
+export type GatewayActivationInput = {
+  provider: PaymentProvider | string;
+  paymentStatus: PaymentStatus;
+  enrollmentStatus: EnrollmentStatus;
+  verificationStatus: VerifyPaymentResult["status"];
+  expectedAmount: Prisma.Decimal | number | string;
+  expectedCurrency: string;
+  actualAmount: Prisma.Decimal | number | string;
+  actualCurrency: string;
+};
+
+export type GatewayActivationResult = {
+  success: boolean;
+  reason?: string;
+  nextPaymentStatus: PaymentStatus;
+  nextEnrollmentStatus: EnrollmentStatus;
+};
+
+export function validateVerifiedGatewayPaymentForActivation({
+  provider,
+  paymentStatus,
+  enrollmentStatus,
+  verificationStatus,
+  expectedAmount,
+  expectedCurrency,
+  actualAmount,
+  actualCurrency
+}: GatewayActivationInput): GatewayActivationResult {
+  if (paymentStatus === "PAID" || enrollmentStatus === "ACTIVE") {
+    return {
+      success: false,
+      reason: "Payment has already been processed.",
+      nextPaymentStatus: paymentStatus,
+      nextEnrollmentStatus: enrollmentStatus
+    };
+  }
+
+  if (provider !== "FLUTTERWAVE") {
+    return {
+      success: false,
+      reason: "Only verified Flutterwave payments can activate automatically.",
+      nextPaymentStatus: paymentStatus,
+      nextEnrollmentStatus: enrollmentStatus
+    };
+  }
+
+  if (verificationStatus !== "successful") {
+    return {
+      success: false,
+      reason: "Payment has not been verified as successful.",
+      nextPaymentStatus: paymentStatus,
+      nextEnrollmentStatus: enrollmentStatus
+    };
+  }
+
+  assertPaymentAmountAndCurrencyMatch({
+    expectedAmount,
+    expectedCurrency,
+    actualAmount,
+    actualCurrency
+  });
+  assertPaymentStatusTransition(paymentStatus, "PAID");
+  assertEnrollmentStatusTransition(enrollmentStatus, "ACTIVE");
+
+  return {
+    success: true,
+    nextPaymentStatus: "PAID",
+    nextEnrollmentStatus: "ACTIVE"
+  };
+}
+
+export function isDuplicatePaymentEvent({
+  existingProviderEventId,
+  currentProviderEventId
+}: {
+  existingProviderEventId?: string | null;
+  currentProviderEventId: string;
+}): boolean {
+  return Boolean(
+    existingProviderEventId &&
+      existingProviderEventId === currentProviderEventId
+  );
 }
 
 export type ManualPaymentSubmissionInput = {
@@ -192,9 +346,330 @@ export function getManualPaymentData({
     amount,
     currency,
     paymentMethod,
+    provider: "MANUAL" as const,
     reference: normalizeOptionalText(reference),
     proofUrl: normalizeOptionalText(proofUrl),
     status: "AWAITING_VERIFICATION" as const
+  };
+}
+
+export function getFlutterwavePendingPaymentData({
+  parentId,
+  studentId,
+  enrollmentId,
+  amount,
+  currency,
+  callbackUrl,
+  metadata
+}: {
+  parentId: string;
+  studentId: string;
+  enrollmentId: string;
+  amount: Prisma.Decimal | number | string;
+  currency: string;
+  callbackUrl: string;
+  metadata?: Prisma.InputJsonValue;
+}) {
+  return {
+    parentId,
+    studentId,
+    enrollmentId,
+    amount,
+    currency,
+    callbackUrl,
+    metadata,
+    paymentMethod: "FLUTTERWAVE" as const,
+    provider: "FLUTTERWAVE" as const,
+    status: "PENDING" as const
+  };
+}
+
+export function getPaymentEventData({
+  provider,
+  providerEventId,
+  paymentId,
+  eventType,
+  rawPayload,
+  status,
+  processedAt,
+  errorMessage
+}: WebhookHandleResult & {
+  paymentId?: string | null;
+  status: string;
+  processedAt?: Date | null;
+  errorMessage?: string | null;
+}) {
+  return {
+    provider,
+    providerEventId,
+    paymentId: paymentId ?? null,
+    eventType,
+    rawPayload: rawPayload as Prisma.InputJsonValue,
+    status,
+    processedAt: processedAt ?? null,
+    errorMessage: errorMessage ?? null
+  };
+}
+
+export async function createFlutterwaveCheckoutForEnrollment(input: {
+  parentId: string;
+  studentId: string;
+  enrollmentId: string;
+  amount: Prisma.Decimal | number | string;
+  currency: string;
+  callbackUrl: string;
+  customer: CreateCheckoutInput["customer"];
+}) {
+  const payment = await db.payment.create({
+    data: getFlutterwavePendingPaymentData({
+      parentId: input.parentId,
+      studentId: input.studentId,
+      enrollmentId: input.enrollmentId,
+      amount: input.amount,
+      currency: input.currency,
+      callbackUrl: input.callbackUrl,
+      metadata: {
+        enrollmentId: input.enrollmentId,
+        parentId: input.parentId,
+        studentId: input.studentId
+      }
+    }),
+    select: {
+      id: true,
+      parentId: true,
+      studentId: true,
+      enrollmentId: true,
+      amount: true,
+      currency: true
+    }
+  });
+  const adapter = getPaymentProviderAdapter("FLUTTERWAVE");
+  const checkout = await adapter.createCheckout({
+    paymentId: payment.id,
+    enrollmentId: payment.enrollmentId ?? input.enrollmentId,
+    parentId: payment.parentId,
+    studentId: payment.studentId ?? input.studentId,
+    amount: payment.amount.toString(),
+    currency: payment.currency,
+    redirectUrl: input.callbackUrl,
+    customer: input.customer
+  });
+
+  return db.payment.update({
+    where: {
+      id: payment.id
+    },
+    data: {
+      checkoutUrl: checkout.checkoutUrl,
+      providerReference: checkout.providerReference,
+      reference: checkout.providerReference,
+      metadata: {
+        checkoutProvider: checkout.provider,
+        checkoutUrl: checkout.checkoutUrl,
+        providerReference: checkout.providerReference,
+        checkoutStatus: checkout.status
+      }
+    }
+  });
+}
+
+export async function createManualPaymentForEnrollment(input: {
+  parentId: string;
+  studentId: string;
+  enrollmentId: string;
+  amount: Prisma.Decimal | number | string;
+  currency: string;
+  reference?: string;
+  proofUrl?: string;
+}) {
+  return db.payment.create({
+    data: getManualPaymentData({
+      parentId: input.parentId,
+      studentId: input.studentId,
+      enrollmentId: input.enrollmentId,
+      amount: input.amount,
+      currency: input.currency,
+      paymentMethod: "MANUAL_TRANSFER",
+      reference: input.reference,
+      proofUrl: input.proofUrl
+    })
+  });
+}
+
+export async function markPaymentPaidAndActivateEnrollment(input: {
+  paymentId: string;
+  verifiedAmount: Prisma.Decimal | number | string;
+  verifiedCurrency: string;
+  providerTransactionId?: string | null;
+  providerReference?: string | null;
+  rawPayload?: Prisma.InputJsonValue;
+}) {
+  return db.$transaction(async (tx) => {
+    const payment = await tx.payment.findUnique({
+      where: {
+        id: input.paymentId
+      },
+      select: {
+        id: true,
+        amount: true,
+        currency: true,
+        status: true,
+        provider: true,
+        enrollmentId: true,
+        enrollment: {
+          select: {
+            id: true,
+            status: true
+          }
+        }
+      }
+    });
+
+    if (!payment?.enrollment) {
+      throw new PaymentSafetyError("Payment or enrollment not found.");
+    }
+
+    const validation = validateVerifiedGatewayPaymentForActivation({
+      provider: payment.provider,
+      paymentStatus: payment.status,
+      enrollmentStatus: payment.enrollment.status,
+      verificationStatus: "successful",
+      expectedAmount: payment.amount,
+      expectedCurrency: payment.currency,
+      actualAmount: input.verifiedAmount,
+      actualCurrency: input.verifiedCurrency
+    });
+
+    if (!validation.success) {
+      return {
+        paymentId: payment.id,
+        enrollmentId: payment.enrollment.id,
+        paymentStatus: validation.nextPaymentStatus,
+        enrollmentStatus: validation.nextEnrollmentStatus,
+        activated: false,
+        reason: validation.reason
+      };
+    }
+
+    const now = new Date();
+
+    await tx.payment.update({
+      where: {
+        id: payment.id
+      },
+      data: {
+        status: validation.nextPaymentStatus,
+        providerTransactionId: input.providerTransactionId ?? undefined,
+        providerReference: input.providerReference ?? undefined,
+        verifiedAt: now,
+        paidAt: now,
+        metadata: input.rawPayload ?? undefined
+      }
+    });
+
+    await tx.enrollment.update({
+      where: {
+        id: payment.enrollment.id
+      },
+      data: {
+        status: validation.nextEnrollmentStatus,
+        startDate: now
+      }
+    });
+
+    return {
+      paymentId: payment.id,
+      enrollmentId: payment.enrollment.id,
+      paymentStatus: validation.nextPaymentStatus,
+      enrollmentStatus: validation.nextEnrollmentStatus,
+      activated: true
+    };
+  });
+}
+
+export async function markPaymentFailed(input: {
+  paymentId: string;
+  failureReason: string;
+  providerTransactionId?: string | null;
+}) {
+  return db.payment.update({
+    where: {
+      id: input.paymentId
+    },
+    data: {
+      status: "FAILED",
+      failureReason: input.failureReason,
+      providerTransactionId: input.providerTransactionId ?? undefined
+    }
+  });
+}
+
+export async function verifyFlutterwavePaymentAndActivateEnrollment(input: {
+  paymentId: string;
+  transactionId: string;
+}) {
+  const adapter = getPaymentProviderAdapter("FLUTTERWAVE");
+  const verification = await adapter.verifyPayment({
+    transactionId: input.transactionId
+  });
+
+  if (verification.status !== "successful") {
+    return markPaymentFailed({
+      paymentId: input.paymentId,
+      failureReason: "Flutterwave transaction was not successful.",
+      providerTransactionId: verification.providerTransactionId
+    });
+  }
+
+  return markPaymentPaidAndActivateEnrollment({
+    paymentId: input.paymentId,
+    verifiedAmount: verification.amount,
+    verifiedCurrency: verification.currency,
+    providerTransactionId: verification.providerTransactionId,
+    providerReference: verification.providerReference,
+    rawPayload: verification.rawPayload as Prisma.InputJsonValue
+  });
+}
+
+export async function recordPaymentEvent(input: WebhookHandleResult) {
+  const existingEvent = await db.paymentEvent.findUnique({
+    where: {
+      provider_providerEventId: {
+        provider: input.provider,
+        providerEventId: input.providerEventId
+      }
+    },
+    select: {
+      id: true,
+      providerEventId: true
+    }
+  });
+
+  if (
+    isDuplicatePaymentEvent({
+      existingProviderEventId: existingEvent?.providerEventId ?? null,
+      currentProviderEventId: input.providerEventId
+    })
+  ) {
+    return {
+      duplicate: true,
+      eventId: existingEvent?.id ?? null
+    };
+  }
+
+  const event = await db.paymentEvent.create({
+    data: getPaymentEventData({
+      ...input,
+      status: "RECEIVED"
+    }),
+    select: {
+      id: true
+    }
+  });
+
+  return {
+    duplicate: false,
+    eventId: event.id
   };
 }
 

@@ -32,9 +32,8 @@ const PaymentStatus = {
 } as const;
 
 const PaymentMethod = {
-  BANK_TRANSFER: "BANK_TRANSFER",
-  CARD: "CARD",
-  PAYMENT_GATEWAY_PLACEHOLDER: "PAYMENT_GATEWAY_PLACEHOLDER"
+  MANUAL_TRANSFER: "MANUAL_TRANSFER",
+  FLUTTERWAVE: "FLUTTERWAVE"
 } as const;
 
 const EnrollmentStatus = {
@@ -912,10 +911,12 @@ async function main(): Promise<void> {
       amount: "180000.00",
       currency: "NGN",
       status: PaymentStatus.PAID,
-      paymentMethod: PaymentMethod.BANK_TRANSFER,
+      paymentMethod: PaymentMethod.MANUAL_TRANSFER,
+      provider: "MANUAL",
       reference: "TOPMOX-NG-2026-0001",
       proofUrl: "https://files.example.com/payments/topmox-ng-2026-0001",
       adminNote: "Verified by admin. Enrollment remains active.",
+      verifiedAt: addDays(-18),
       paidAt: addDays(-18)
     }
   });
@@ -928,10 +929,11 @@ async function main(): Promise<void> {
       amount: "350.00",
       currency: "GBP",
       status: PaymentStatus.AWAITING_VERIFICATION,
-      paymentMethod: PaymentMethod.CARD,
+      paymentMethod: PaymentMethod.MANUAL_TRANSFER,
+      provider: "MANUAL",
       reference: "TOPMOX-UK-2026-041",
       proofUrl: "https://files.example.com/payments/topmox-uk-2026-041",
-      adminNote: "Awaiting bank confirmation from provider."
+      adminNote: "Awaiting manual confirmation from the admin team."
     }
   });
 
@@ -943,8 +945,12 @@ async function main(): Promise<void> {
       amount: "420.00",
       currency: "CAD",
       status: PaymentStatus.PENDING,
-      paymentMethod: PaymentMethod.PAYMENT_GATEWAY_PLACEHOLDER,
-      reference: "TOPMOX-CA-2026-015"
+      paymentMethod: PaymentMethod.FLUTTERWAVE,
+      provider: "FLUTTERWAVE",
+      reference: "TOPMOX-CA-2026-015",
+      providerReference: "topmox-demo-flw-ca-015",
+      checkoutUrl: "https://checkout.flutterwave.com/pay/topmox-demo-ca-015",
+      callbackUrl: "http://localhost:7000/parent/payments"
     }
   });
 
@@ -956,10 +962,14 @@ async function main(): Promise<void> {
       amount: "420.00",
       currency: "CAD",
       status: PaymentStatus.FAILED,
-      paymentMethod: PaymentMethod.CARD,
+      paymentMethod: PaymentMethod.FLUTTERWAVE,
+      provider: "FLUTTERWAVE",
       reference: "TOPMOX-CA-2026-014",
+      providerReference: "topmox-demo-flw-ca-014",
+      providerTransactionId: "flw-demo-failed-014",
+      failureReason: "Flutterwave transaction was not successful.",
       adminNote:
-        "Card authorization failed. Parent advised to retry with bank transfer."
+        "Flutterwave authorization failed. Parent advised to retry or use manual transfer."
     }
   });
 

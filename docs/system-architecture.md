@@ -43,8 +43,9 @@ TopMox Global Tutoring should be implemented as a **modular Next.js application*
 - React Hook Form
 - Server Actions where appropriate
 - In-app notifications
-- Manual payment tracking first
-- Payment provider abstraction for future Flutterwave, Paystack, Stripe, or PayPal
+- Flutterwave as the primary live payment gateway
+- Manual payment tracking as fallback
+- Payment provider abstraction for gateway and fallback adapters
 
 ### Architecture Style
 
@@ -580,10 +581,17 @@ UI hiding is not security.
 
 #### Payment
 
-- Purpose: manual payment tracking and verification
-- Key fields: `id`, `parentId`, `enrollmentId`, `amount`, `currency`, `method`, `status`, `reference`, `proofUrl`, `verifiedByAdminId`
-- Relationships: links to parent/enrollment and communication logs
-- Access: owner parent create/read own, admin approve/reject
+- Purpose: Flutterwave checkout tracking, manual fallback tracking, and verified enrollment activation
+- Key fields: `id`, `parentId`, `studentId`, `enrollmentId`, `amount`, `currency`, `status`, `paymentMethod`, `provider`, `providerReference`, `providerTransactionId`, `checkoutUrl`, `callbackUrl`, `proofUrl`, `adminNote`, `failureReason`, `metadata`, `verifiedAt`, `paidAt`
+- Relationships: links to parent/enrollment/payment events and communication logs
+- Access: owner parent create/read own, admin review manual payments, system verifies Flutterwave payments
+
+#### PaymentEvent
+
+- Purpose: idempotent provider event and callback processing
+- Key fields: `id`, `provider`, `providerEventId`, `paymentId`, `eventType`, `rawPayload`, `processedAt`, `status`, `errorMessage`
+- Relationships: optionally links to payment
+- Access: system/admin operational data only
 
 #### ProgressReport
 
@@ -632,7 +640,14 @@ UI hiding is not security.
 - `Enrollment.studentId`
 - `Enrollment.status`
 - `Payment.parentId`
+- `Payment.enrollmentId`
 - `Payment.status`
+- `Payment.provider`
+- `Payment.providerReference`
+- `Payment.providerTransactionId`
+- `PaymentEvent.provider`
+- `PaymentEvent.providerEventId`
+- `PaymentEvent.paymentId`
 - `Lesson.parentId`
 - `Lesson.studentId`
 - `Lesson.tutorId`
@@ -901,31 +916,40 @@ Future:
 
 For MVP:
 
-- Manual payment tracking
-- Admin verification
-- Enrollment activation after payment approval
+- Flutterwave checkout is the primary live payment path.
+- Manual transfer remains available as fallback.
+- Admin verification is used for manual payments.
+- Enrollment activation happens only after verified successful Flutterwave payment or admin-approved manual payment.
+- Supported currencies must include at least `NGN`, `USD`, `GBP`, `EUR`, and `CAD`.
+- Available Flutterwave methods can vary by country, currency, merchant KYC, and account setup.
 
 ### Payment Provider Abstraction
 
 - Define internal payment service interface
-- Do not couple business logic directly to Flutterwave/Paystack/Stripe/PayPal
-- Add gateway integrations later through adapters
+- Keep Flutterwave-specific logic in a Flutterwave adapter
+- Keep manual fallback logic in a manual adapter/service
+- Do not couple business logic directly to provider SDKs or HTTP details
+- Do not add Stripe to the active payment stack
 
-Suggested future interface:
+Internal adapter interface:
 
-- `createCheckoutSession()`
+- `createCheckout()`
 - `verifyPayment()`
 - `handleWebhook()`
-- `refundPayment()`
 
 MVP payment methods:
 
-- `BANK_TRANSFER`
-- `CASH`
-- `CARD`
-- `PAYMENT_GATEWAY_PLACEHOLDER`
+- `FLUTTERWAVE`
+- `MANUAL_TRANSFER`
 
-Payment status is the trigger for enrollment activation.
+Payment safety rules:
+
+- Callback status alone is never trusted.
+- Flutterwave webhooks must be verified.
+- Amount, currency, provider reference, transaction id, parent ownership, and enrollment ownership must match before activation.
+- Payment event processing must be idempotent.
+- Duplicate callbacks/webhooks must not create duplicate state transitions.
+- Manual payment never auto-activates enrollment.
 
 ---
 
@@ -1024,6 +1048,13 @@ Future enhancements:
 | `DATABASE_URL`                 | PostgreSQL connection string                    |
 | `AUTH_SECRET`                  | Session/JWT signing secret                      |
 | `NEXTAUTH_URL` (or equivalent) | Canonical auth callback URL                     |
+| `APP_BASE_URL`                 | Base URL for payment callbacks and absolute links |
+| `FLUTTERWAVE_PUBLIC_KEY`       | Flutterwave public key                          |
+| `FLUTTERWAVE_SECRET_KEY`       | Flutterwave secret key                          |
+| `FLUTTERWAVE_SECRET_HASH`      | Flutterwave webhook verification hash           |
+| `FLUTTERWAVE_BASE_URL`         | Flutterwave API base URL                        |
+| `NEXT_PUBLIC_FLUTTERWAVE_ENABLED` | Public feature flag for Flutterwave checkout |
+| `NEXT_PUBLIC_MANUAL_PAYMENTS_ENABLED` | Public feature flag for manual fallback |
 | `EMAIL_PROVIDER_KEY`           | Placeholder for future email notifications      |
 | `PAYMENT_PROVIDER_SECRET`      | Placeholder for future payment integration      |
 | `STORAGE_PROVIDER_KEY`         | Placeholder for future file storage integration |
@@ -1194,9 +1225,9 @@ Architecture should enable these enhancements later without forcing them into MV
 
 Reason: faster MVP delivery, easier deployment, and enough internal separation.
 
-### ADR 002: Use Manual Payment Tracking First
+### ADR 002: Use Flutterwave Primary With Manual Fallback
 
-Reason: avoids payment gateway delays while preserving core business workflow.
+Reason: TopMox needs a live gateway that can support Nigerian and foreign-currency payments where available, while retaining manual transfer as an operational fallback. Stripe is not part of the active payment stack.
 
 ### ADR 003: No Independent Student Login in MVP
 

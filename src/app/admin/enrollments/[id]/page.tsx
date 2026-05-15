@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getEnrollmentStatusMeta } from "@/lib/utils/enrollment-status";
 import { getLessonStatusMeta } from "@/lib/utils/lesson-status";
+import {
+  canScheduleLessonsForEnrollment,
+  getLessonSchedulingUnavailableMessage
+} from "@/lib/utils/lesson-workflow";
 import { getPaymentStatusMeta } from "@/lib/utils/payment-status";
 import {
   getAdminEnrollmentById
@@ -72,6 +76,10 @@ export default async function AdminEnrollmentDetailPage({
   const paymentStatus = latestPayment
     ? getPaymentStatusMeta(latestPayment.status)
     : null;
+  const canScheduleLessons = canScheduleLessonsForEnrollment(enrollment.status);
+  const schedulingUnavailableMessage = canScheduleLessons
+    ? null
+    : getLessonSchedulingUnavailableMessage(enrollment.status);
 
   return (
     <section className="space-y-6">
@@ -86,12 +94,14 @@ export default async function AdminEnrollmentDetailPage({
                 Back to Enrollments
               </Link>
             </Button>
-            <Button asChild className="w-full sm:w-auto">
-              <Link href={`/admin/lessons/new?enrollmentId=${enrollment.id}`}>
-                <CalendarPlus className="mr-2 h-4 w-4" />
-                Schedule Lesson
-              </Link>
-            </Button>
+            {canScheduleLessons ? (
+              <Button asChild className="w-full sm:w-auto">
+                <Link href={`/admin/lessons/new?enrollmentId=${enrollment.id}`}>
+                  <CalendarPlus className="mr-2 h-4 w-4" />
+                  Schedule Lesson
+                </Link>
+              </Button>
+            ) : null}
           </div>
         }
       />
@@ -176,8 +186,14 @@ export default async function AdminEnrollmentDetailPage({
               </p>
             </div>
             <Button asChild variant="outline" className="w-full sm:w-auto">
-              <Link href={`/admin/lessons/new?enrollmentId=${enrollment.id}`}>
-                Add Lesson
+              <Link
+                href={
+                  canScheduleLessons
+                    ? `/admin/lessons/new?enrollmentId=${enrollment.id}`
+                    : "/admin/payments"
+                }
+              >
+                {canScheduleLessons ? "Add Lesson" : "Review Activation"}
               </Link>
             </Button>
           </CardHeader>
@@ -212,7 +228,9 @@ export default async function AdminEnrollmentDetailPage({
               })
             ) : (
               <p className="rounded-xl border border-dashed border-border bg-soft-cream/40 p-5 text-sm text-text-secondary">
-                No lessons have been scheduled for this enrollment yet.
+                {canScheduleLessons
+                  ? "No lessons have been scheduled for this enrollment yet."
+                  : schedulingUnavailableMessage}
               </p>
             )}
           </CardContent>

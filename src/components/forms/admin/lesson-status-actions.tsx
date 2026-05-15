@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { getAdminLessonStatusActions } from "@/lib/utils/lesson-workflow";
 import {
   updateLessonStatusAction,
   type LessonActionResult
@@ -16,21 +17,6 @@ type LessonStatusActionsProps = {
   status: LessonStatus;
 };
 
-const ACTIONS_BY_STATUS: Partial<
-  Record<LessonStatus, Array<{ status: LessonStatus; label: string }>>
-> = {
-  SCHEDULED: [
-    { status: "RESCHEDULED", label: "Mark Rescheduled" },
-    { status: "CANCELLED", label: "Cancel Lesson" },
-    { status: "MISSED", label: "Mark Missed" },
-    { status: "COMPLETED", label: "Mark Completed" }
-  ],
-  RESCHEDULED: [
-    { status: "SCHEDULED", label: "Confirm Scheduled" },
-    { status: "CANCELLED", label: "Cancel Lesson" }
-  ]
-};
-
 export function LessonStatusActions({
   lessonId,
   status
@@ -38,7 +24,7 @@ export function LessonStatusActions({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<LessonActionResult | null>(null);
-  const actions = ACTIONS_BY_STATUS[status] ?? [];
+  const actions = getAdminLessonStatusActions(status);
 
   const updateStatus = (nextStatus: LessonStatus) => {
     setResult(null);
@@ -72,7 +58,7 @@ export function LessonStatusActions({
           <Button
             key={action.status}
             type="button"
-            variant={action.status === "CANCELLED" ? "destructive" : "outline"}
+            variant={action.destructive ? "destructive" : "outline"}
             onClick={() => updateStatus(action.status)}
             disabled={isPending}
             className="w-full sm:w-auto"

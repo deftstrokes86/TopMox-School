@@ -34,6 +34,13 @@ export const LESSON_STATUSES = [
   "CANCELLED"
 ] as const;
 
+export const HOMEWORK_STATUSES = [
+  "ASSIGNED",
+  "SUBMITTED",
+  "REVIEWED",
+  "OVERDUE"
+] as const;
+
 export const REPORT_STATUSES = ["DRAFT", "REVIEW", "PUBLISHED"] as const;
 
 export const SUPPORT_STATUSES = [

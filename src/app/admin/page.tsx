@@ -1,6 +1,8 @@
 import Link from "next/link";
 import {
+  AlertTriangle,
   ArrowRight,
+  BookOpenCheck,
   CalendarClock,
   CalendarPlus,
   ClipboardList,
@@ -14,6 +16,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireDashboardAccess } from "@/lib/auth/dashboard-access";
+import { getAdminLessonDeliveryDashboardSummary } from "@/lib/utils/admin-lesson-delivery";
 import { getAssessmentStatusMeta } from "@/lib/utils/assessment-status";
 import { getLessonStatusMeta } from "@/lib/utils/lesson-status";
 import { getPaymentStatusMeta } from "@/lib/utils/payment-status";
@@ -22,6 +25,7 @@ import {
   getAssessmentRequestCountsByStatus
 } from "@/server/queries/assessment.queries";
 import { getAdminEnrollmentSummary } from "@/server/queries/enrollment.queries";
+import { getAdminHomework } from "@/server/queries/homework.queries";
 import { getAdminLessons } from "@/server/queries/lesson.queries";
 import {
   getAdminPayments,
@@ -57,14 +61,21 @@ export default async function AdminDashboardPage() {
       getAdminPaymentSummary(),
       getAdminPayments({ take: 5 })
     ]);
-  const [enrollmentSummary, upcomingLessons] = await Promise.all([
-    getAdminEnrollmentSummary(),
-    getAdminLessons({
-      status: "SCHEDULED",
-      dateFrom: new Date(),
-      take: 5
-    })
-  ]);
+  const [enrollmentSummary, upcomingLessons, deliveryLessons, adminHomework] =
+    await Promise.all([
+      getAdminEnrollmentSummary(),
+      getAdminLessons({
+        status: "SCHEDULED",
+        dateFrom: new Date(),
+        take: 5
+      }),
+      getAdminLessons(),
+      getAdminHomework()
+    ]);
+  const deliverySummary = getAdminLessonDeliveryDashboardSummary(
+    deliveryLessons,
+    adminHomework
+  );
 
   return (
     <section className="space-y-6">
@@ -95,6 +106,12 @@ export default async function AdminDashboardPage() {
               <Link href="/admin/lessons">
                 <CalendarPlus className="mr-2 h-4 w-4" />
                 Schedule Lessons
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full sm:w-auto">
+              <Link href="/admin/homework">
+                <BookOpenCheck className="mr-2 h-4 w-4" />
+                Review Homework
               </Link>
             </Button>
           </div>
@@ -171,6 +188,30 @@ export default async function AdminDashboardPage() {
           value={`${upcomingLessons.length}`}
           context="Next scheduled lessons visible to admin."
           icon={<CalendarPlus className="h-5 w-5 text-info" />}
+        />
+        <StatCard
+          label="Completed This Week"
+          value={`${deliverySummary.lessonsCompletedThisWeek}`}
+          context="Completed lessons available for admin delivery review."
+          icon={<BookOpenCheck className="h-5 w-5 text-success" />}
+        />
+        <StatCard
+          label="Need Notes"
+          value={`${deliverySummary.lessonsNeedingNotes}`}
+          context="Completed or missed lessons without tutor notes."
+          icon={<ClipboardList className="h-5 w-5 text-warning" />}
+        />
+        <StatCard
+          label="Concern Flags"
+          value={`${deliverySummary.concernFlags}`}
+          context="Lessons where a tutor flagged extra student attention."
+          icon={<AlertTriangle className="h-5 w-5 text-warning" />}
+        />
+        <StatCard
+          label="Homework Assigned"
+          value={`${deliverySummary.homeworkAssigned}`}
+          context="Active homework currently assigned to students."
+          icon={<BookOpenCheck className="h-5 w-5 text-info" />}
         />
       </div>
 

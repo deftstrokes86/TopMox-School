@@ -1,14 +1,18 @@
 import type { HomeworkStatus, LessonStatus } from "@prisma/client";
 
 type LessonDeliverySummarySource = {
+  id?: string;
   status: LessonStatus;
   startTime: Date;
   lessonNotes?: string | null;
   concernFlag?: boolean | null;
+  homework?: unknown[];
 };
 
 type HomeworkSummarySource = {
+  id?: string;
   status: HomeworkStatus;
+  createdAt?: Date;
 };
 
 export function getAdminLessonDeliveryDashboardSummary(

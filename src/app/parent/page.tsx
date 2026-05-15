@@ -7,6 +7,7 @@ import type { AssessmentStatusValue } from "@/lib/utils/assessment-status";
 import { getNextUpcomingLessonSummary } from "@/lib/utils/lesson-dashboard";
 import type { LessonStatusValue } from "@/lib/utils/lesson-status";
 import { getParentLessonVisibilitySummary } from "@/lib/utils/parent-lesson-visibility";
+import { getParentReportDashboardSummary } from "@/lib/utils/parent-report-ui";
 import { getCurrentParentAssessmentRequests } from "@/server/queries/assessment.queries";
 import {
   getCurrentParentEnrollments,
@@ -16,16 +17,26 @@ import { getCurrentParentHomework } from "@/server/queries/homework.queries";
 import { getCurrentParentLessons } from "@/server/queries/lesson.queries";
 import { getParentOnboardingStatus } from "@/server/queries/parent.queries";
 import { getCurrentParentPayments } from "@/server/queries/payment.queries";
+import { getCurrentParentReports } from "@/server/queries/report.queries";
 
 export default async function ParentPlaceholderPage() {
   const user = await requireDashboardAccess("PARENT");
-  const [onboardingStatus, assessments, enrollments, payments, lessons, homework] = await Promise.all([
+  const [
+    onboardingStatus,
+    assessments,
+    enrollments,
+    payments,
+    lessons,
+    homework,
+    reports
+  ] = await Promise.all([
     getParentOnboardingStatus(),
     getCurrentParentAssessmentRequests(),
     getCurrentParentEnrollments(),
     getCurrentParentPayments(),
     getCurrentParentLessons(),
-    getCurrentParentHomework()
+    getCurrentParentHomework(),
+    getCurrentParentReports()
   ]);
   const latestAssessment = assessments[0]
     ? {
@@ -90,6 +101,22 @@ export default async function ParentPlaceholderPage() {
         }
       : null
   };
+  const reportSummary = getParentReportDashboardSummary(reports);
+  const reportVisibility = {
+    latestReport: reportSummary.latestReport
+      ? {
+          id: reportSummary.latestReport.id,
+          childName: reportSummary.latestReport.childName,
+          tutorName: reportSummary.latestReport.tutorName,
+          reportingMonth: reportSummary.latestReport.reportingMonth.toISOString(),
+          publishedAt:
+            reportSummary.latestReport.publishedAt?.toISOString() ?? null,
+          progressLabel: reportSummary.latestReport.progress.label,
+          progressTone: reportSummary.latestReport.progress.tone
+        }
+      : null,
+    publishedReportCount: reportSummary.publishedReportCount
+  };
   let planNextStep: ParentDashboardPlanNextStep | null = null;
 
   if (activeEnrollment) {
@@ -152,6 +179,7 @@ export default async function ParentPlaceholderPage() {
       latestAssessment={latestAssessment}
       nextLesson={nextLesson}
       lessonVisibility={lessonVisibility}
+      reportVisibility={reportVisibility}
       planNextStep={planNextStep}
     />
   );

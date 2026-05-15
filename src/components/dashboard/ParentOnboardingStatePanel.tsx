@@ -9,6 +9,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AppRole } from "@/lib/auth/types";
+import type { StatusTone } from "@/lib/constants/statuses";
 import {
   getAssessmentStatusMeta,
   getParentAssessmentNextAction,
@@ -33,6 +34,7 @@ type ParentOnboardingStatePanelProps = {
   latestAssessment?: ParentDashboardAssessmentSummary | null;
   nextLesson?: ParentDashboardLessonSummary | null;
   lessonVisibility?: ParentDashboardLessonVisibility | null;
+  reportVisibility?: ParentDashboardReportVisibility | null;
   planNextStep?: ParentDashboardPlanNextStep | null;
 };
 
@@ -74,11 +76,24 @@ type ParentDashboardLessonVisibility = {
   } | null;
 };
 
+type ParentDashboardReportVisibility = {
+  latestReport: {
+    id: string;
+    childName: string;
+    tutorName: string;
+    reportingMonth: string;
+    publishedAt: string | null;
+    progressLabel: string;
+    progressTone: StatusTone;
+  } | null;
+  publishedReportCount: number;
+};
+
 export type ParentDashboardPlanNextStep = {
   title: string;
   description: string;
   badgeLabel: string;
-  badgeTone: "neutral" | "info" | "success" | "warning" | "danger";
+  badgeTone: StatusTone;
   ctaLabel?: string;
   ctaHref?: string;
 };
@@ -94,6 +109,13 @@ function formatDashboardDate(value: string | null): string {
   }).format(new Date(value));
 }
 
+function formatDashboardMonth(value: string): string {
+  return new Intl.DateTimeFormat("en", {
+    month: "long",
+    year: "numeric"
+  }).format(new Date(value));
+}
+
 export function ParentOnboardingStatePanel({
   userName,
   userEmail,
@@ -102,6 +124,7 @@ export function ParentOnboardingStatePanel({
   latestAssessment,
   nextLesson,
   lessonVisibility,
+  reportVisibility,
   planNextStep
 }: ParentOnboardingStatePanelProps) {
   const [loading, setLoading] = useState(!initialState);
@@ -429,6 +452,69 @@ export function ParentOnboardingStatePanel({
                     <Button asChild variant="outline">
                       <Link href="/parent/lessons">
                         View Lessons
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+              {content.state === "READY_FOR_ASSESSMENT" &&
+              reportVisibility ? (
+                <div className="mt-4 rounded-xl border border-royal-blue/20 bg-white p-4">
+                  {reportVisibility.latestReport ? (
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
+                          Latest Progress Report
+                        </p>
+                        <p className="mt-1 font-semibold text-deep-navy">
+                          {reportVisibility.latestReport.childName}
+                        </p>
+                        <p className="mt-1 text-sm text-text-secondary">
+                          {formatDashboardMonth(
+                            reportVisibility.latestReport.reportingMonth
+                          )}{" "}
+                          | {reportVisibility.latestReport.tutorName}
+                        </p>
+                        <p className="mt-2 text-sm leading-6 text-text-secondary">
+                          TopMox has published structured feedback so you can
+                          see what is improving and what needs attention next.
+                        </p>
+                      </div>
+                      <StatusBadge
+                        label={reportVisibility.latestReport.progressLabel}
+                        tone={reportVisibility.latestReport.progressTone}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.1em] text-text-muted">
+                          Progress Reports
+                        </p>
+                        <p className="mt-1 font-semibold text-deep-navy">
+                          First report coming after reviewed lessons
+                        </p>
+                        <p className="mt-2 text-sm leading-6 text-text-secondary">
+                          Your child&apos;s first report will appear after
+                          lessons have been completed and reviewed.
+                        </p>
+                      </div>
+                      <StatusBadge label="No report yet" tone="neutral" />
+                    </div>
+                  )}
+                  <div className="mt-4">
+                    <Button asChild variant="outline">
+                      <Link
+                        href={
+                          reportVisibility.latestReport
+                            ? `/parent/reports/${reportVisibility.latestReport.id}`
+                            : "/parent/reports"
+                        }
+                      >
+                        {reportVisibility.latestReport
+                          ? "View Latest Report"
+                          : "View Reports"}
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>

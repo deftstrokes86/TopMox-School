@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AlertTriangle, ArrowLeft, CheckCircle2, ExternalLink } from "lucide-react";
 
+import { CommunicationLogPanel } from "@/components/admin/CommunicationLogPanel";
 import { LessonStatusActions } from "@/components/forms/admin/lesson-status-actions";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -10,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getEnrollmentStatusMeta } from "@/lib/utils/enrollment-status";
 import { getHomeworkStatusMeta } from "@/lib/utils/homework-status";
 import { getLessonStatusMeta } from "@/lib/utils/lesson-status";
+import { getCommunicationLogsForLesson } from "@/server/queries/communication-log.queries";
 import {
   buildAdminLessonDeliveryView,
   getAdminLessonById
@@ -70,7 +72,10 @@ function DetailItem({
 export default async function AdminLessonDetailPage({
   params
 }: AdminLessonDetailPageProps) {
-  const lesson = await getAdminLessonById(params.id);
+  const [lesson, communicationLogs] = await Promise.all([
+    getAdminLessonById(params.id),
+    getCommunicationLogsForLesson(params.id)
+  ]);
 
   if (!lesson) {
     notFound();
@@ -308,6 +313,16 @@ export default async function AdminLessonDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      <CommunicationLogPanel
+        logs={communicationLogs}
+        targetInput={{
+          lessonId: lesson.id,
+          parentId: lesson.parentId,
+          studentId: lesson.studentId
+        }}
+        revalidatePathname={`/admin/lessons/${lesson.id}`}
+      />
     </section>
   );
 }

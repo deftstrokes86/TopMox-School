@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 
+import { CommunicationLogPanel } from "@/components/admin/CommunicationLogPanel";
 import { PaymentReviewActions } from "@/components/forms/admin/payment-review-actions";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getEnrollmentStatusMeta } from "@/lib/utils/enrollment-status";
 import { getPaymentStatusMeta } from "@/lib/utils/payment-status";
+import { getCommunicationLogsForPayment } from "@/server/queries/communication-log.queries";
 import { getAdminPaymentById } from "@/server/queries/payment.queries";
 
 export const dynamic = "force-dynamic";
@@ -59,7 +61,10 @@ function DetailItem({
 export default async function AdminPaymentDetailPage({
   params
 }: AdminPaymentDetailPageProps) {
-  const payment = await getAdminPaymentById(params.id);
+  const [payment, communicationLogs] = await Promise.all([
+    getAdminPaymentById(params.id),
+    getCommunicationLogsForPayment(params.id)
+  ]);
 
   if (!payment) {
     notFound();
@@ -239,6 +244,16 @@ export default async function AdminPaymentDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      <CommunicationLogPanel
+        logs={communicationLogs}
+        targetInput={{
+          paymentId: payment.id,
+          parentId: payment.parentId,
+          ...(payment.studentId ? { studentId: payment.studentId } : {})
+        }}
+        revalidatePathname={`/admin/payments/${payment.id}`}
+      />
     </section>
   );
 }

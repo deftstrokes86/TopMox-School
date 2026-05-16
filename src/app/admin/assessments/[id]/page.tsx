@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 
+import { CommunicationLogPanel } from "@/components/admin/CommunicationLogPanel";
 import { AssessmentInternalNotesForm } from "@/components/forms/admin/assessment-internal-notes-form";
 import { AssessmentScheduleForm } from "@/components/forms/admin/assessment-schedule-form";
 import { AssessmentStatusActions } from "@/components/forms/admin/assessment-status-actions";
@@ -13,6 +14,7 @@ import {
   getAssessmentStatusMeta,
   type AssessmentStatusValue
 } from "@/lib/utils/assessment-status";
+import { getCommunicationLogsForAssessment } from "@/server/queries/communication-log.queries";
 import { getAdminAssessmentRequestById } from "@/server/queries/assessment.queries";
 
 export const dynamic = "force-dynamic";
@@ -67,7 +69,10 @@ function DetailItem({
 export default async function AdminAssessmentDetailPage({
   params
 }: AdminAssessmentDetailPageProps) {
-  const assessment = await getAdminAssessmentRequestById(params.id);
+  const [assessment, communicationLogs] = await Promise.all([
+    getAdminAssessmentRequestById(params.id),
+    getCommunicationLogsForAssessment(params.id)
+  ]);
 
   if (!assessment) {
     notFound();
@@ -284,43 +289,15 @@ export default async function AdminAssessmentDetailPage({
         </Card>
       </div>
 
-      <Card className="border-border/80">
-        <CardHeader>
-          <CardTitle className="text-xl text-deep-navy">
-            Communication Log Preview
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {assessment.communicationLogs.length > 0 ? (
-            assessment.communicationLogs.map((log) => (
-              <div
-                key={log.id}
-                className="rounded-xl border border-border/80 bg-soft-cream/40 p-4"
-              >
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm font-semibold text-deep-navy">
-                    {log.type.replaceAll("_", " ")}
-                  </p>
-                  <p className="text-xs text-text-muted">
-                    {formatDateTime(log.createdAt)}
-                  </p>
-                </div>
-                <p className="mt-2 text-sm text-text-secondary">{log.message}</p>
-                {log.createdBy ? (
-                  <p className="mt-2 text-xs text-text-muted">
-                    Added by {log.createdBy.name || log.createdBy.email}
-                  </p>
-                ) : null}
-              </div>
-            ))
-          ) : (
-            <p className="rounded-xl border border-dashed border-border bg-soft-cream/40 p-5 text-sm text-text-secondary">
-              Communication logs will appear here after admin notes are added in
-              a later phase.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+      <CommunicationLogPanel
+        logs={communicationLogs}
+        targetInput={{
+          assessmentRequestId: assessment.id,
+          parentId: assessment.parentId,
+          studentId: assessment.studentId
+        }}
+        revalidatePathname={`/admin/assessments/${assessment.id}`}
+      />
 
       {assessment.status === "PLAN_RECOMMENDED" && assessment.outcome ? (
         <Card className="border-success/25 bg-success/10">
@@ -346,4 +323,3 @@ export default async function AdminAssessmentDetailPage({
     </section>
   );
 }
-

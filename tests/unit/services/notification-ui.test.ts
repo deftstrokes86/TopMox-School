@@ -6,7 +6,8 @@ import {
   buildNotificationDropdownModel,
   canShowMarkAsReadAction,
   getMarkAllNotificationsScope,
-  getNotificationCenterHref
+  getNotificationCenterHref,
+  getSafeNotificationHrefForRole
 } from "@/lib/utils/notification-ui";
 
 const notifications = [
@@ -141,5 +142,58 @@ describe("notification center UI model", () => {
     assert.equal(getNotificationCenterHref("ADMIN"), "/admin/notifications");
     assert.equal(getNotificationCenterHref("PARENT"), "/parent/notifications");
     assert.equal(getNotificationCenterHref("TUTOR"), "/tutor/notifications");
+  });
+
+  test("notification links are restricted to valid routes for the current role", () => {
+    assert.equal(
+      getSafeNotificationHrefForRole("ADMIN", "/admin/payments/payment-id"),
+      "/admin/payments/payment-id"
+    );
+    assert.equal(
+      getSafeNotificationHrefForRole("PARENT", "/parent/lessons/lesson-id"),
+      "/parent/lessons/lesson-id"
+    );
+    assert.equal(
+      getSafeNotificationHrefForRole("PARENT", "/book-assessment"),
+      "/book-assessment"
+    );
+    assert.equal(
+      getSafeNotificationHrefForRole("TUTOR", "/tutor/lessons/lesson-id"),
+      "/tutor/lessons/lesson-id"
+    );
+    assert.equal(
+      getSafeNotificationHrefForRole("PARENT", "/admin/payments/payment-id"),
+      null
+    );
+    assert.equal(
+      getSafeNotificationHrefForRole("TUTOR", "https://example.com/phishing"),
+      null
+    );
+    assert.equal(
+      getSafeNotificationHrefForRole("PARENT", "/parent/../admin/payments"),
+      null
+    );
+  });
+
+  test("notification center strips unsafe cross-role links from display items", () => {
+    const model = buildNotificationCenterModel({
+      currentUserId: "current-user",
+      role: "PARENT",
+      notifications: [
+        {
+          id: "unsafe-admin-link",
+          userId: "current-user",
+          type: "PAYMENT_SUBMITTED" as const,
+          title: "Payment needs review.",
+          message: "This link should not be exposed to a parent.",
+          href: "/admin/payments/payment-id",
+          readAt: null,
+          createdAt: new Date("2026-05-16T11:00:00.000Z")
+        }
+      ],
+      unreadCount: 1
+    });
+
+    assert.equal(model.items[0].href, null);
   });
 });

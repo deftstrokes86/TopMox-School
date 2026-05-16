@@ -1,4 +1,5 @@
 import type { StatusTone } from "@/lib/constants/statuses";
+import { getSafeNotificationHrefForRole } from "@/lib/utils/notification-ui";
 
 export type ActivityCategory =
   | "assessment"
@@ -163,6 +164,17 @@ function getRoleHref(role: "admin" | "parent" | "tutor", path: string): string {
   return `/${role}${path}`;
 }
 
+function getNotificationHrefForActivityRole(
+  role: "admin" | "parent" | "tutor",
+  href: string | null | undefined
+): string | undefined {
+  const appRole =
+    role === "admin" ? "ADMIN" : role === "tutor" ? "TUTOR" : "PARENT";
+  const safeHref = getSafeNotificationHrefForRole(appRole, href);
+
+  return safeHref ?? undefined;
+}
+
 function buildCommunicationHref(record: CommunicationActivityRecord): string | undefined {
   if (record.supportRequestId) {
     return getRoleHref("admin", `/support/${record.supportRequestId}`);
@@ -284,7 +296,7 @@ function buildCommonItems(
       title: record.title,
       description: record.message,
       timestamp: toDate(record.timestamp),
-      href: record.href ?? undefined,
+      href: getNotificationHrefForActivityRole(role, record.href),
       tone: "info"
     });
   }

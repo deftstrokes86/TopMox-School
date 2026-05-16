@@ -172,6 +172,27 @@ describe("parent activity feed model", () => {
     );
     assert.equal(feed[0].href, "/parent/assessments/assessment-1");
   });
+
+  test("Parent activity feed strips unsafe notification links", () => {
+    const feed = buildParentActivityFeedFromRecords(
+      {
+        notifications: [
+          {
+            id: "unsafe-notification",
+            title: "Admin-only payment queue",
+            message: "This should not link a parent into admin.",
+            href: "/admin/payments",
+            timestamp: now
+          }
+        ]
+      },
+      "parent-1",
+      10
+    );
+
+    assert.equal(feed[0].category, "notification");
+    assert.equal(feed[0].href, undefined);
+  });
 });
 
 describe("tutor activity feed model", () => {
@@ -224,5 +245,26 @@ describe("tutor activity feed model", () => {
       ["lesson", "homework", "report"]
     );
     assert.equal(feed[0].href, "/tutor/lessons/lesson-1");
+  });
+
+  test("Tutor activity feed strips unsafe notification links", () => {
+    const feed = buildTutorActivityFeedFromRecords(
+      {
+        notifications: [
+          {
+            id: "unsafe-notification",
+            title: "Parent payment update",
+            message: "This should not link a tutor into a parent area.",
+            href: "/parent/payments/payment-id",
+            timestamp: now
+          }
+        ]
+      },
+      "tutor-1",
+      10
+    );
+
+    assert.equal(feed[0].category, "notification");
+    assert.equal(feed[0].href, undefined);
   });
 });

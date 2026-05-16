@@ -96,16 +96,16 @@ export function NotificationCenter({
                   {notification.href ? (
                     <Link
                       href={notification.href}
-                      className="mt-3 block text-lg font-semibold text-text-primary hover:text-primary"
+                      className="mt-3 block break-words text-lg font-semibold text-text-primary hover:text-primary"
                     >
                       {notification.title}
                     </Link>
                   ) : (
-                    <h3 className="mt-3 text-lg font-semibold text-text-primary">
+                    <h3 className="mt-3 break-words text-lg font-semibold text-text-primary">
                       {notification.title}
                     </h3>
                   )}
-                  <p className="mt-2 max-w-3xl text-sm leading-6 text-text-secondary">
+                  <p className="mt-2 max-w-3xl break-words text-sm leading-6 text-text-secondary">
                     {notification.message}
                   </p>
                 </div>

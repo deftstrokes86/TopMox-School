@@ -86,16 +86,16 @@ export function ActivityFeed({
             {items.map((item) => {
               const content = (
                 <div className="flex gap-3 rounded-xl border border-border/80 bg-soft-cream/35 p-4 transition hover:border-royal-blue/30 hover:bg-white">
-                  <div className="mt-0.5 rounded-full bg-white p-2 shadow-sm">
+                  <div className="mt-0.5 shrink-0 rounded-full bg-white p-2 shadow-sm">
                     <ActivityIcon category={item.category} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <div>
-                        <p className="font-semibold text-deep-navy">
+                        <p className="break-words font-semibold text-deep-navy">
                           {item.title}
                         </p>
-                        <p className="mt-1 text-sm leading-6 text-text-secondary">
+                        <p className="mt-1 break-words text-sm leading-6 text-text-secondary">
                           {item.description}
                         </p>
                       </div>

@@ -44,6 +44,56 @@ export function getNotificationCenterHref(role: AppRole) {
   }
 }
 
+function isWorkspaceHref(href: string, workspaceHref: string) {
+  return (
+    href === workspaceHref ||
+    href.startsWith(`${workspaceHref}/`) ||
+    href.startsWith(`${workspaceHref}?`)
+  );
+}
+
+export function getSafeNotificationHrefForRole(
+  role: AppRole,
+  href: string | null | undefined
+) {
+  if (!href) {
+    return null;
+  }
+
+  const safeHref = href.trim();
+
+  if (!safeHref.startsWith("/") || safeHref.startsWith("//")) {
+    return null;
+  }
+
+  let normalizedHref: string;
+
+  try {
+    const url = new URL(safeHref, "https://topmox.local");
+
+    if (url.origin !== "https://topmox.local") {
+      return null;
+    }
+
+    normalizedHref = `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return null;
+  }
+
+  if (role === "ADMIN") {
+    return isWorkspaceHref(normalizedHref, "/admin") ? normalizedHref : null;
+  }
+
+  if (role === "TUTOR") {
+    return isWorkspaceHref(normalizedHref, "/tutor") ? normalizedHref : null;
+  }
+
+  return isWorkspaceHref(normalizedHref, "/parent") ||
+    isWorkspaceHref(normalizedHref, "/book-assessment")
+    ? normalizedHref
+    : null;
+}
+
 export function getNotificationCreatedLabel(
   createdAt: NotificationUiItem["createdAt"]
 ) {
@@ -74,11 +124,15 @@ export function getMarkAllNotificationsScope(currentUserId: string) {
   };
 }
 
-function toDisplayItem(notification: NotificationUiItem): NotificationDisplayItem {
+function toDisplayItem(
+  notification: NotificationUiItem,
+  role: AppRole
+): NotificationDisplayItem {
   const isUnread = notification.readAt === null;
 
   return {
     ...notification,
+    href: getSafeNotificationHrefForRole(role, notification.href),
     isUnread,
     statusLabel: isUnread ? "Unread" : "Read",
     statusTone: isUnread ? "info" : "neutral",
@@ -95,7 +149,7 @@ function buildBaseNotificationModel({
 }: BuildNotificationModelInput) {
   const currentUserNotifications = notifications
     .filter((notification) => notification.userId === currentUserId)
-    .map(toDisplayItem);
+    .map((notification) => toDisplayItem(notification, role));
 
   const items =
     typeof limit === "number"

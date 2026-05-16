@@ -69,8 +69,13 @@ export function NotificationDropdown({
         </div>
 
         {model.isEmpty ? (
-          <div className="px-4 py-6 text-sm text-text-secondary">
-            No notifications yet.
+          <div className="px-4 py-6">
+            <p className="text-sm font-semibold text-text-primary">
+              No notifications yet.
+            </p>
+            <p className="mt-1 text-xs leading-5 text-text-secondary">
+              {model.emptyStateDescription}
+            </p>
           </div>
         ) : (
           <div className="max-h-80 divide-y divide-border overflow-y-auto">
@@ -87,16 +92,16 @@ export function NotificationDropdown({
                     {notification.href ? (
                       <Link
                         href={notification.href}
-                        className="line-clamp-1 text-sm font-semibold text-text-primary hover:text-primary"
+                        className="line-clamp-1 break-words text-sm font-semibold text-text-primary hover:text-primary"
                       >
                         {notification.title}
                       </Link>
                     ) : (
-                      <p className="line-clamp-1 text-sm font-semibold text-text-primary">
+                      <p className="line-clamp-1 break-words text-sm font-semibold text-text-primary">
                         {notification.title}
                       </p>
                     )}
-                    <p className="mt-1 line-clamp-2 text-xs leading-5 text-text-secondary">
+                    <p className="mt-1 line-clamp-2 break-words text-xs leading-5 text-text-secondary">
                       {notification.message}
                     </p>
                   </div>

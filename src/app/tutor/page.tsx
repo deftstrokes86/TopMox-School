@@ -8,6 +8,7 @@ import {
   Send
 } from "lucide-react";
 
+import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -20,6 +21,7 @@ import { getTutorLessonWorkSummary } from "@/lib/utils/tutor-lesson-delivery";
 import { getTutorReportDashboardSummary } from "@/lib/utils/tutor-report-ui";
 import { getCurrentTutorHomework } from "@/server/queries/homework.queries";
 import { getCurrentTutorLessons } from "@/server/queries/lesson.queries";
+import { getCurrentTutorActivityFeed } from "@/server/queries/activity.queries";
 import {
   getCurrentTutorReports,
   getReportsDueForTutor
@@ -68,11 +70,12 @@ function DashboardLessonCard({ lesson }: { lesson: TutorDashboardLesson }) {
 
 export default async function TutorDashboardPage() {
   const user = await requireDashboardAccess("TUTOR");
-  const [lessons, homework, reports, reportsDue] = await Promise.all([
+  const [lessons, homework, reports, reportsDue, tutorActivity] = await Promise.all([
     getCurrentTutorLessons(),
     getCurrentTutorHomework(),
     getCurrentTutorReports(),
-    getReportsDueForTutor()
+    getReportsDueForTutor(),
+    getCurrentTutorActivityFeed(8)
   ]);
   const lessonSummary = getTutorLessonDashboardSummary(lessons);
   const workSummary = getTutorLessonWorkSummary(lessons, homework);
@@ -171,6 +174,14 @@ export default async function TutorDashboardPage() {
           icon={<BookOpenCheck className="h-4 w-4 text-warm-gold" />}
         />
       </div>
+
+      <ActivityFeed
+        title="Recent Teaching Activity"
+        description="A quick trail of lesson, homework, report, and notification updates for your assigned students."
+        items={tutorActivity}
+        emptyTitle="No teaching activity yet"
+        emptyDescription="Assigned lessons, homework, and report updates will appear here as TopMox schedules your work."
+      />
 
       <Card className="border-royal-blue/20">
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

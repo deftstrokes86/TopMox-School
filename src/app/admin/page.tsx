@@ -11,6 +11,7 @@ import {
   UserCheck
 } from "lucide-react";
 
+import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -37,6 +38,7 @@ import {
   getAdminReports,
   getReportsDueForAdmin
 } from "@/server/queries/report.queries";
+import { getAdminActivityFeed } from "@/server/queries/activity.queries";
 
 export const dynamic = "force-dynamic";
 
@@ -60,12 +62,19 @@ function formatPaymentMethod(value: string): string {
 
 export default async function AdminDashboardPage() {
   const user = await requireDashboardAccess("ADMIN");
-  const [counts, recentAssessments, paymentSummary, recentPayments] =
+  const [
+    counts,
+    recentAssessments,
+    paymentSummary,
+    recentPayments,
+    adminActivity
+  ] =
     await Promise.all([
       getAssessmentRequestCountsByStatus(),
       getAdminAssessmentRequests({ take: 5 }),
       getAdminPaymentSummary(),
-      getAdminPayments({ take: 5 })
+      getAdminPayments({ take: 5 }),
+      getAdminActivityFeed(8)
     ]);
   const [
     enrollmentSummary,
@@ -256,6 +265,14 @@ export default async function AdminDashboardPage() {
           icon={<ClipboardList className="h-5 w-5 text-info" />}
         />
       </div>
+
+      <ActivityFeed
+        title="Recent Operational Activity"
+        description="A concise view of recent assessment, payment, lesson, report, support, and communication updates across TopMox."
+        items={adminActivity}
+        emptyTitle="No operational activity yet"
+        emptyDescription="Recent assessment, payment, lesson, report, support, and communication updates will appear here."
+      />
 
       <Card className="border-royal-blue/20">
         <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

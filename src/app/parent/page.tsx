@@ -2,6 +2,7 @@ import {
   ParentOnboardingStatePanel,
   type ParentDashboardPlanNextStep
 } from "@/components/dashboard/ParentOnboardingStatePanel";
+import { ActivityFeed } from "@/components/dashboard/ActivityFeed";
 import { requireDashboardAccess } from "@/lib/auth/dashboard-access";
 import type { AssessmentStatusValue } from "@/lib/utils/assessment-status";
 import { getNextUpcomingLessonSummary } from "@/lib/utils/lesson-dashboard";
@@ -18,6 +19,7 @@ import { getCurrentParentLessons } from "@/server/queries/lesson.queries";
 import { getParentOnboardingStatus } from "@/server/queries/parent.queries";
 import { getCurrentParentPayments } from "@/server/queries/payment.queries";
 import { getCurrentParentReports } from "@/server/queries/report.queries";
+import { getCurrentParentActivityFeed } from "@/server/queries/activity.queries";
 
 export default async function ParentPlaceholderPage() {
   const user = await requireDashboardAccess("PARENT");
@@ -28,7 +30,8 @@ export default async function ParentPlaceholderPage() {
     payments,
     lessons,
     homework,
-    reports
+    reports,
+    parentActivity
   ] = await Promise.all([
     getParentOnboardingStatus(),
     getCurrentParentAssessmentRequests(),
@@ -36,7 +39,8 @@ export default async function ParentPlaceholderPage() {
     getCurrentParentPayments(),
     getCurrentParentLessons(),
     getCurrentParentHomework(),
-    getCurrentParentReports()
+    getCurrentParentReports(),
+    getCurrentParentActivityFeed(8)
   ]);
   const latestAssessment = assessments[0]
     ? {
@@ -171,16 +175,25 @@ export default async function ParentPlaceholderPage() {
   }
 
   return (
-    <ParentOnboardingStatePanel
-      role={user.role}
-      userName={user.name}
-      userEmail={user.email}
-      initialState={onboardingStatus}
-      latestAssessment={latestAssessment}
-      nextLesson={nextLesson}
-      lessonVisibility={lessonVisibility}
-      reportVisibility={reportVisibility}
-      planNextStep={planNextStep}
-    />
+    <section className="space-y-6">
+      <ParentOnboardingStatePanel
+        role={user.role}
+        userName={user.name}
+        userEmail={user.email}
+        initialState={onboardingStatus}
+        latestAssessment={latestAssessment}
+        nextLesson={nextLesson}
+        lessonVisibility={lessonVisibility}
+        reportVisibility={reportVisibility}
+        planNextStep={planNextStep}
+      />
+      <ActivityFeed
+        title="Recent Family Activity"
+        description="Recent updates for your family across assessments, payments, lessons, homework, reports, and support."
+        items={parentActivity}
+        emptyTitle="No family activity yet"
+        emptyDescription="Your recent assessment, payment, lesson, homework, report, and support updates will appear here."
+      />
+    </section>
   );
 }

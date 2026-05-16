@@ -1,13 +1,16 @@
 import { requireAuth } from "@/lib/auth";
 import {
+  type GetUserNotificationsOptions,
   getUserNotifications,
   getUserUnreadNotificationCount
 } from "@/server/services/notification.service";
 
-export async function getCurrentUserNotifications() {
+export async function getCurrentUserNotifications(
+  options?: GetUserNotificationsOptions
+) {
   const user = await requireAuth();
 
-  return getUserNotifications(user.id);
+  return getUserNotifications(user.id, options);
 }
 
 export async function getCurrentUserUnreadNotificationCount() {

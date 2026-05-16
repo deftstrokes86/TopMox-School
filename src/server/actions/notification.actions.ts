@@ -94,3 +94,13 @@ export async function markAllNotificationsReadAction(): Promise<
     throw error;
   }
 }
+
+export async function markNotificationReadFromFormAction(formData: FormData) {
+  await markNotificationReadAction({
+    notificationId: String(formData.get("notificationId") ?? "")
+  });
+}
+
+export async function markAllNotificationsReadFromFormAction() {
+  await markAllNotificationsReadAction();
+}

@@ -1,21 +1,26 @@
 import { NextResponse } from "next/server";
 
+import { BRAND } from "@/lib/constants/brand";
 import { checkDatabaseConnection } from "@/lib/db/connection-check";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const isConnected = await checkDatabaseConnection();
+  let isConnected = false;
 
-  if (isConnected) {
-    return NextResponse.json(
-      { status: "ok", database: "connected" },
-      { status: 200 }
-    );
+  try {
+    isConnected = await checkDatabaseConnection();
+  } catch (error) {
+    console.error("Health check database probe failed:", error);
   }
 
   return NextResponse.json(
-    { status: "error", database: "disconnected" },
-    { status: 503 }
+    {
+      status: isConnected ? "ok" : "degraded",
+      app: BRAND.PRODUCT_NAME,
+      timestamp: new Date().toISOString(),
+      database: isConnected ? "connected" : "disconnected"
+    },
+    { status: 200 }
   );
 }

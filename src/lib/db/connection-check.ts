@@ -4,9 +4,10 @@ import { PrismaClient } from "@prisma/client";
  * Performs a lightweight connectivity check against the configured database.
  */
 export async function checkDatabaseConnection(): Promise<boolean> {
-  const prisma = new PrismaClient();
+  let prisma: PrismaClient | null = null;
 
   try {
+    prisma = new PrismaClient();
     await prisma.$connect();
     return true;
   } catch (error) {
@@ -14,7 +15,7 @@ export async function checkDatabaseConnection(): Promise<boolean> {
     return false;
   } finally {
     try {
-      await prisma.$disconnect();
+      await prisma?.$disconnect();
     } catch (disconnectError) {
       console.error(
         "Database connectivity check disconnect failed:",
@@ -23,4 +24,3 @@ export async function checkDatabaseConnection(): Promise<boolean> {
     }
   }
 }
-

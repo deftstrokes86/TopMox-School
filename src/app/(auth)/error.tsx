@@ -2,17 +2,18 @@
 
 import { AppErrorFallback } from "@/components/shared/AppErrorFallback";
 
-type AppErrorPageProps = {
+type AuthErrorProps = {
   error: Error & { digest?: string };
   reset: () => void;
 };
 
-export default function AppErrorPage({ error, reset }: AppErrorPageProps) {
+export default function AuthError({ error, reset }: AuthErrorProps) {
   return (
     <AppErrorFallback
       error={error}
       reset={reset}
-      context="root-route-error"
+      context="auth-route-error"
+      description="We could not load the account page safely. Please try again or return home."
     />
   );
 }

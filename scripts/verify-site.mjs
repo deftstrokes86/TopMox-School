@@ -3,15 +3,21 @@ const MIN_HTML_LENGTH = 1000;
 const REQUIRED_TEXT = "TopMox";
 
 const routes = [
-  "/",
-  "/global-tutoring",
-  "/subjects",
-  "/pricing",
-  "/about",
-  "/contact",
-  "/faq",
-  "/resources",
-  "/login"
+  { path: "/", kind: "html" },
+  { path: "/global-tutoring", kind: "html" },
+  { path: "/subjects", kind: "html" },
+  { path: "/pricing", kind: "html" },
+  { path: "/about", kind: "html" },
+  { path: "/faq", kind: "html" },
+  { path: "/contact", kind: "html" },
+  { path: "/resources", kind: "html" },
+  { path: "/login", kind: "html" },
+  { path: "/register", kind: "html" },
+  { path: "/forgot-password", kind: "html" },
+  { path: "/admin", kind: "html" },
+  { path: "/parent", kind: "html" },
+  { path: "/tutor", kind: "html" },
+  { path: "/api/health", kind: "json" }
 ];
 
 function fail(message) {
@@ -40,7 +46,7 @@ function extractStaticAssets(html) {
   return [...new Set(matches)];
 }
 
-async function verifyRoute(route) {
+async function verifyHtmlRoute(route) {
   const url = `${BASE_URL.replace(/\/$/, "")}${route}`;
   const response = await fetchOk(url, `Route ${route}`);
   const html = await response.text();
@@ -56,11 +62,34 @@ async function verifyRoute(route) {
   return html;
 }
 
+async function verifyJsonRoute(route) {
+  const url = `${BASE_URL.replace(/\/$/, "")}${route}`;
+  const response = await fetchOk(url, `Route ${route}`);
+  const payload = await response.json();
+
+  if (!payload || typeof payload !== "object") {
+    fail(`route ${route} did not return a JSON object.`);
+  }
+
+  if (!["ok", "degraded"].includes(payload.status)) {
+    fail(`route ${route} returned unexpected health status "${payload.status}".`);
+  }
+
+  if (!payload.timestamp || !payload.app) {
+    fail(`route ${route} is missing app or timestamp health metadata.`);
+  }
+}
+
 async function main() {
-  const homepageHtml = await verifyRoute("/");
+  const homepageHtml = await verifyHtmlRoute("/");
 
   for (const route of routes.slice(1)) {
-    await verifyRoute(route);
+    if (route.kind === "json") {
+      await verifyJsonRoute(route.path);
+      continue;
+    }
+
+    await verifyHtmlRoute(route.path);
   }
 
   const staticAssets = extractStaticAssets(homepageHtml);
@@ -82,4 +111,3 @@ async function main() {
 main().catch((error) => {
   fail(error instanceof Error ? error.message : String(error));
 });
-

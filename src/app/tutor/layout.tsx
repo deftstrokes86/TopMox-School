@@ -13,10 +13,17 @@ import {
 
 export default async function TutorLayout({ children }: { children: ReactNode }) {
   const user = await requireDashboardAccess("TUTOR");
-  const [notifications, unreadCount] = await Promise.all([
-    getRecentCurrentUserNotifications(5),
-    getCurrentUserUnreadNotificationCount()
-  ]);
+  let notifications: NotificationUiItem[] = [];
+  let unreadCount = 0;
+
+  try {
+    [notifications, unreadCount] = (await Promise.all([
+      getRecentCurrentUserNotifications(5),
+      getCurrentUserUnreadNotificationCount()
+    ])) as [NotificationUiItem[], number];
+  } catch (error) {
+    console.error("Tutor notification summary failed to load:", error);
+  }
 
   return (
     <DashboardShell
@@ -29,7 +36,7 @@ export default async function TutorLayout({ children }: { children: ReactNode })
           <NotificationDropdown
             currentUserId={user.id}
             role={user.role}
-            notifications={notifications as NotificationUiItem[]}
+            notifications={notifications}
             unreadCount={unreadCount}
           />
           <DashboardUserMenu

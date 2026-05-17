@@ -18,8 +18,11 @@
     "format:check": "prettier --check .",
     "typecheck": "node scripts/typecheck.mjs",
     "test": "tsx --test tests/**/*.test.ts",
+    "test:e2e": "node scripts/verify-browser.mjs",
+    "test:e2e:headed": "node scripts/verify-browser.mjs --headed",
     "test:watch": "tsx --test --watch tests/**/*.test.ts",
     "test:coverage": "tsx --test --experimental-test-coverage tests/**/*.test.ts",
+    "verify:browser": "node scripts/verify-browser.mjs tests/e2e/smoke.spec.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
@@ -44,6 +47,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/node": "^22.10.2",
     "@types/react": "^18.3.13",
     "@types/react-dom": "^18.3.1",

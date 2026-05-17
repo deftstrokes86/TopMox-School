@@ -24,13 +24,17 @@ If a test cannot be written because infrastructure is missing, state exactly why
 Before reporting a feature phase as complete, run:
 
 ```bash
+npm run test
 npm run lint
 npm run typecheck
-npm run test
 npm run build
+npm run verify:site
+npm run verify:browser
 ```
 
-If any command cannot run because of environment configuration, report the missing variable or external dependency exactly.
+Run `npm run verify:site` and `npm run verify:browser` when those scripts are available in `package.json`.
+
+If any command cannot run because of environment configuration, browser binaries, a missing dev server, or an external dependency, report the exact reason honestly.
 
 ## Current Test Setup
 

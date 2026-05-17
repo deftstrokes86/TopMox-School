@@ -54,6 +54,59 @@ It checks:
 Dashboard routes may redirect unauthenticated users to `/login`. That is safe
 as long as the redirect produces real HTML instead of a blank page or crash.
 
+## Browser Smoke Checks
+
+Run the browser smoke suite with:
+
+```bash
+npm run verify:browser
+```
+
+If Playwright browser binaries are missing on a fresh machine, install Chromium
+first:
+
+```bash
+npx playwright install chromium
+```
+
+The browser smoke suite starts a clean dev server on `http://localhost:7000`
+and checks these routes in Chromium:
+
+- Public: `/`, `/global-tutoring`, `/subjects`, `/pricing`, `/about`, `/faq`,
+  `/contact`, `/resources`.
+- Auth: `/login`, `/register`, `/forgot-password`.
+- Protected dashboards: `/admin`, `/parent`, `/tutor`.
+- Health: `/api/health`.
+
+Protected routes may redirect to `/login` when unauthenticated. That is valid
+as long as the browser renders meaningful text and does not blank.
+
+The browser suite fails on serious client-side issues, including:
+
+- Uncaught page errors.
+- Hydration failures.
+- Minified React errors.
+- `ChunkLoadError`.
+- Missing Next.js compiled chunks.
+- Manifest JSON parse failures.
+- `TypeError` or `ReferenceError` crashes.
+- `Cannot read properties of undefined/null`.
+- `/_next/static` 404 or 500 responses.
+
+It also fails if the body has no meaningful visible text, stays on the loading
+fallback, or renders only the generic error boundary for routes that should load
+normally.
+
+## `verify:site` vs `verify:browser`
+
+Use both checks because they catch different failures:
+
+- `npm run verify:site` is a Node HTTP smoke test. It verifies server responses,
+  redirects, route HTML, health JSON, and static asset URLs.
+- `npm run verify:browser` is a Playwright Chromium smoke test. It catches
+  hydration failures, browser console errors, uncaught client errors, and real
+  blank-screen behavior.
+
 ## Blank Page Recovery
 
 If a browser shows a blank page after the dev server starts:
@@ -84,6 +137,17 @@ Check the dev terminal for:
 - Prisma generated-client errors.
 
 If those appear, stop the dev server, clean the Next cache, and restart.
+
+If the blank screen returns after cache cleanup, run:
+
+```bash
+npm run verify:site
+npm run verify:browser
+```
+
+Use the failing route and any browser console error reported by Playwright as
+the starting point for the fix. Do not continue feature work until the route
+renders or shows a useful error state.
 
 ## Health Check
 
@@ -116,13 +180,14 @@ npm run test
 npm run lint
 npm run typecheck
 npm run build
+npm run verify:site
+npm run verify:browser
 ```
 
-Then start the app and run:
+`npm run verify:site` expects the app to already be running. Start it first:
 
 ```bash
 npm run dev:clean
-npm run verify:site
 ```
 
 At minimum, manually check:

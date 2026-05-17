@@ -23,6 +23,7 @@ playwright-report/
 
 # local env files
 .env*
+!.env.example
 
 # prisma
 prisma/dev.db

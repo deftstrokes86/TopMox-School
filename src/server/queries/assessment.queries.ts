@@ -4,7 +4,7 @@ import { requireAdmin, requireParent } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { ASSESSMENT_STATUSES } from "@/lib/validations/assessment.schema";
 
-const assessmentRequestSelect = {
+const assessmentRequestBaseSelect = {
   id: true,
   parentId: true,
   studentId: true,
@@ -16,7 +16,6 @@ const assessmentRequestSelect = {
   notes: true,
   scheduledAt: true,
   meetingLink: true,
-  internalNotes: true,
   createdAt: true,
   updatedAt: true,
   parent: {
@@ -67,7 +66,16 @@ const assessmentRequestSelect = {
         }
       }
     }
-  },
+  }
+} satisfies Prisma.AssessmentRequestSelect;
+
+export const assessmentRequestParentSelect = {
+  ...assessmentRequestBaseSelect
+} satisfies Prisma.AssessmentRequestSelect;
+
+export const assessmentRequestAdminSelect = {
+  ...assessmentRequestBaseSelect,
+  internalNotes: true,
   communicationLogs: {
     select: {
       id: true,
@@ -211,7 +219,7 @@ export async function getCurrentParentAssessmentRequests() {
         userId: user.id
       }
     },
-    select: assessmentRequestSelect,
+    select: assessmentRequestParentSelect,
     orderBy: {
       createdAt: "desc"
     }
@@ -230,7 +238,7 @@ export async function getAssessmentRequestForCurrentParent(
         userId: user.id
       }
     },
-    select: assessmentRequestSelect
+    select: assessmentRequestParentSelect
   });
 }
 
@@ -270,7 +278,7 @@ export async function getAdminAssessmentRequests(
 
   return db.assessmentRequest.findMany({
     where: buildAdminAssessmentWhereInput(filters),
-    select: assessmentRequestSelect,
+    select: assessmentRequestAdminSelect,
     orderBy: {
       createdAt: "desc"
     },
@@ -285,7 +293,7 @@ export async function getAdminAssessmentRequestById(assessmentId: string) {
     where: {
       id: assessmentId
     },
-    select: assessmentRequestSelect
+    select: assessmentRequestAdminSelect
   });
 }
 

@@ -35,5 +35,9 @@ export function parseDemoLoginEnabled(value: string | undefined): boolean {
 }
 
 export function isDemoLoginEnabled(): boolean {
+  if (process.env.NODE_ENV === "production") {
+    return false;
+  }
+
   return parseDemoLoginEnabled(process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED);
 }

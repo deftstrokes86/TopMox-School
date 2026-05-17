@@ -31,13 +31,88 @@ const smokeRoutes: SmokeRoute[] = [
     allowLoginRedirect: true
   },
   {
+    path: "/admin/assessments",
+    expectedText: /TopMox Global Tutoring|Log in|Assessment Requests/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/admin/payments",
+    expectedText: /TopMox Global Tutoring|Log in|Payments/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/admin/lessons",
+    expectedText: /TopMox Global Tutoring|Log in|Lessons/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/admin/reports",
+    expectedText: /TopMox Global Tutoring|Log in|Progress Reports/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/admin/support",
+    expectedText: /TopMox Global Tutoring|Log in|Support Requests/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/admin/resources",
+    expectedText: /TopMox Global Tutoring|Log in|Resources/i,
+    allowLoginRedirect: true
+  },
+  {
     path: "/parent",
     expectedText: /TopMox Global Tutoring|Log in|Parent Dashboard/i,
     allowLoginRedirect: true
   },
   {
+    path: "/parent/assessments",
+    expectedText: /TopMox Global Tutoring|Log in|Assessments/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/parent/payments",
+    expectedText: /TopMox Global Tutoring|Log in|Payments/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/parent/lessons",
+    expectedText: /TopMox Global Tutoring|Log in|Lessons/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/parent/homework",
+    expectedText: /TopMox Global Tutoring|Log in|Homework/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/parent/reports",
+    expectedText: /TopMox Global Tutoring|Log in|Progress Reports/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/parent/support",
+    expectedText: /TopMox Global Tutoring|Log in|Support/i,
+    allowLoginRedirect: true
+  },
+  {
     path: "/tutor",
     expectedText: /TopMox Global Tutoring|Log in|Tutor Dashboard/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/tutor/lessons",
+    expectedText: /TopMox Global Tutoring|Log in|Lessons/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/tutor/homework",
+    expectedText: /TopMox Global Tutoring|Log in|Homework/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/tutor/reports",
+    expectedText: /TopMox Global Tutoring|Log in|Progress Reports/i,
     allowLoginRedirect: true
   }
 ];

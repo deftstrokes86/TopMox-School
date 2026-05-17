@@ -16,8 +16,23 @@ const routes = [
   { path: "/register", kind: "html" },
   { path: "/forgot-password", kind: "html" },
   { path: "/admin", kind: "html" },
+  { path: "/admin/assessments", kind: "html" },
+  { path: "/admin/payments", kind: "html" },
+  { path: "/admin/lessons", kind: "html" },
+  { path: "/admin/reports", kind: "html" },
+  { path: "/admin/support", kind: "html" },
+  { path: "/admin/resources", kind: "html" },
   { path: "/parent", kind: "html" },
+  { path: "/parent/assessments", kind: "html" },
+  { path: "/parent/payments", kind: "html" },
+  { path: "/parent/lessons", kind: "html" },
+  { path: "/parent/homework", kind: "html" },
+  { path: "/parent/reports", kind: "html" },
+  { path: "/parent/support", kind: "html" },
   { path: "/tutor", kind: "html" },
+  { path: "/tutor/lessons", kind: "html" },
+  { path: "/tutor/homework", kind: "html" },
+  { path: "/tutor/reports", kind: "html" },
   { path: "/api/health", kind: "json" }
 ];
 

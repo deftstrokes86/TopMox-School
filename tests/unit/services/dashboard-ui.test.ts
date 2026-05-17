@@ -55,6 +55,26 @@ describe("admin dashboard UI", () => {
     assert.match(parentHtml, /Dashboard unavailable/);
     assert.match(tutorHtml, /Dashboard unavailable/);
   });
+
+  test("Admin dashboard renders useful empty states and linked operations", () => {
+    const html = renderToStaticMarkup(
+      createElement(AdminDashboardView, { data: createEmptyAdminDashboardData() })
+    );
+
+    assert.match(html, /No assessment requests yet/);
+    assert.match(html, /No paid revenue yet/);
+    assert.match(html, /No conversion data yet/);
+    assert.match(html, /No upcoming lessons/);
+    assert.match(html, /No open support requests/);
+    assert.match(html, /No payment submissions yet/);
+    assert.match(html, /No reports in review/);
+    assert.match(html, /No tutor workload yet/);
+    assert.match(html, /href="\/admin\/assessments"/);
+    assert.match(html, /href="\/admin\/payments"/);
+    assert.match(html, /href="\/admin\/lessons"/);
+    assert.match(html, /href="\/admin\/reports"/);
+    assert.match(html, /href="\/admin\/support"/);
+  });
 });
 
 describe("parent dashboard UI", () => {
@@ -85,6 +105,97 @@ describe("parent dashboard UI", () => {
     assert.doesNotMatch(html, /Other Parent Child/);
     assert.doesNotMatch(html, /Internal admin note/);
   });
+
+  test("Parent dashboard renders useful empty states", () => {
+    const html = renderToStaticMarkup(
+      createElement(ParentDashboardView, { data: createEmptyParentDashboardData() })
+    );
+
+    assert.match(html, /Complete parent profile/);
+    assert.match(html, /No child profile yet/);
+    assert.match(html, /No tutoring plan yet/);
+    assert.match(html, /No lessons scheduled yet/);
+    assert.match(html, /No homework assigned yet/);
+    assert.match(html, /No progress reports yet/);
+    assert.match(html, /No open support requests/);
+  });
+
+  test("Parent dashboard next action follows journey state", () => {
+    const noAssessmentHtml = renderToStaticMarkup(
+      createElement(ParentDashboardView, {
+        data: {
+          ...createParentDashboardData(),
+          latestAssessment: null,
+          enrollments: [],
+          activeEnrollment: null,
+          nextUpcomingLesson: null,
+          paymentStatusSummary: {
+            pending: 0,
+            awaitingVerification: 0,
+            paid: 0,
+            failed: 0
+          }
+        }
+      })
+    );
+    const recommendationHtml = renderToStaticMarkup(
+      createElement(ParentDashboardView, {
+        data: {
+          ...createParentDashboardData(),
+          latestAssessment: {
+            id: "assessment-ready",
+            status: "PLAN_RECOMMENDED",
+            student: { id: "student-1", fullName: "Ada M" }
+          },
+          enrollments: [],
+          activeEnrollment: null,
+          nextUpcomingLesson: null,
+          paymentStatusSummary: {
+            pending: 0,
+            awaitingVerification: 0,
+            paid: 0,
+            failed: 0
+          }
+        }
+      })
+    );
+    const lessonHtml = renderToStaticMarkup(
+      createElement(ParentDashboardView, {
+        data: {
+          ...createParentDashboardData(),
+          latestAssessment: {
+            id: "assessment-converted",
+            status: "CONVERTED",
+            student: { id: "student-1", fullName: "Ada M" }
+          },
+          enrollments: [
+            {
+              id: "enrollment-active",
+              status: "ACTIVE",
+              student: { id: "student-1", fullName: "Ada M" },
+              tutoringPlan: { id: "plan-1", name: "Focused Support" }
+            }
+          ],
+          activeEnrollment: {
+            id: "enrollment-active",
+            status: "ACTIVE",
+            student: { id: "student-1", fullName: "Ada M" },
+            tutoringPlan: { id: "plan-1", name: "Focused Support" }
+          },
+          paymentStatusSummary: {
+            pending: 0,
+            awaitingVerification: 0,
+            paid: 1,
+            failed: 0
+          }
+        }
+      })
+    );
+
+    assert.match(noAssessmentHtml, /Book child assessment/);
+    assert.match(recommendationHtml, /Accept recommended plan/);
+    assert.match(lessonHtml, /View next lesson/);
+  });
 });
 
 describe("tutor dashboard UI", () => {
@@ -112,6 +223,19 @@ describe("tutor dashboard UI", () => {
     assert.doesNotMatch(html, /Payment Summary/);
     assert.doesNotMatch(html, /NGN/);
     assert.doesNotMatch(html, /Unassigned Student/);
+  });
+
+  test("Tutor dashboard renders useful empty states", () => {
+    const html = renderToStaticMarkup(
+      createElement(TutorDashboardView, { data: createEmptyTutorDashboardData() })
+    );
+
+    assert.match(html, /No lessons assigned yet/);
+    assert.match(html, /No lessons need notes/);
+    assert.match(html, /No assigned students yet/);
+    assert.match(html, /No homework assigned/);
+    assert.match(html, /Draft reports/);
+    assert.match(html, /Reports in review/);
   });
 });
 
@@ -240,6 +364,46 @@ function createAdminDashboardData() {
   };
 }
 
+function createEmptyAdminDashboardData() {
+  return {
+    ...createAdminDashboardData(),
+    stats: {
+      totalParents: 0,
+      totalStudents: 0,
+      activeEnrollments: 0,
+      pendingAssessments: 0,
+      paymentsAwaitingVerification: 0,
+      paidPayments: 0,
+      upcomingLessons: 0,
+      completedLessons: 0,
+      openSupportRequests: 0,
+      reportsInReview: 0,
+      activeTutors: 0
+    },
+    revenue: {
+      totalPaidRevenue: 0,
+      paidPaymentCount: 0,
+      revenueByCurrency: [],
+      recentPaidPayments: []
+    },
+    conversionFunnel: {
+      assessmentRequests: 0,
+      scheduledAssessments: 0,
+      completedAssessments: 0,
+      planRecommended: 0,
+      convertedAssessments: 0,
+      activeEnrollments: 0
+    },
+    recentAssessmentRequests: [],
+    recentPayments: [],
+    upcomingLessons: [],
+    openSupportRequests: [],
+    reportsAwaitingReview: [],
+    tutorWorkload: [],
+    recentActivity: []
+  };
+}
+
 function createParentDashboardData() {
   return {
     user: {
@@ -346,6 +510,40 @@ function createParentDashboardData() {
   };
 }
 
+function createEmptyParentDashboardData() {
+  return {
+    ...createParentDashboardData(),
+    parentProfileStatus: {
+      hasParentProfile: false,
+      hasChildren: false,
+      childrenCount: 0,
+      isComplete: false
+    },
+    parentProfile: null,
+    childProfiles: [],
+    latestAssessment: null,
+    recommendedPlan: null,
+    enrollments: [],
+    activeEnrollment: null,
+    paymentStatusSummary: {
+      pending: 0,
+      awaitingVerification: 0,
+      paid: 0,
+      failed: 0
+    },
+    nextUpcomingLesson: null,
+    recentCompletedLessonNote: null,
+    homeworkDue: [],
+    latestPublishedReport: null,
+    openSupportRequests: [],
+    notificationsSummary: {
+      unreadCount: 0,
+      recent: []
+    },
+    recentActivity: []
+  };
+}
+
 function createTutorDashboardData() {
   return {
     user: {
@@ -433,6 +631,35 @@ function createTutorDashboardData() {
           student: { id: "student-1", fullName: "Ada M" }
         }
       ],
+      published: [],
+      due: []
+    },
+    notificationsSummary: {
+      unreadCount: 0,
+      recent: []
+    },
+    recentActivity: []
+  };
+}
+
+function createEmptyTutorDashboardData() {
+  return {
+    ...createTutorDashboardData(),
+    tutorProfile: {
+      id: "tutor-profile-1",
+      userId: "tutor-user",
+      status: "ACTIVE",
+      user: { id: "tutor-user", name: "Tutor One", email: "tutor@test.local" },
+      subjects: []
+    },
+    todayLessons: [],
+    upcomingLessons: [],
+    lessonsNeedingNotes: [],
+    assignedStudents: [],
+    homeworkAssigned: [],
+    reports: {
+      draft: [],
+      inReview: [],
       published: [],
       due: []
     },

@@ -26,8 +26,23 @@ describe("app stability infrastructure", () => {
       "/register",
       "/forgot-password",
       "/admin",
+      "/admin/assessments",
+      "/admin/payments",
+      "/admin/lessons",
+      "/admin/reports",
+      "/admin/support",
+      "/admin/resources",
       "/parent",
+      "/parent/assessments",
+      "/parent/payments",
+      "/parent/lessons",
+      "/parent/homework",
+      "/parent/reports",
+      "/parent/support",
       "/tutor",
+      "/tutor/lessons",
+      "/tutor/homework",
+      "/tutor/reports",
       "/api/health"
     ];
 
@@ -48,6 +63,35 @@ describe("app stability infrastructure", () => {
       /["']\/resources\/how-online-tutoring-works-at-topmox["']/,
       "Expected Playwright smoke checks to cover a published resource detail page"
     );
+  });
+
+  test("browser smoke checks include dashboard-linked routes", () => {
+    const browserSmokeSpec = readProjectFile("tests/e2e/smoke.spec.ts");
+    const requiredDashboardRoutes = [
+      "/admin/assessments",
+      "/admin/payments",
+      "/admin/lessons",
+      "/admin/reports",
+      "/admin/support",
+      "/admin/resources",
+      "/parent/assessments",
+      "/parent/payments",
+      "/parent/lessons",
+      "/parent/homework",
+      "/parent/reports",
+      "/parent/support",
+      "/tutor/lessons",
+      "/tutor/homework",
+      "/tutor/reports"
+    ];
+
+    for (const route of requiredDashboardRoutes) {
+      assert.match(
+        browserSmokeSpec,
+        new RegExp(`["']${route.replace("/", "\\/")}["']`),
+        `Expected Playwright smoke checks to cover ${route}`
+      );
+    }
   });
 
   test("Next.js app has root error, global error, not-found, and loading boundaries", () => {
@@ -79,6 +123,38 @@ describe("app stability infrastructure", () => {
 
     for (const path of requiredRouteGroupFiles) {
       assert.equal(existsSync(join(repoRoot, path)), true, `${path} should exist`);
+    }
+  });
+
+  test("middleware guards protected dashboard routes before page queries run", () => {
+    const middlewarePath = join(repoRoot, "src/middleware.ts");
+
+    assert.equal(
+      existsSync(middlewarePath),
+      true,
+      "src/middleware.ts should exist so Next.js loads it with the src/app router"
+    );
+
+    const middleware = readFileSync(middlewarePath, "utf8");
+    const requiredProtectedPrefixes = ["/admin", "/parent", "/tutor"];
+
+    assert.match(
+      middleware,
+      /getToken/,
+      "middleware should inspect the NextAuth JWT before protected page rendering"
+    );
+    assert.match(
+      middleware,
+      /callbackUrl/,
+      "middleware should preserve a callbackUrl when redirecting to login"
+    );
+
+    for (const prefix of requiredProtectedPrefixes) {
+      assert.match(
+        middleware,
+        new RegExp(`["']${prefix.replace("/", "\\/")}["']`),
+        `Expected middleware to guard ${prefix}`
+      );
     }
   });
 });

@@ -38,7 +38,7 @@ type DashboardLesson = {
   id: string;
   title: string;
   startTime: Date;
-  endTime: Date;
+  endTime?: Date;
   timezone: string;
   status: string;
   meetingLink?: string | null;
@@ -154,6 +154,48 @@ type AdminActivityReportRecord = {
   createdAt: Date;
   student?: {
     fullName?: string;
+  } | null;
+};
+
+type AdminDashboardAssessmentItem = AdminActivityAssessmentRecord & {
+  parent?: {
+    user?: {
+      name?: string | null;
+      email?: string | null;
+    } | null;
+  } | null;
+};
+
+type AdminDashboardPaymentItem = AdminActivityPaymentRecord & {
+  paymentMethod?: string | null;
+  parent?: {
+    user?: {
+      name?: string | null;
+      email?: string | null;
+    } | null;
+  } | null;
+};
+
+type AdminDashboardSupportItem = AdminActivitySupportRecord & {
+  parent?: {
+    user?: {
+      name?: string | null;
+      email?: string | null;
+    } | null;
+  } | null;
+  student?: {
+    id?: string;
+    fullName?: string;
+  } | null;
+};
+
+type AdminDashboardReportItem = AdminActivityReportRecord & {
+  title?: string;
+  reportingMonth?: Date;
+  tutor?: {
+    user?: {
+      name?: string | null;
+    } | null;
   } | null;
 };
 
@@ -518,12 +560,12 @@ export async function getAdminConversionFunnel(
   ]);
 
   return {
-    assessmentRequests,
-    scheduledAssessments,
-    completedAssessments,
-    planRecommended,
-    convertedAssessments,
-    activeEnrollments
+    assessmentRequests: toNumber(assessmentRequests),
+    scheduledAssessments: toNumber(scheduledAssessments),
+    completedAssessments: toNumber(completedAssessments),
+    planRecommended: toNumber(planRecommended),
+    convertedAssessments: toNumber(convertedAssessments),
+    activeEnrollments: toNumber(activeEnrollments)
   };
 }
 
@@ -834,25 +876,26 @@ export async function getAdminDashboardDataForUser(
       role: user.role
     },
     stats: {
-      totalParents,
-      totalStudents,
-      activeEnrollments,
-      pendingAssessments,
-      paymentsAwaitingVerification,
-      paidPayments,
-      upcomingLessons: upcomingLessonsCount,
-      completedLessons,
-      openSupportRequests,
-      reportsInReview,
-      activeTutors
+      totalParents: toNumber(totalParents),
+      totalStudents: toNumber(totalStudents),
+      activeEnrollments: toNumber(activeEnrollments),
+      pendingAssessments: toNumber(pendingAssessments),
+      paymentsAwaitingVerification: toNumber(paymentsAwaitingVerification),
+      paidPayments: toNumber(paidPayments),
+      upcomingLessons: toNumber(upcomingLessonsCount),
+      completedLessons: toNumber(completedLessons),
+      openSupportRequests: toNumber(openSupportRequests),
+      reportsInReview: toNumber(reportsInReview),
+      activeTutors: toNumber(activeTutors)
     },
     revenue,
     conversionFunnel,
-    recentAssessmentRequests,
-    recentPayments,
-    upcomingLessons,
-    openSupportRequests: supportQueue,
-    reportsAwaitingReview,
+    recentAssessmentRequests:
+      recentAssessmentRequests as AdminDashboardAssessmentItem[],
+    recentPayments: recentPayments as AdminDashboardPaymentItem[],
+    upcomingLessons: upcomingLessons as DashboardLesson[],
+    openSupportRequests: supportQueue as AdminDashboardSupportItem[],
+    reportsAwaitingReview: reportsAwaitingReview as AdminDashboardReportItem[],
     tutorWorkload,
     recentActivity
   };
@@ -1168,7 +1211,7 @@ export async function getCurrentParentDashboardDataForUser(
     latestPublishedReport,
     openSupportRequests: parentSupportRequests,
     notificationsSummary: {
-      unreadCount: unreadNotifications,
+      unreadCount: toNumber(unreadNotifications),
       recent: parentNotifications
     },
     recentActivity
@@ -1390,10 +1433,10 @@ export async function getCurrentTutorDashboardDataForUser(
       draft: reportsList.filter((report) => report.status === "DRAFT"),
       inReview: reportsList.filter((report) => report.status === "REVIEW"),
       published: reportsList.filter((report) => report.status === "PUBLISHED"),
-      due: reportsDue
+      due: reportsDue as EnrollmentRecord[]
     },
     notificationsSummary: {
-      unreadCount: unreadNotifications,
+      unreadCount: toNumber(unreadNotifications),
       recent: tutorNotifications
     },
     recentActivity

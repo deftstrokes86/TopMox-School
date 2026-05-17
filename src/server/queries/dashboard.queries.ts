@@ -625,6 +625,7 @@ export async function getAdminDashboardDataForUser(
   assertDashboardRole(user, "ADMIN");
   const prisma = asClient(client);
 
+  try {
   const [
     totalParents,
     totalStudents,
@@ -899,6 +900,10 @@ export async function getAdminDashboardDataForUser(
     tutorWorkload,
     recentActivity
   };
+  } catch (error) {
+    console.error("Admin dashboard data failed to load:", error);
+    return createEmptyAdminDashboard(user);
+  }
 }
 
 export async function getCurrentParentDashboardDataForUser(
@@ -1476,6 +1481,51 @@ function summarizePayments(payments: ParentPaymentRecord[]) {
       failed: 0
     }
   );
+}
+
+function createEmptyAdminDashboard(user: AuthUser) {
+  return {
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    },
+    stats: {
+      totalParents: 0,
+      totalStudents: 0,
+      activeEnrollments: 0,
+      pendingAssessments: 0,
+      paymentsAwaitingVerification: 0,
+      paidPayments: 0,
+      upcomingLessons: 0,
+      completedLessons: 0,
+      openSupportRequests: 0,
+      reportsInReview: 0,
+      activeTutors: 0
+    },
+    revenue: {
+      totalPaidRevenue: 0,
+      paidPaymentCount: 0,
+      revenueByCurrency: [],
+      recentPaidPayments: []
+    },
+    conversionFunnel: {
+      assessmentRequests: 0,
+      scheduledAssessments: 0,
+      completedAssessments: 0,
+      planRecommended: 0,
+      convertedAssessments: 0,
+      activeEnrollments: 0
+    },
+    recentAssessmentRequests: [],
+    recentPayments: [],
+    upcomingLessons: [],
+    openSupportRequests: [],
+    reportsAwaitingReview: [],
+    tutorWorkload: [],
+    recentActivity: [] as ActivityFeedItem[]
+  };
 }
 
 function createEmptyParentDashboard(user: AuthUser) {

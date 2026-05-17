@@ -24,6 +24,21 @@ type LoginFormProps = {
   demoAccounts?: DemoLoginAccount[];
 };
 
+async function waitForDashboardPathAfterSignIn() {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const session = await getSession();
+    const nextPath = getDashboardPathForRole(session?.user?.role);
+
+    if (nextPath !== "/login") {
+      return nextPath;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  }
+
+  return "/login";
+}
+
 export function LoginForm({
   demoLoginEnabled = false,
   demoAccounts = []
@@ -58,8 +73,7 @@ export function LoginForm({
       return;
     }
 
-    const session = await getSession();
-    const nextPath = getDashboardPathForRole(session?.user?.role);
+    const nextPath = await waitForDashboardPathAfterSignIn();
 
     if (nextPath === "/login") {
       setFormError("We could not determine your account role. Please try again.");
@@ -86,8 +100,7 @@ export function LoginForm({
         return;
       }
 
-      const session = await getSession();
-      const nextPath = getDashboardPathForRole(session?.user?.role);
+      const nextPath = await waitForDashboardPathAfterSignIn();
 
       if (nextPath === "/login") {
         setFormError("We could not determine your account role. Please try again.");
@@ -103,6 +116,7 @@ export function LoginForm({
 
   return (
     <motion.form
+      method="post"
       className="space-y-5"
       onSubmit={handleSubmit(onSubmit)}
       initial={{ opacity: 0, y: 8 }}

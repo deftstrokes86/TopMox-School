@@ -21,6 +21,7 @@ describe("app stability infrastructure", () => {
       "/faq",
       "/contact",
       "/resources",
+      "/resources/how-online-tutoring-works-at-topmox",
       "/login",
       "/register",
       "/forgot-password",
@@ -37,6 +38,16 @@ describe("app stability infrastructure", () => {
         `Expected scripts/verify-site.mjs to smoke check ${route}`
       );
     }
+  });
+
+  test("browser smoke checks include the published resource detail route", () => {
+    const browserSmokeSpec = readProjectFile("tests/e2e/smoke.spec.ts");
+
+    assert.match(
+      browserSmokeSpec,
+      /["']\/resources\/how-online-tutoring-works-at-topmox["']/,
+      "Expected Playwright smoke checks to cover a published resource detail page"
+    );
   });
 
   test("Next.js app has root error, global error, not-found, and loading boundaries", () => {

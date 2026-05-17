@@ -1,5 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 
+import { DEFAULT_RESOURCES } from "../src/lib/resources/default-resources";
+
 const prisma = new PrismaClient();
 
 const DEMO_PASSWORD_HASH = "demo-only-change-me";
@@ -72,10 +74,6 @@ const CommunicationLogType = {
   INTERNAL_NOTE: "INTERNAL_NOTE",
   PAYMENT_FOLLOW_UP: "PAYMENT_FOLLOW_UP",
   ACADEMIC_FOLLOW_UP: "ACADEMIC_FOLLOW_UP"
-} as const;
-
-const ResourceStatus = {
-  PUBLISHED: "PUBLISHED"
 } as const;
 
 const PreferredContactMethod = {
@@ -549,103 +547,28 @@ async function main(): Promise<void> {
     plansBySlug[plan.slug] = { id: plan.id, slug: plan.slug };
   }
 
-  await prisma.resource.upsert({
-    where: { slug: "how-online-tutoring-works-at-topmox" },
-    update: {
-      title: "How online tutoring works at TopMox",
-      excerpt:
-        "A step-by-step guide to TopMox Global Tutoring for busy parents in Nigeria and abroad.",
-      content:
-        "TopMox Global Tutoring starts with a child assessment, followed by a structured plan, consistent lessons, and monthly reporting. Parents stay informed through clear notes, homework tracking, and practical next steps.",
-      category: "Parent Guide",
-      status: ResourceStatus.PUBLISHED,
-      authorId: adminUser.id
-    },
-    create: {
-      slug: "how-online-tutoring-works-at-topmox",
-      title: "How online tutoring works at TopMox",
-      excerpt:
-        "A step-by-step guide to TopMox Global Tutoring for busy parents in Nigeria and abroad.",
-      content:
-        "TopMox Global Tutoring starts with a child assessment, followed by a structured plan, consistent lessons, and monthly reporting. Parents stay informed through clear notes, homework tracking, and practical next steps.",
-      category: "Parent Guide",
-      status: ResourceStatus.PUBLISHED,
-      authorId: adminUser.id
-    }
-  });
-
-  await prisma.resource.upsert({
-    where: { slug: "help-your-child-improve-in-mathematics" },
-    update: {
-      title: "How to help your child improve in Mathematics",
-      excerpt:
-        "Practical ways parents can support maths confidence and discipline at home.",
-      content:
-        "Consistency, error review, and confidence coaching make a measurable difference in mathematics performance. This guide shares routines that complement TopMox tutoring sessions.",
-      category: "Mathematics",
-      status: ResourceStatus.PUBLISHED,
-      authorId: adminUser.id
-    },
-    create: {
-      slug: "help-your-child-improve-in-mathematics",
-      title: "How to help your child improve in Mathematics",
-      excerpt:
-        "Practical ways parents can support maths confidence and discipline at home.",
-      content:
-        "Consistency, error review, and confidence coaching make a measurable difference in mathematics performance. This guide shares routines that complement TopMox tutoring sessions.",
-      category: "Mathematics",
-      status: ResourceStatus.PUBLISHED,
-      authorId: adminUser.id
-    }
-  });
-
-  await prisma.resource.upsert({
-    where: { slug: "reading-habits-for-primary-school-children" },
-    update: {
-      title: "Reading habits for primary school children",
-      excerpt:
-        "Simple reading routines that build fluency, comprehension, and confidence.",
-      content:
-        "Strong reading habits are built with short daily sessions, guided questioning, and a supportive environment. Parents can use these methods alongside tutor assignments.",
-      category: "Reading",
-      status: ResourceStatus.PUBLISHED,
-      authorId: adminUser.id
-    },
-    create: {
-      slug: "reading-habits-for-primary-school-children",
-      title: "Reading habits for primary school children",
-      excerpt:
-        "Simple reading routines that build fluency, comprehension, and confidence.",
-      content:
-        "Strong reading habits are built with short daily sessions, guided questioning, and a supportive environment. Parents can use these methods alongside tutor assignments.",
-      category: "Reading",
-      status: ResourceStatus.PUBLISHED,
-      authorId: adminUser.id
-    }
-  });
-
-  await prisma.resource.upsert({
-    where: { slug: "preparing-your-child-for-exam-success" },
-    update: {
-      title: "Preparing your child for exam success",
-      excerpt: "A structured exam-prep framework for parents and learners.",
-      content:
-        "Exam success improves when revision is planned, practice is timed, and progress is reviewed weekly. This resource explains how TopMox combines tutoring structure with accountability.",
-      category: "Exam Prep",
-      status: ResourceStatus.PUBLISHED,
-      authorId: adminUser.id
-    },
-    create: {
-      slug: "preparing-your-child-for-exam-success",
-      title: "Preparing your child for exam success",
-      excerpt: "A structured exam-prep framework for parents and learners.",
-      content:
-        "Exam success improves when revision is planned, practice is timed, and progress is reviewed weekly. This resource explains how TopMox combines tutoring structure with accountability.",
-      category: "Exam Prep",
-      status: ResourceStatus.PUBLISHED,
-      authorId: adminUser.id
-    }
-  });
+  for (const resourceSeed of DEFAULT_RESOURCES) {
+    await prisma.resource.upsert({
+      where: { slug: resourceSeed.slug },
+      update: {
+        title: resourceSeed.title,
+        excerpt: resourceSeed.excerpt,
+        content: resourceSeed.content,
+        category: resourceSeed.category,
+        status: resourceSeed.status,
+        authorId: adminUser.id
+      },
+      create: {
+        slug: resourceSeed.slug,
+        title: resourceSeed.title,
+        excerpt: resourceSeed.excerpt,
+        content: resourceSeed.content,
+        category: resourceSeed.category,
+        status: resourceSeed.status,
+        authorId: adminUser.id
+      }
+    });
+  }
 
   await prisma.communicationLog.deleteMany();
   await prisma.notification.deleteMany();

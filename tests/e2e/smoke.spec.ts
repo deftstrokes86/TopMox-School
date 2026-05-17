@@ -15,6 +15,10 @@ const smokeRoutes: SmokeRoute[] = [
   { path: "/faq", expectedText: /FAQ|Questions/i },
   { path: "/contact", expectedText: /Contact|WhatsApp|TopMox/i },
   { path: "/resources", expectedText: /Resources|Read more/i },
+  {
+    path: "/resources/how-online-tutoring-works-at-topmox",
+    expectedText: /How online tutoring works at TopMox|assessment|structured/i
+  },
   { path: "/login", expectedText: /TopMox Global Tutoring|Log in|Sign in/i },
   { path: "/register", expectedText: /TopMox Global Tutoring|Create|Register/i },
   {

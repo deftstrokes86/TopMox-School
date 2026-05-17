@@ -11,6 +11,7 @@ const routes = [
   { path: "/faq", kind: "html" },
   { path: "/contact", kind: "html" },
   { path: "/resources", kind: "html" },
+  { path: "/resources/how-online-tutoring-works-at-topmox", kind: "html" },
   { path: "/login", kind: "html" },
   { path: "/register", kind: "html" },
   { path: "/forgot-password", kind: "html" },

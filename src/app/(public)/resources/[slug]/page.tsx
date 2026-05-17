@@ -8,6 +8,10 @@ import { SectionHeader } from "@/components/shared/SectionHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  getDefaultResourceUiRecordBySlug,
+  getDefaultResourceUiRecords
+} from "@/lib/resources/default-resource-records";
+import {
   buildPublicResourceDetailView,
   filterPublicResourcesForDisplay
 } from "@/lib/utils/resource-ui";
@@ -57,7 +61,7 @@ async function withPublicResourceFallback<T>(
 async function loadPublishedResource(slug: string) {
   return withPublicResourceFallback(
     getPublishedResourceBySlug(slug),
-    null,
+    getDefaultResourceUiRecordBySlug(slug),
     "Published resource detail"
   );
 }
@@ -65,7 +69,7 @@ async function loadPublishedResource(slug: string) {
 async function loadRelatedResources(currentSlug: string) {
   const resources = await withPublicResourceFallback(
     getRecentPublishedResources(4),
-    [],
+    getDefaultResourceUiRecords(),
     "Related resources"
   );
 

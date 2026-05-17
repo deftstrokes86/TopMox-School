@@ -6,6 +6,7 @@ import { OfferBenefitCard } from "@/components/marketing/OfferBenefitCard";
 import { ResourceCard } from "@/components/marketing/ResourceCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { SectionHeader } from "@/components/shared/SectionHeader";
+import { getDefaultResourceUiRecords } from "@/lib/resources/default-resource-records";
 import { filterPublicResourcesForDisplay } from "@/lib/utils/resource-ui";
 import { getPublishedResources } from "@/server/queries/resource.queries";
 
@@ -44,7 +45,7 @@ async function withPublicResourceFallback<T>(
 async function loadPublishedResources() {
   const resources = await withPublicResourceFallback(
     getPublishedResources(),
-    [],
+    getDefaultResourceUiRecords(),
     "Published resources"
   );
 

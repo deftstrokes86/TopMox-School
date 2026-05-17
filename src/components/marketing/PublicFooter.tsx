@@ -75,7 +75,7 @@ export function PublicFooter() {
 
         <div className="border-t border-border pt-5">
           <p className="text-sm text-text-muted">
-            © {new Date().getFullYear()} {BRAND.PRODUCT_NAME}. All rights
+            &copy; {new Date().getFullYear()} {BRAND.PRODUCT_NAME}. All rights
             reserved.
           </p>
         </div>

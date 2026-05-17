@@ -6,6 +6,11 @@ const routes = [
   { path: "/", kind: "html" },
   { path: "/global-tutoring", kind: "html" },
   { path: "/subjects", kind: "html" },
+  { path: "/subjects/mathematics", kind: "html" },
+  { path: "/subjects/english", kind: "html" },
+  { path: "/subjects/science", kind: "html" },
+  { path: "/subjects/reading-comprehension", kind: "html" },
+  { path: "/exam-prep", kind: "html" },
   { path: "/pricing", kind: "html" },
   { path: "/about", kind: "html" },
   { path: "/faq", kind: "html" },
@@ -18,21 +23,29 @@ const routes = [
   { path: "/admin", kind: "html" },
   { path: "/admin/assessments", kind: "html" },
   { path: "/admin/payments", kind: "html" },
+  { path: "/admin/enrollments", kind: "html" },
   { path: "/admin/lessons", kind: "html" },
+  { path: "/admin/homework", kind: "html" },
   { path: "/admin/reports", kind: "html" },
   { path: "/admin/support", kind: "html" },
   { path: "/admin/resources", kind: "html" },
+  { path: "/admin/notifications", kind: "html" },
   { path: "/parent", kind: "html" },
+  { path: "/parent/onboarding", kind: "html" },
+  { path: "/parent/children", kind: "html" },
   { path: "/parent/assessments", kind: "html" },
+  { path: "/parent/enrollments", kind: "html" },
   { path: "/parent/payments", kind: "html" },
   { path: "/parent/lessons", kind: "html" },
   { path: "/parent/homework", kind: "html" },
   { path: "/parent/reports", kind: "html" },
   { path: "/parent/support", kind: "html" },
+  { path: "/parent/notifications", kind: "html" },
   { path: "/tutor", kind: "html" },
   { path: "/tutor/lessons", kind: "html" },
   { path: "/tutor/homework", kind: "html" },
   { path: "/tutor/reports", kind: "html" },
+  { path: "/tutor/notifications", kind: "html" },
   { path: "/api/health", kind: "json" }
 ];
 
@@ -73,6 +86,10 @@ async function verifyHtmlRoute(route) {
 
   if (!html.includes(REQUIRED_TEXT)) {
     fail(`route ${route} does not contain "${REQUIRED_TEXT}".`);
+  }
+
+  if (/Â|�/.test(html)) {
+    fail(`route ${route} contains visible mojibake or replacement glyphs.`);
   }
 
   return html;

@@ -10,6 +10,14 @@ const smokeRoutes: SmokeRoute[] = [
   { path: "/", expectedText: /TopMox Global Tutoring/i },
   { path: "/global-tutoring", expectedText: /Global Tutoring/i },
   { path: "/subjects", expectedText: /Subjects|Mathematics|English/i },
+  { path: "/subjects/mathematics", expectedText: /Mathematics|TopMox/i },
+  { path: "/subjects/english", expectedText: /English|TopMox/i },
+  { path: "/subjects/science", expectedText: /Science|TopMox/i },
+  {
+    path: "/subjects/reading-comprehension",
+    expectedText: /Reading|Comprehension|TopMox/i
+  },
+  { path: "/exam-prep", expectedText: /Exam|Preparation|TopMox/i },
   { path: "/pricing", expectedText: /Pricing|Tutoring Plans/i },
   { path: "/about", expectedText: /About|TopMox Schools/i },
   { path: "/faq", expectedText: /FAQ|Questions/i },
@@ -41,8 +49,18 @@ const smokeRoutes: SmokeRoute[] = [
     allowLoginRedirect: true
   },
   {
+    path: "/admin/enrollments",
+    expectedText: /TopMox Global Tutoring|Log in|Enrollments|Tutoring Plans/i,
+    allowLoginRedirect: true
+  },
+  {
     path: "/admin/lessons",
     expectedText: /TopMox Global Tutoring|Log in|Lessons/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/admin/homework",
+    expectedText: /TopMox Global Tutoring|Log in|Homework/i,
     allowLoginRedirect: true
   },
   {
@@ -61,13 +79,33 @@ const smokeRoutes: SmokeRoute[] = [
     allowLoginRedirect: true
   },
   {
+    path: "/admin/notifications",
+    expectedText: /TopMox Global Tutoring|Log in|Notifications/i,
+    allowLoginRedirect: true
+  },
+  {
     path: "/parent",
     expectedText: /TopMox Global Tutoring|Log in|Parent Dashboard/i,
     allowLoginRedirect: true
   },
   {
+    path: "/parent/onboarding",
+    expectedText: /TopMox Global Tutoring|Log in|Parent Profile|Onboarding/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/parent/children",
+    expectedText: /TopMox Global Tutoring|Log in|Children|Child/i,
+    allowLoginRedirect: true
+  },
+  {
     path: "/parent/assessments",
     expectedText: /TopMox Global Tutoring|Log in|Assessments/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/parent/enrollments",
+    expectedText: /TopMox Global Tutoring|Log in|Tutoring Plans|Enrollments/i,
     allowLoginRedirect: true
   },
   {
@@ -96,6 +134,11 @@ const smokeRoutes: SmokeRoute[] = [
     allowLoginRedirect: true
   },
   {
+    path: "/parent/notifications",
+    expectedText: /TopMox Global Tutoring|Log in|Notifications/i,
+    allowLoginRedirect: true
+  },
+  {
     path: "/tutor",
     expectedText: /TopMox Global Tutoring|Log in|Tutor Dashboard/i,
     allowLoginRedirect: true
@@ -113,6 +156,33 @@ const smokeRoutes: SmokeRoute[] = [
   {
     path: "/tutor/reports",
     expectedText: /TopMox Global Tutoring|Log in|Progress Reports/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/tutor/notifications",
+    expectedText: /TopMox Global Tutoring|Log in|Notifications/i,
+    allowLoginRedirect: true
+  }
+];
+
+const responsiveRoutes: SmokeRoute[] = [
+  { path: "/", expectedText: /TopMox Global Tutoring/i },
+  { path: "/subjects/mathematics", expectedText: /Mathematics|TopMox/i },
+  { path: "/resources", expectedText: /Resources|Read more|TopMox/i },
+  { path: "/login", expectedText: /TopMox Global Tutoring|Log in|Sign in/i },
+  {
+    path: "/admin",
+    expectedText: /TopMox Global Tutoring|Log in|Admin Dashboard/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/parent",
+    expectedText: /TopMox Global Tutoring|Log in|Parent Dashboard/i,
+    allowLoginRedirect: true
+  },
+  {
+    path: "/tutor",
+    expectedText: /TopMox Global Tutoring|Log in|Tutor Dashboard/i,
     allowLoginRedirect: true
   }
 ];
@@ -198,6 +268,22 @@ async function assertNotBlank(page: Page, route: SmokeRoute) {
   expect(bodyText, `${route.path} should not render only an error boundary`).not.toMatch(
     /Something went wrong|critical app shell issue/i
   );
+  expect(bodyText, `${route.path} should not show mojibake or replacement glyphs`).not.toMatch(
+    /Â|�/
+  );
+}
+
+async function assertNoHorizontalOverflow(page: Page, route: SmokeRoute) {
+  const overflow = await page.evaluate(() => {
+    const documentElement = document.documentElement;
+
+    return documentElement.scrollWidth - documentElement.clientWidth;
+  });
+
+  expect(
+    overflow,
+    `${route.path} should not create page-level horizontal overflow`
+  ).toBeLessThanOrEqual(2);
 }
 
 async function getVisibleBodyText(page: Page) {
@@ -282,6 +368,24 @@ test.describe("browser route smoke checks", () => {
       }
 
       await assertNotBlank(page, route);
+      guard.assertClean();
+    });
+  }
+
+  for (const route of responsiveRoutes) {
+    test(`${route.path} remains usable on mobile`, async ({ page }) => {
+      const guard = attachBrowserStabilityGuards(page);
+      await page.setViewportSize({ width: 390, height: 844 });
+
+      const response = await page.goto(route.path, {
+        waitUntil: "networkidle"
+      });
+
+      expect(response, `${route.path} should produce a mobile response`).not.toBeNull();
+      expect(response?.status(), `${route.path} mobile should not return 500`).toBeLessThan(500);
+
+      await assertNotBlank(page, route);
+      await assertNoHorizontalOverflow(page, route);
       guard.assertClean();
     });
   }

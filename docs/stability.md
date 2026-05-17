@@ -72,14 +72,29 @@ npx playwright install chromium
 The browser smoke suite starts a clean dev server on `http://localhost:7000`
 and checks these routes in Chromium:
 
-- Public: `/`, `/global-tutoring`, `/subjects`, `/pricing`, `/about`, `/faq`,
-  `/contact`, `/resources`.
+- Public: `/`, `/global-tutoring`, `/subjects`, `/subjects/mathematics`,
+  `/subjects/english`, `/subjects/science`, `/subjects/reading-comprehension`,
+  `/exam-prep`, `/pricing`, `/about`, `/faq`, `/contact`, `/resources`, and a
+  published resource detail route.
 - Auth: `/login`, `/register`, `/forgot-password`.
-- Protected dashboards: `/admin`, `/parent`, `/tutor`.
+- Protected admin routes: `/admin`, `/admin/assessments`, `/admin/payments`,
+  `/admin/enrollments`, `/admin/lessons`, `/admin/homework`, `/admin/reports`,
+  `/admin/support`, `/admin/resources`, `/admin/notifications`.
+- Protected parent routes: `/parent`, `/parent/onboarding`, `/parent/children`,
+  `/parent/assessments`, `/parent/enrollments`, `/parent/payments`,
+  `/parent/lessons`, `/parent/homework`, `/parent/reports`, `/parent/support`,
+  `/parent/notifications`.
+- Protected tutor routes: `/tutor`, `/tutor/lessons`, `/tutor/homework`,
+  `/tutor/reports`, `/tutor/notifications`.
 - Health: `/api/health`.
 
 Protected routes may redirect to `/login` when unauthenticated. That is valid
 as long as the browser renders meaningful text and does not blank.
+
+The browser suite also includes a small mobile viewport pass for representative
+public, auth, and protected routes. These checks catch page-level horizontal
+overflow, permanent loading states, and fatal browser errors before a phase is
+reported complete.
 
 The browser suite fails on serious client-side issues, including:
 
@@ -92,6 +107,7 @@ The browser suite fails on serious client-side issues, including:
 - `TypeError` or `ReferenceError` crashes.
 - `Cannot read properties of undefined/null`.
 - `/_next/static` 404 or 500 responses.
+- Visible mojibake or replacement glyphs such as `Â` or `�`.
 
 It also fails if the body has no meaningful visible text, stays on the loading
 fallback, or renders only the generic error boundary for routes that should load

@@ -191,16 +191,23 @@ export function LoginForm({
                 key={account.email}
                 type="button"
                 variant="outline"
-                className="justify-start"
+                className="h-auto justify-start whitespace-normal py-3 text-left"
                 disabled={isSubmitting || demoLoadingEmail !== null}
                 onClick={() => onDemoLogin(account)}
               >
                 {demoLoadingEmail === account.email ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-3 h-4 w-4 shrink-0 animate-spin" />
                 ) : (
-                  <Sparkles className="mr-2 h-4 w-4 text-warm-gold" />
+                  <Sparkles className="mr-3 h-4 w-4 shrink-0 text-warm-gold" />
                 )}
-                {`Continue as ${account.label}`}
+                <span>
+                  <span className="block text-sm font-semibold">
+                    {`Continue as ${account.label}: ${account.name}`}
+                  </span>
+                  <span className="block text-xs font-normal text-text-secondary">
+                    {account.walkthrough}
+                  </span>
+                </span>
               </Button>
             ))}
           </div>

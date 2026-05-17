@@ -4,6 +4,8 @@ export type DemoLoginAccount = {
   role: AppRole;
   label: "Admin" | "Tutor" | "Parent";
   email: string;
+  name: string;
+  walkthrough: string;
 };
 
 /**
@@ -16,17 +18,44 @@ export const DEMO_LOGIN_ACCOUNTS: DemoLoginAccount[] = [
   {
     role: "ADMIN",
     label: "Admin",
-    email: "admin@topmox.test"
+    email: "admin@topmox.test",
+    name: "TopMox Admin",
+    walkthrough: "Operations dashboard, assessments, payments, lessons, reports"
   },
   {
     role: "TUTOR",
     label: "Tutor",
-    email: "amara.math@topmox.test"
+    email: "amara.math@topmox.test",
+    name: "Amara Okoye",
+    walkthrough: "Mathematics and Science tutor workflow"
+  },
+  {
+    role: "TUTOR",
+    label: "Tutor",
+    email: "david.english@topmox.test",
+    name: "David Mensah",
+    walkthrough: "English and Reading tutor workflow"
   },
   {
     role: "PARENT",
     label: "Parent",
-    email: "ngozi.parent@topmox.test"
+    email: "ngozi.parent@topmox.test",
+    name: "Ngozi Akinyemi",
+    walkthrough: "Nigeria parent with active plan, lessons, homework, and report"
+  },
+  {
+    role: "PARENT",
+    label: "Parent",
+    email: "bola.ukparent@topmox.test",
+    name: "Bola Okafor",
+    walkthrough: "UK parent with scheduled assessment and pending payment review"
+  },
+  {
+    role: "PARENT",
+    label: "Parent",
+    email: "ada.canadaparent@topmox.test",
+    name: "Ada Mensah",
+    walkthrough: "Canada parent with Flutterwave payment and exam-prep history"
   }
 ];
 

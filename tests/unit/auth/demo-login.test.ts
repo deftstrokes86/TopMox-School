@@ -56,7 +56,11 @@ describe("demo login helpers", () => {
   });
 
   test("demo accounts include admin, tutor, and parent", () => {
-    const roles = DEMO_LOGIN_ACCOUNTS.map((account) => account.role).sort();
+    const roles = [...new Set(DEMO_LOGIN_ACCOUNTS.map((account) => account.role))].sort();
     assert.deepEqual(roles, ["ADMIN", "PARENT", "TUTOR"]);
+    assert.equal(
+      DEMO_LOGIN_ACCOUNTS.every((account) => account.name && account.walkthrough),
+      true
+    );
   });
 });

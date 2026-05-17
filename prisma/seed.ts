@@ -1292,7 +1292,7 @@ async function main(): Promise<void> {
     ]
   });
 
-  console.log("TopMox Phase 2 seed complete.");
+  console.log("TopMox demo seed complete.");
   console.log(
     [
       "Users: 6",

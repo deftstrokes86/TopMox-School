@@ -1,14 +1,23 @@
 import Link from "next/link";
 
-import type { ResourceArticle } from "@/lib/demo-data/resources";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
+type ResourceCardResource = {
+  title: string;
+  excerpt: string;
+  category: string;
+  slug: string;
+  href?: string;
+};
+
 type ResourceCardProps = {
-  resource: Pick<ResourceArticle, "title" | "excerpt" | "category" | "slug">;
+  resource: ResourceCardResource;
 };
 
 export function ResourceCard({ resource }: ResourceCardProps) {
+  const href = resource.href ?? `/resources/${resource.slug}`;
+
   return (
     <Card className="h-full border-border shadow-soft">
       <CardContent className="flex h-full flex-col p-6">
@@ -20,7 +29,7 @@ export function ResourceCard({ resource }: ResourceCardProps) {
         </h3>
         <p className="mt-3 text-sm text-text-secondary">{resource.excerpt}</p>
         <Button asChild variant="outline" className="mt-6 w-fit">
-          <Link href={`/resources/${resource.slug}`}>Read More</Link>
+          <Link href={href}>Read More</Link>
         </Button>
       </CardContent>
     </Card>

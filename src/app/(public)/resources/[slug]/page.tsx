@@ -8,10 +8,17 @@ import { SectionHeader } from "@/components/shared/SectionHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  getAllResources,
-  getRelatedResources,
-  getResourceBySlug
-} from "@/lib/demo-data/resources";
+  buildPublicResourceDetailView,
+  filterPublicResourcesForDisplay
+} from "@/lib/utils/resource-ui";
+import {
+  getPublishedResourceBySlug,
+  getRecentPublishedResources
+} from "@/server/queries/resource.queries";
+
+export const dynamic = "force-dynamic";
+
+const RESOURCE_QUERY_TIMEOUT_MS = 2500;
 
 type ResourceDetailPageProps = {
   params: {
@@ -19,16 +26,58 @@ type ResourceDetailPageProps = {
   };
 };
 
-export function generateStaticParams() {
-  return getAllResources().map((resource) => ({
-    slug: resource.slug
-  }));
+async function withPublicResourceFallback<T>(
+  promise: Promise<T>,
+  fallback: T,
+  label: string
+): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+
+  const guardedPromise = promise
+    .catch((error) => {
+      console.error(`${label} failed to load:`, error);
+      return fallback;
+    })
+    .finally(() => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    });
+
+  const timeoutPromise = new Promise<T>((resolve) => {
+    timeout = setTimeout(() => {
+      console.error(`${label} timed out.`);
+      resolve(fallback);
+    }, RESOURCE_QUERY_TIMEOUT_MS);
+  });
+
+  return Promise.race([guardedPromise, timeoutPromise]);
 }
 
-export function generateMetadata({
+async function loadPublishedResource(slug: string) {
+  return withPublicResourceFallback(
+    getPublishedResourceBySlug(slug),
+    null,
+    "Published resource detail"
+  );
+}
+
+async function loadRelatedResources(currentSlug: string) {
+  const resources = await withPublicResourceFallback(
+    getRecentPublishedResources(4),
+    [],
+    "Related resources"
+  );
+
+  return filterPublicResourcesForDisplay(resources).filter(
+    (resource) => resource.slug !== currentSlug
+  );
+}
+
+export async function generateMetadata({
   params
-}: ResourceDetailPageProps): Metadata {
-  const resource = getResourceBySlug(params.slug);
+}: ResourceDetailPageProps): Promise<Metadata> {
+  const resource = await loadPublishedResource(params.slug);
 
   if (!resource) {
     return {
@@ -43,14 +92,18 @@ export function generateMetadata({
   };
 }
 
-export default function ResourceDetailPage({ params }: ResourceDetailPageProps) {
-  const resource = getResourceBySlug(params.slug);
+export default async function ResourceDetailPage({
+  params
+}: ResourceDetailPageProps) {
+  const resource = buildPublicResourceDetailView(
+    await loadPublishedResource(params.slug)
+  );
 
   if (!resource) {
     notFound();
   }
 
-  const relatedResources = getRelatedResources(resource.slug, 3);
+  const relatedResources = await loadRelatedResources(resource.slug);
 
   return (
     <section className="py-12 md:py-16">
@@ -72,65 +125,63 @@ export default function ResourceDetailPage({ params }: ResourceDetailPageProps) 
           </div>
         </section>
 
-        <section className="space-y-7">
-          <Card className="border-border shadow-soft">
-            <CardContent className="space-y-8 p-6 md:p-8">
-              <p className="text-base text-text-secondary">{resource.intro}</p>
-              {resource.sections.map((section) => (
-                <article key={section.heading} className="space-y-3">
-                  <h2 className="text-2xl font-semibold text-text-primary">
-                    {section.heading}
-                  </h2>
-                  {section.paragraphs.map((paragraph) => (
-                    <p key={paragraph} className="text-sm text-text-secondary md:text-base">
-                      {paragraph}
-                    </p>
-                  ))}
-                  {section.bullets ? (
-                    <ul className="space-y-2 text-sm text-text-secondary md:text-base">
-                      {section.bullets.map((bullet) => (
-                        <li key={bullet}>- {bullet}</li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </article>
-              ))}
-            </CardContent>
-          </Card>
-        </section>
-
-        <section className="space-y-7">
-          <SectionHeader
-            eyebrow="Next Step"
-            title="Ready to move from reading to action?"
-            description="Book a child assessment so TopMox can translate these insights into a structured support direction for your child."
-          />
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button asChild>
-              <Link href="/book-assessment">Book a Child Assessment</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/pricing">View Tutoring Plans</Link>
-            </Button>
-          </div>
-        </section>
-
-        <section className="space-y-7">
-          <SectionHeader
-            eyebrow="Related Resources"
-            title="Keep learning with these parent guides"
-            description="Explore more practical support articles focused on clarity, consistency, and progress."
-          />
-          <div className="grid gap-4 md:grid-cols-3">
-            {relatedResources.map((relatedResource) => (
-              <ResourceCard key={relatedResource.slug} resource={relatedResource} />
+        <Card className="border-border shadow-soft">
+          <CardContent className="space-y-5 p-6 md:p-8">
+            {resource.paragraphs.map((paragraph) => (
+              <p
+                key={paragraph}
+                className="text-sm leading-7 text-text-secondary md:text-base"
+              >
+                {paragraph}
+              </p>
             ))}
+          </CardContent>
+        </Card>
+
+        <section className="rounded-2xl border border-warm-gold/30 bg-warm-gold/10 p-6 md:p-8">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-royal-blue">
+              Next Step
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-deep-navy md:text-3xl">
+              Want clearer support for your child?
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-text-secondary md:text-base">
+              A child assessment helps TopMox understand the learning context
+              before recommending a structured support direction.
+            </p>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+              <Button asChild>
+                <Link href="/book-assessment">Book a Child Assessment</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/resources">Back to Resources</Link>
+              </Button>
+            </div>
           </div>
         </section>
+
+        {relatedResources.length > 0 ? (
+          <section className="space-y-7">
+            <SectionHeader
+              eyebrow="Related Resources"
+              title="Keep learning with these parent guides"
+              description="Explore more practical TopMox guidance focused on clarity, consistency, and structured progress."
+            />
+            <div className="grid gap-4 md:grid-cols-3">
+              {relatedResources.map((relatedResource) => (
+                <ResourceCard
+                  key={relatedResource.slug}
+                  resource={relatedResource}
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <AssessmentCTA
           title="Book an assessment and build a clearer learning path."
-          description="TopMox Global Tutoring is designed to help parents move from uncertainty to structured support with experienced educators and visible progress."
+          description="TopMox Global Tutoring helps parents move from uncertainty to structured support with visible next steps."
         />
       </div>
     </section>

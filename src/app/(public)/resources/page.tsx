@@ -4,11 +4,55 @@ import { BookOpenText, Lightbulb, SearchCheck } from "lucide-react";
 import { AssessmentCTA } from "@/components/marketing/AssessmentCTA";
 import { OfferBenefitCard } from "@/components/marketing/OfferBenefitCard";
 import { ResourceCard } from "@/components/marketing/ResourceCard";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { SectionHeader } from "@/components/shared/SectionHeader";
-import { getAllResources } from "@/lib/demo-data/resources";
+import { filterPublicResourcesForDisplay } from "@/lib/utils/resource-ui";
+import { getPublishedResources } from "@/server/queries/resource.queries";
 
-export default function ResourcesPage() {
-  const resources = getAllResources();
+export const dynamic = "force-dynamic";
+
+const RESOURCE_QUERY_TIMEOUT_MS = 2500;
+
+async function withPublicResourceFallback<T>(
+  promise: Promise<T>,
+  fallback: T,
+  label: string
+): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+
+  const guardedPromise = promise
+    .catch((error) => {
+      console.error(`${label} failed to load:`, error);
+      return fallback;
+    })
+    .finally(() => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    });
+
+  const timeoutPromise = new Promise<T>((resolve) => {
+    timeout = setTimeout(() => {
+      console.error(`${label} timed out.`);
+      resolve(fallback);
+    }, RESOURCE_QUERY_TIMEOUT_MS);
+  });
+
+  return Promise.race([guardedPromise, timeoutPromise]);
+}
+
+async function loadPublishedResources() {
+  const resources = await withPublicResourceFallback(
+    getPublishedResources(),
+    [],
+    "Published resources"
+  );
+
+  return filterPublicResourcesForDisplay(resources);
+}
+
+export default async function ResourcesPage() {
+  const resources = await loadPublishedResources();
 
   return (
     <section className="py-12 md:py-16">
@@ -18,25 +62,32 @@ export default function ResourcesPage() {
             Parent Resources
           </p>
           <h1 className="mt-4 text-balance text-3xl font-semibold leading-tight md:text-5xl">
-            Practical guidance for parents who want clearer academic support
+            Parent Resources
           </h1>
           <p className="mt-4 max-w-3xl text-sm text-blue-50/95 md:text-base">
-            Explore educational articles designed to reduce uncertainty and help
-            you make better support decisions for your child.
+            Guides to help parents understand online tutoring, academic
+            support, and child learning progress.
           </p>
         </section>
 
         <section className="space-y-7">
           <SectionHeader
             eyebrow="Resource Library"
-            title="Start with these core parent guides"
-            description="These resources are written to support confidence, clarity, and structured action."
+            title="Helpful guidance for clearer next steps"
+            description="Read parent-focused resources from TopMox Global Tutoring, written to support confidence, clarity, and structured academic decisions."
           />
-          <div className="grid gap-4 md:grid-cols-2">
-            {resources.map((resource) => (
-              <ResourceCard key={resource.slug} resource={resource} />
-            ))}
-          </div>
+          {resources.length === 0 ? (
+            <EmptyState
+              title="Resources are being prepared"
+              description="Resources are being prepared. Check back soon for parent guides from TopMox Global Tutoring."
+            />
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {resources.map((resource) => (
+                <ResourceCard key={resource.slug} resource={resource} />
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="space-y-7">

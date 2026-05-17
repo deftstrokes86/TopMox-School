@@ -122,53 +122,66 @@ async function assertNotBlank(page: Page, route: SmokeRoute) {
 }
 
 async function getVisibleBodyText(page: Page) {
-  return page.locator("body").evaluate((body) => {
-    const normalize = (value: string | null | undefined) =>
-      (value ?? "").replace(/\s+/g, " ").trim();
-    const htmlBody = body as HTMLElement;
+  try {
+    return await page.locator("body").evaluate((body) => {
+      const normalize = (value: string | null | undefined) =>
+        (value ?? "").replace(/\s+/g, " ").trim();
+      const htmlBody = body as HTMLElement;
 
-    const bodyText = normalize(htmlBody.innerText);
-    if (bodyText.length > 0) {
-      return bodyText;
-    }
+      const bodyText = normalize(htmlBody.innerText);
+      if (bodyText.length > 0) {
+        return bodyText;
+      }
 
-    const visibleElements = Array.from(
-      body.querySelectorAll<HTMLElement>(
-        "h1,h2,h3,h4,p,a,button,label,input,textarea,summary,li"
-      )
-    ).filter((element) => {
-      const style = window.getComputedStyle(element);
-      const rect = element.getBoundingClientRect();
+      const visibleElements = Array.from(
+        body.querySelectorAll<HTMLElement>(
+          "h1,h2,h3,h4,p,a,button,label,input,textarea,summary,li"
+        )
+      ).filter((element) => {
+        const style = window.getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
 
-      return (
-        style.display !== "none" &&
-        style.visibility !== "hidden" &&
-        style.opacity !== "0" &&
-        rect.width > 0 &&
-        rect.height > 0
+        return (
+          style.display !== "none" &&
+          style.visibility !== "hidden" &&
+          style.opacity !== "0" &&
+          rect.width > 0 &&
+          rect.height > 0
+        );
+      });
+
+      return normalize(
+        visibleElements
+          .map((element) => {
+            if (
+              element instanceof HTMLInputElement ||
+              element instanceof HTMLTextAreaElement
+            ) {
+              return (
+                element.value ||
+                element.placeholder ||
+                element.getAttribute("aria-label")
+              );
+            }
+
+            return element.innerText || element.textContent;
+          })
+          .filter(Boolean)
+          .join(" ")
       );
     });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (
+      /Execution context was destroyed|Cannot find context with specified id/i.test(
+        message
+      )
+    ) {
+      return "";
+    }
 
-    return normalize(
-      visibleElements
-        .map((element) => {
-          if (
-            element instanceof HTMLInputElement ||
-            element instanceof HTMLTextAreaElement
-          ) {
-            return (
-              element.value ||
-              element.placeholder ||
-              element.getAttribute("aria-label")
-            );
-          }
-
-          return element.innerText || element.textContent;
-        })
-        .filter(Boolean)
-        .join(" ")
-    );
-  });
+    throw error;
+  }
 }
 
 test.describe("browser route smoke checks", () => {

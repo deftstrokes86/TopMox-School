@@ -204,9 +204,15 @@ async function loginAs(page: Page, account: DemoAccount) {
 }
 
 async function assertAuthenticatedRouteLoads(page: Page, route: string) {
-  const response = await page.goto(route, { waitUntil: "networkidle" });
+  const response = await page.goto(route, { waitUntil: "domcontentloaded" });
   expect(response?.status() ?? 200, `${route} should not return a server error`).toBeLessThan(500);
   await expect(page).toHaveURL(new RegExp(`${route}(?:$|[?#])`));
+
+  await expect
+    .poll(() => visibleBodyText(page), {
+      message: `${route} should render meaningful authenticated content`
+    })
+    .toSatisfy((text) => text.length > 40);
 
   const bodyText = await visibleBodyText(page);
 

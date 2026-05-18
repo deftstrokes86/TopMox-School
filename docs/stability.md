@@ -122,11 +122,12 @@ Safe geo priority:
 5. Nigeria/NGN fallback.
 
 No page should blank if region detection is missing, invalid, or ambiguous. The
-region switcher lets users correct the guess manually, the app should never hard
-redirect based on geo detection, and the safe default is Nigeria with NGN.
+country switcher lets users choose the experience that fits their family, and
+the safe default is Nigeria with NGN.
 The homepage should render region-aware copy for the resolved region without
-depending on Vercel headers. FAQ remains directly accessible at `/faq`, but it
-is not part of the main public navigation.
+depending on Vercel headers. Global tutoring, Locations, Resources, and FAQ are
+grouped under About in the main public navigation; `/faq` remains directly
+accessible.
 
 The browser suite fails on serious client-side issues, including:
 

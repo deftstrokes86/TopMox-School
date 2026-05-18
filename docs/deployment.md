@@ -176,7 +176,7 @@ $env:PLAYWRIGHT_BASE_URL="https://your-domain.example"; npm run verify:browser
 ## Hostinger Geolocation Strategy
 
 Hostinger does not provide platform geo headers by default. TopMox uses
-Hostinger-compatible soft personalization instead of hard redirects.
+Hostinger-compatible country guidance with a visible country selector.
 
 Priority order:
 
@@ -188,20 +188,19 @@ Priority order:
 4. Weak browser hints such as timezone and `Accept-Language`.
 5. Nigeria fallback with NGN.
 
-Manual selection always wins. Header detection is only a guess. The region
-switcher works even without Cloudflare, and users should never be trapped in
-the wrong location. The homepage changes its guidance by resolved region, but
-the safe final fallback is Nigeria/NGN when no reliable signal is available.
+Manual selection always wins. Header detection is only a guess. The country
+selector works even without Cloudflare, and users should never be trapped in the
+wrong country experience. The homepage changes its guidance by resolved region,
+but the safe final fallback is Nigeria/NGN when no reliable signal is available.
 
-Region-based currency display is guidance for parents. Payment amount and
+Region-based pricing context is guidance for parents. Payment amount and
 currency must still be derived server-side from enrollment/plan data. Manual
-payment fallback remains available. For AUD and AED, live Flutterwave checkout
-should be confirmed in the TopMox Flutterwave account before enabling gateway
-collection.
+payment fallback remains available. For AUD and AED, live online checkout should
+be confirmed in the TopMox payment account before enabling gateway collection.
 
 The homepage is region-aware and should default to Nigeria/NGN when no reliable
-signal is available. FAQ remains available at `/faq`, but it is intentionally
-not shown in the main public navigation.
+signal is available. Global tutoring, Locations, Resources, and FAQ are grouped
+under About in the main public navigation. FAQ remains available at `/faq`.
 
 ## Flutterwave Notes
 

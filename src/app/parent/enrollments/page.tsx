@@ -34,7 +34,7 @@ function getEnrollmentAction(enrollment: EnrollmentListItem) {
       label: "Continue Checkout",
       href: latestPayment.checkoutUrl,
       description:
-        "Flutterwave checkout has started. Continue checkout to complete payment securely."
+        "Online checkout has started. Continue checkout to complete payment securely."
     };
   }
 
@@ -55,7 +55,7 @@ function getEnrollmentAction(enrollment: EnrollmentListItem) {
         label: "Choose Payment Method",
         href: `/parent/payments/new?enrollmentId=${enrollment.id}`,
         description:
-          "Choose Flutterwave checkout or submit manual transfer details for TopMox review."
+          "Choose online checkout or submit manual transfer details for TopMox review."
       };
     case "ACTIVE":
       return {
@@ -202,9 +202,9 @@ export default async function ParentEnrollmentsPage({
                 Your plan has been accepted.
               </p>
               <p className="text-sm text-text-secondary">
-                Choose Flutterwave checkout or submit manual transfer details
-                so TopMox can activate your child&apos;s tutoring plan after
-                payment is verified.
+                Choose online checkout or submit manual transfer details so
+                TopMox can activate your child&apos;s tutoring plan after payment
+                is verified.
               </p>
             </div>
             <Button asChild className="w-full sm:w-auto">

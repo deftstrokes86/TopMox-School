@@ -10,10 +10,7 @@ import { SectionHeader } from "@/components/shared/SectionHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { REGION_COOKIE_NAME } from "@/lib/constants/locations";
-import {
-  getPaymentFallbackForRegion,
-  resolveVisitorRegion
-} from "@/server/services/location.service";
+import { resolveVisitorRegion } from "@/server/services/location.service";
 
 export default function PricingPage() {
   const resolvedRegion = resolveVisitorRegion({
@@ -21,21 +18,19 @@ export default function PricingPage() {
     cookie: cookies().get(REGION_COOKIE_NAME)?.value
   });
   const region = resolvedRegion.region;
-  const paymentFallback = getPaymentFallbackForRegion(region.code);
-  const priceNote = `${region.currency} shown for ${region.name}. Final pricing confirmed after child assessment.`;
-  const needsGatewayConfirmation = ["AUD", "AED"].includes(region.currency);
+  const priceNote = `Plans for ${region.name} families can be discussed in ${region.currency}. Final pricing is confirmed after child assessment.`;
 
   return (
     <section className="py-12 md:py-16">
       <div className="container space-y-12 md:space-y-16">
         <section className="rounded-2xl border border-royal-blue/20 bg-gradient-to-br from-deep-navy via-royal-blue to-[#2f75bf] p-7 text-white shadow-lifted md:p-10">
-          <p className="inline-flex rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-50">
+          <p className="inline-flex rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white">
             Tutoring Plans
           </p>
           <h1 className="mt-4 text-balance text-3xl font-semibold leading-tight md:text-5xl">
             Choose support with confidence, not guesswork.
           </h1>
-          <p className="mt-4 max-w-3xl text-sm text-blue-50/95 md:text-base">
+          <p className="mt-4 max-w-3xl text-sm text-white md:text-base">
             Every child has different learning gaps and strengths. TopMox starts
             with a child assessment so you receive a recommendation designed to
             support the right level of tutoring from day one.
@@ -44,7 +39,7 @@ export default function PricingPage() {
             <StatusBadge label="Assessment-led recommendation" tone="info" />
             <StatusBadge label="School-backed structure" tone="success" />
             <StatusBadge label="Parent visibility included" tone="neutral" />
-            <StatusBadge label={`${region.currency} display`} tone="warning" />
+            <StatusBadge label={`${region.currency} pricing context`} tone="warning" />
           </div>
           <div className="mt-6 max-w-xl">
             <RegionSwitcher currentRegionCode={region.code} />
@@ -56,27 +51,15 @@ export default function PricingPage() {
             Pricing guidance for {region.name}
           </h2>
           <p className="mt-2 text-sm text-text-secondary">
-            Display currency: {region.currency}. Final pricing is confirmed
-            after child assessment so TopMox can recommend the right support
-            level before payment.
+            Plans for {region.name} families can be discussed in{" "}
+            {region.currencySymbol} {region.currency}. Final pricing is
+            confirmed after child assessment so TopMox can recommend the right
+            support level before payment.
           </p>
           <p className="mt-2 text-sm text-text-secondary">
-            Payment options depend on currency, country, and Flutterwave account
-            configuration. Manual payment fallback remains available.
+            TopMox confirms available online or assisted payment options after
+            assessment and plan acceptance.
           </p>
-          {needsGatewayConfirmation ? (
-            <p className="mt-2 text-sm font-medium text-deep-navy">
-              This currency is displayed for your region. Live Flutterwave
-              collection should be confirmed before launch. Manual or USD
-              fallback may be used.
-            </p>
-          ) : null}
-          {!paymentFallback.flutterwaveEnabled ? (
-            <p className="mt-2 text-sm font-medium text-deep-navy">
-              Online checkout is not enabled by default for this region until
-              Flutterwave support is confirmed. Manual payment remains available.
-            </p>
-          ) : null}
         </section>
 
         <section className="space-y-7">

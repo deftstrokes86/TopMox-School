@@ -1,6 +1,6 @@
 import type { ResourceStatus } from "@prisma/client";
 import Link from "next/link";
-import { ArrowRight, FileText, Plus, Search } from "lucide-react";
+import { AlertCircle, ArrowRight, FileText, Plus, Search } from "lucide-react";
 
 import { StatCard } from "@/components/dashboard/StatCard";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -14,11 +14,13 @@ import {
   getResourceStatusMeta,
   type ResourceUiRecord
 } from "@/lib/utils/resource-ui";
+import { AuthError } from "@/lib/auth";
 import { getAdminResources } from "@/server/queries/resource.queries";
 
 export const dynamic = "force-dynamic";
 
 const resourceStatuses: ResourceStatus[] = ["DRAFT", "PUBLISHED", "ARCHIVED"];
+const RESOURCE_QUERY_TIMEOUT_MS = 8_000;
 
 type AdminResourcesPageProps = {
   searchParams: {
@@ -38,6 +40,57 @@ function formatDate(value: Date): string {
   return new Intl.DateTimeFormat("en", {
     dateStyle: "medium"
   }).format(value);
+}
+
+function timeoutAfter(label: string): Promise<never> {
+  return new Promise((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(`${label} timed out after ${RESOURCE_QUERY_TIMEOUT_MS}ms`));
+    }, RESOURCE_QUERY_TIMEOUT_MS);
+  });
+}
+
+async function withResourceQueryTimeout<T>(
+  promise: Promise<T>,
+  label: string
+): Promise<T> {
+  return Promise.race([promise, timeoutAfter(label)]);
+}
+
+async function loadAdminResourcesPageData(
+  searchParams: AdminResourcesPageProps["searchParams"]
+) {
+  try {
+    const [resources, allResources] = await Promise.all([
+      withResourceQueryTimeout(
+        getAdminResources({
+          status: parseStatus(searchParams.status),
+          category: searchParams.category || undefined,
+          search: searchParams.search || undefined
+        }),
+        "Filtered admin resources query"
+      ),
+      withResourceQueryTimeout(getAdminResources(), "Admin resources summary query")
+    ]);
+
+    return {
+      allResources,
+      isDegraded: false,
+      resources
+    };
+  } catch (error) {
+    if (error instanceof AuthError) {
+      throw error;
+    }
+
+    console.error("Admin resources failed to load:", error);
+
+    return {
+      allResources: [],
+      isDegraded: true,
+      resources: []
+    };
+  }
 }
 
 function FilterControls({
@@ -177,14 +230,8 @@ function ResourceRow({ resource }: { resource: ResourceUiRecord }) {
 export default async function AdminResourcesPage({
   searchParams
 }: AdminResourcesPageProps) {
-  const [resources, allResources] = await Promise.all([
-    getAdminResources({
-      status: parseStatus(searchParams.status),
-      category: searchParams.category || undefined,
-      search: searchParams.search || undefined
-    }),
-    getAdminResources()
-  ]);
+  const { allResources, isDegraded, resources } =
+    await loadAdminResourcesPageData(searchParams);
   const summary = buildAdminResourceSummary(allResources);
 
   return (
@@ -221,6 +268,21 @@ export default async function AdminResourcesPage({
       </div>
 
       <FilterControls searchParams={searchParams} />
+
+      {isDegraded ? (
+        <Card className="border-amber-300 bg-amber-50">
+          <CardContent className="flex flex-col gap-3 p-5 text-sm text-amber-900 sm:flex-row sm:items-start">
+            <AlertCircle className="h-5 w-5 flex-none" />
+            <div>
+              <p className="font-semibold">Resources are temporarily unavailable.</p>
+              <p className="mt-1 leading-6">
+                The rest of the admin area is still usable. Try this page again in a
+                moment if the database connection is recovering.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {resources.length === 0 ? (
         <EmptyState

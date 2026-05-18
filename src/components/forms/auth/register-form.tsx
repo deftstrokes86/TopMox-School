@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-import { CheckCircle2, Loader2, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -137,16 +137,6 @@ export function RegisterForm() {
         {errors.confirmPassword ? (
           <p className="text-xs text-danger">{errors.confirmPassword.message}</p>
         ) : null}
-      </div>
-
-      <div className="rounded-xl border border-warm-gold/35 bg-warm-gold/10 p-3 text-sm text-text-secondary">
-        <p className="flex items-center gap-2 font-medium text-deep-navy">
-          <ShieldCheck className="h-4 w-4 text-warm-gold" />
-          Public registration creates parent accounts only.
-        </p>
-        <p className="mt-1">
-          Admin and tutor accounts are provisioned internally by TopMox operations.
-        </p>
       </div>
 
       {result ? (

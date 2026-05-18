@@ -22,7 +22,7 @@ export function CTASection({
         <h3 className="text-2xl font-semibold text-white md:text-3xl">
           {title}
         </h3>
-        <p className="text-sm text-blue-50/90 md:text-base">{description}</p>
+        <p className="text-sm text-white md:text-base">{description}</p>
       </div>
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <Button asChild className="bg-white text-deep-navy hover:bg-white/90">

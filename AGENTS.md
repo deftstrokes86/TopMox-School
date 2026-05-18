@@ -68,6 +68,6 @@ Do not depend on platform-specific geo headers. Region personalization must use:
 4. Weak browser hints such as timezone and `Accept-Language`.
 5. Nigeria/NGN fallback.
 
-Manual region selection always wins. Never hard redirect by guessed location.
+User-selected country always wins. Never trap users in a guessed country experience.
 
-Public currency display is not payment authority. Payment amount and currency must be derived server-side from enrollment/plan data. Manual payment fallback remains available, and Flutterwave checkout can be disabled for currencies that require account confirmation. FAQ must not appear in the main public navigation, though `/faq` remains accessible.
+Public pricing context is not payment authority. Payment amount and currency must be derived server-side from enrollment/plan data. Manual payment fallback remains available, and online checkout can be disabled for currencies that require account confirmation. Global tutoring, Locations, Resources, and FAQ should be grouped under About in the main public navigation, while `/faq` remains accessible.

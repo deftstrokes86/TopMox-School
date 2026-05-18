@@ -32,7 +32,7 @@ export type PaymentEnrollmentOption = {
 const paymentMethodOptions = [
   {
     value: "FLUTTERWAVE",
-    label: "Pay with Flutterwave"
+    label: "Pay with online checkout"
   },
   {
     value: "MANUAL_TRANSFER",
@@ -161,9 +161,9 @@ export function PaymentSubmissionForm({
           Choose the payment path that works best for your family.
         </p>
         <p className="mt-2">
-          Flutterwave is the primary secure checkout option. Manual transfer is
-          available as a fallback when TopMox has provided payment instructions
-          or offline verification is preferred.
+          Online checkout is the primary secure option. Manual transfer is
+          available when TopMox has provided payment instructions or assisted
+          verification is preferred.
         </p>
       </div>
 
@@ -232,11 +232,11 @@ export function PaymentSubmissionForm({
         {selectedPaymentMethod === "FLUTTERWAVE" ? (
           <div className="rounded-xl border border-success/25 bg-success/10 p-4 md:col-span-2">
             <p className="text-sm font-semibold text-deep-navy">
-              Pay securely with Flutterwave.
+              Pay securely online.
             </p>
             <p className="mt-2 text-sm text-text-secondary">
-              Supports local and international payment options depending on
-              your currency, location, and Flutterwave availability.
+              Available payment options depend on your currency, country, and
+              TopMox account setup.
             </p>
           </div>
         ) : (
@@ -303,7 +303,7 @@ export function PaymentSubmissionForm({
             Starting payment...
           </>
         ) : selectedPaymentMethod === "FLUTTERWAVE" ? (
-          "Continue to Flutterwave"
+          "Continue to Online Checkout"
         ) : (
           "Submit Manual Transfer Details"
         )}

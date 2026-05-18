@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { cookies, headers } from "next/headers";
 import {
   BookOpenCheck,
   CalendarClock,
@@ -20,10 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   PUBLIC_REGION_OPTIONS,
-  REGION_COOKIE_NAME,
   type RegionConfig
 } from "@/lib/constants/locations";
-import { resolveVisitorRegion } from "@/server/services/location.service";
 
 type LocationPageProps = {
   params: {
@@ -72,7 +69,7 @@ export function generateMetadata({ params }: LocationPageProps): Metadata {
 
   return {
     title: `${region.name} Online Tutoring | TopMox Global Tutoring`,
-    description: `${region.shortDescription} Currency guidance: ${region.currency}.`
+    description: `${region.shortDescription} Start with a child assessment and get tutoring support for families in ${region.name}.`
   };
 }
 
@@ -82,11 +79,6 @@ export default function LocationDetailPage({ params }: LocationPageProps) {
   if (!region) {
     notFound();
   }
-
-  const resolvedRegion = resolveVisitorRegion({
-    headers: headers(),
-    cookie: cookies().get(REGION_COOKIE_NAME)?.value
-  });
 
   return (
     <section className="py-12 md:py-16">
@@ -105,15 +97,15 @@ export default function LocationDetailPage({ params }: LocationPageProps) {
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
                 <StatusBadge
-                  label={`${region.currency} display currency`}
+                  label={`Tutoring in ${region.name}`}
                   tone="info"
                 />
-                <StatusBadge label="Manual region switcher" tone="success" />
-                <StatusBadge label="No hard redirects" tone="neutral" />
+                <StatusBadge label={`${region.currency} pricing context`} tone="success" />
+                <StatusBadge label="Parent progress updates" tone="neutral" />
               </div>
             </div>
             <div className="w-full max-w-sm rounded-2xl border border-border bg-white p-4 shadow-soft">
-              <RegionSwitcher currentRegionCode={resolvedRegion.region.code} />
+              <RegionSwitcher currentRegionCode={region.code} />
               <Button asChild className="mt-4 w-full">
                 <Link href="/book-assessment">Book a Child Assessment</Link>
               </Button>
@@ -126,14 +118,15 @@ export default function LocationDetailPage({ params }: LocationPageProps) {
             <CardContent className="p-6">
               <CreditCard className="h-6 w-6 text-royal-blue" />
               <h2 className="mt-4 text-lg font-semibold text-text-primary">
-                Currency
+                Pricing context
               </h2>
               <p className="mt-2 text-2xl font-semibold text-deep-navy">
                 {region.currencySymbol} {region.currency}
               </p>
               <p className="mt-2 text-sm text-text-secondary">
-                Displayed as regional guidance. Final pricing is confirmed after
-                child assessment.
+                Plans for families in {region.name} can be discussed in{" "}
+                {region.currency}. Final pricing is confirmed after child
+                assessment.
               </p>
             </CardContent>
           </Card>
@@ -141,11 +134,11 @@ export default function LocationDetailPage({ params }: LocationPageProps) {
             <CardContent className="p-6">
               <CalendarClock className="h-6 w-6 text-royal-blue" />
               <h2 className="mt-4 text-lg font-semibold text-text-primary">
-                Timezone support
+                Lesson scheduling
               </h2>
               <p className="mt-2 text-sm text-text-secondary">
-                Example timezone: {region.timezoneExamples.join(", ")}.
-                Scheduling is confirmed around family and tutor availability.
+                Lesson times are confirmed around family and tutor availability
+                so support fits your routine.
               </p>
             </CardContent>
           </Card>
@@ -153,11 +146,11 @@ export default function LocationDetailPage({ params }: LocationPageProps) {
             <CardContent className="p-6">
               <MapPinned className="h-6 w-6 text-royal-blue" />
               <h2 className="mt-4 text-lg font-semibold text-text-primary">
-                Soft personalization
+                Parent visibility
               </h2>
               <p className="mt-2 text-sm text-text-secondary">
-                Detection is only a helpful guess. You can manually choose a
-                different region anytime.
+                Parents can follow lessons, homework, notes, and reports from
+                one clear account.
               </p>
             </CardContent>
           </Card>
@@ -182,7 +175,7 @@ export default function LocationDetailPage({ params }: LocationPageProps) {
           <SectionHeader
             eyebrow="How It Works"
             title={`A structured path for families in ${region.name}`}
-            description="The process stays assessment-led, parent-visible, and payment-safe in every region."
+            description="The process stays assessment-led, parent-visible, and practical from first assessment to active lessons."
           />
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {[
@@ -216,8 +209,8 @@ export default function LocationDetailPage({ params }: LocationPageProps) {
                 {region.paymentNotes}
               </p>
               <p className="mt-2 text-sm text-text-secondary">
-                Payment options depend on currency, country, and Flutterwave
-                account configuration. Manual payment fallback remains available.
+                TopMox confirms available online or assisted payment options
+                after assessment and plan acceptance.
               </p>
             </div>
           </div>
@@ -233,14 +226,14 @@ export default function LocationDetailPage({ params }: LocationPageProps) {
             items={[
               ...region.faq,
               {
-                question: "Can I change my selected region?",
+                question: "What happens after I book an assessment?",
                 answer:
-                  "Yes. Use the region switcher at the top of the site. The selection is stored in a simple cookie and can be changed anytime."
+                  "TopMox reviews your child's needs, recommends a practical tutoring path, then confirms the plan, schedule, and payment instructions."
               },
               {
-                question: "Does TopMox use hard geo redirects?",
+                question: "How will I track my child's progress?",
                 answer:
-                  "No. The site uses soft guidance only, so families can always choose the region that fits their situation."
+                  "Parents can see lesson activity, homework, tutor notes, and progress reports as tutoring continues."
               }
             ]}
           />

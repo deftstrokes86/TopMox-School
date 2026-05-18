@@ -972,7 +972,6 @@ Region resolution priority:
 
 Supported public regions:
 
-- Global -> USD
 - Nigeria -> NGN
 - United States -> USD
 - Canada -> CAD
@@ -981,18 +980,22 @@ Supported public regions:
 - Europe -> EUR
 - UAE -> AED
 
-Manual region selection always wins. Automatic detection is only a soft default.
-The app must never hard redirect a visitor based on guessed geography.
+`global` remains an internal fallback code only. It is not shown in the public
+country switcher, and the final visitor fallback is Nigeria/NGN.
+
+Manual country selection always wins. Automatic detection is only a soft default.
+The app must not trap visitors in a guessed country experience.
 The homepage uses the resolved region to adapt headline, parent pain points,
-benefits, and payment notes while keeping a visible region switcher.
+benefits, and payment notes while keeping a visible country switcher.
 
-Payment currency safety remains server-side. Public currency display helps
-parents understand the region context, but payment records must derive amount
+Payment currency safety remains server-side. Public pricing context helps
+parents understand the country context, but payment records must derive amount
 and currency from the enrollment/plan data on the server. Manual payment
-fallback remains available in every region. Flutterwave checkout may be disabled
-for currencies that require account confirmation, especially AUD and AED.
+fallback remains available in every region. Online checkout may be disabled for
+currencies that require account confirmation, especially AUD and AED.
 
-FAQ remains available at `/faq` but is not part of the main public navigation.
+Global tutoring, Locations, Resources, and FAQ are grouped under the About menu
+in the main public navigation. FAQ remains available at `/faq`.
 
 ---
 

@@ -26,6 +26,7 @@ export type RegionConfig = {
   code: RegionCode;
   name: string;
   slug: string;
+  flag: string;
   countryCodes: string[];
   continentCode?: string;
   currency: RegionCurrency;
@@ -84,6 +85,7 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
     code: "global",
     name: "Global",
     slug: "global",
+    flag: "🌍",
     countryCodes: [],
     currency: "USD",
     currencySymbol: "$",
@@ -109,7 +111,7 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
       "Homework support"
     ],
     paymentNotes:
-      "USD is shown only when Global is manually selected. If no region can be resolved, TopMox falls back to Nigeria with NGN. Final payment options depend on country, currency, and Flutterwave account configuration.",
+      "TopMox confirms pricing and payment guidance after assessment so each family gets the support path that fits their country and plan.",
     faq: [
       {
         question: "Can TopMox support families outside Nigeria?",
@@ -117,9 +119,9 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
           "Yes. The online tutoring model is designed for families in Nigeria and abroad, with scheduling handled around family context and tutor availability."
       },
       {
-        question: "Will I be redirected automatically to a country page?",
+        question: "How does TopMox support families in different countries?",
         answer:
-          "No. TopMox uses soft personalization and always lets you choose your preferred region manually."
+          "TopMox starts with the child's needs, then confirms lesson rhythm, subjects, pricing, and payment guidance for the family's country."
       }
     ],
     flutterwaveEnabledDefault: true,
@@ -129,6 +131,7 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
     code: "nigeria",
     name: "Nigeria",
     slug: "nigeria",
+    flag: "🇳🇬",
     countryCodes: ["NG"],
     continentCode: "AF",
     currency: "NGN",
@@ -155,17 +158,17 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
       "Exam-focused support where available"
     ],
     paymentNotes:
-      "NGN is shown for Nigeria. Flutterwave checkout and manual payment fallback remain available based on TopMox account configuration.",
+      "Families in Nigeria can discuss plans in NGN. Final pricing and payment instructions are confirmed after the child assessment.",
     faq: [
       {
-        question: "Does TopMox guarantee WAEC, NECO, or JAMB results?",
+        question: "Can TopMox help with homework and exam-focused support?",
         answer:
-          "No. TopMox provides structured academic support and exam-focused help where available, but does not guarantee exam outcomes."
+          "Yes, TopMox can support homework routines and exam-focused preparation where available, while avoiding guaranteed exam outcome promises."
       },
       {
-        question: "Can parents track homework and progress?",
+        question: "How will I know what my child is doing?",
         answer:
-          "Yes. The platform is designed to show lessons, homework, tutor notes, and progress reports."
+          "Parents can follow lessons, homework, tutor notes, and progress reports so support feels clear and accountable."
       }
     ],
     flutterwaveEnabledDefault: true,
@@ -175,6 +178,7 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
     code: "united-states",
     name: "United States",
     slug: "united-states",
+    flag: "🇺🇸",
     countryCodes: ["US"],
     continentCode: "NA",
     currency: "USD",
@@ -193,7 +197,7 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
       "Diaspora families often value structured communication and accountability."
     ],
     offerBenefits: [
-      "Flexible online coordination across US time zones.",
+      "Flexible online coordination across US family routines.",
       "Assessment-led support before a tutoring plan is accepted.",
       "Progress visibility that helps parents see what is happening."
     ],
@@ -205,17 +209,17 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
       "Homework follow-through"
     ],
     paymentNotes:
-      "USD is shown for the United States. Payment options depend on currency, location, and Flutterwave account configuration.",
+      "Families in the United States can discuss plans in USD. TopMox confirms final pricing and payment instructions after assessment.",
     faq: [
       {
-        question: "Does TopMox claim certified US curriculum coverage?",
+        question: "Can lessons support after-school routines in the United States?",
         answer:
-          "No. TopMox provides structured academic support and parent visibility, but specific curriculum certification should be confirmed before launch."
+          "Yes. Lessons are coordinated online around family and tutor availability, with support focused on reading, maths, homework, and confidence."
       },
       {
-        question: "Can lessons work around US time zones?",
+        question: "How will I know what my child is working on?",
         answer:
-          "Scheduling is online and timezone-aware, subject to tutor availability."
+          "Parents can see lesson context, homework, notes, and progress reporting from the TopMox parent experience."
       }
     ],
     flutterwaveEnabledDefault: true,
@@ -225,6 +229,7 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
     code: "canada",
     name: "Canada",
     slug: "canada",
+    flag: "🇨🇦",
     countryCodes: ["CA"],
     continentCode: "NA",
     currency: "CAD",
@@ -251,17 +256,17 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
       "Homework support"
     ],
     paymentNotes:
-      "CAD is shown for Canada. Final payment options depend on Flutterwave account configuration and manual fallback remains available.",
+      "Families in Canada can discuss plans in CAD. Final pricing and payment instructions are confirmed after assessment.",
     faq: [
       {
-        question: "Does TopMox guarantee province-specific curriculum mastery?",
+        question: "Can TopMox support homework consistency for families in Canada?",
         answer:
-          "No. TopMox offers structured academic support and should confirm province-specific curriculum scope with families when needed."
+          "Yes. TopMox focuses on consistent routines, homework follow-through, and core subject support without overclaiming province-specific curriculum coverage."
       },
       {
-        question: "Can parents see lesson follow-up?",
+        question: "How are progress updates shared?",
         answer:
-          "Yes. Lesson visibility, homework, notes, and progress reports are part of the support model."
+          "Parents can follow lesson activity, homework, tutor notes, and progress reports so support remains easy to understand."
       }
     ],
     flutterwaveEnabledDefault: true,
@@ -271,21 +276,22 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
     code: "australia",
     name: "Australia",
     slug: "australia",
+    flag: "🇦🇺",
     countryCodes: ["AU"],
     continentCode: "OC",
     currency: "AUD",
     currencySymbol: "A$",
     timezoneExamples: ["Australia/Sydney", "Australia/Perth"],
-    headline: "Timezone-aware tutoring support for families in Australia.",
+    headline: "Tutoring support for families in Australia.",
     shortDescription:
       "TopMox helps families abroad access structured academic help, progress reporting, and online tutoring coordination.",
     parentPainPoints: [
-      "Time-zone distance can make tutoring coordination feel difficult.",
+      "Distance can make tutoring coordination feel difficult.",
       "Families need clear reports so support feels accountable.",
       "Children benefit from structure between school and home study."
     ],
     offerBenefits: [
-      "Online scheduling designed to respect family time zones.",
+      "Online scheduling designed to respect family routines.",
       "Structured lessons and homework support.",
       "Progress reporting so parents can see the learning path."
     ],
@@ -297,17 +303,17 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
       "Homework support"
     ],
     paymentNotes:
-      "AUD is shown for your region. Live Flutterwave collection in AUD should be confirmed before launch. Manual or fallback payment options may be used if needed.",
+      "Families in Australia can discuss plans in AUD. TopMox confirms final pricing and payment instructions after assessment.",
     faq: [
       {
-        question: "Is AUD Flutterwave checkout enabled automatically?",
+        question: "Can TopMox work around family schedules in Australia?",
         answer:
-          "No. AUD is displayed for regional clarity, but live Flutterwave collection should be confirmed in the TopMox Flutterwave account before launch."
+          "Yes. Lesson times are confirmed around family and tutor availability so online support can fit normal routines."
       },
       {
-        question: "What happens if online checkout is not enabled?",
+        question: "What subjects are available for Australian families?",
         answer:
-          "Manual payment fallback or another TopMox-approved fallback can be used if TopMox confirms that path operationally."
+          "TopMox can support Mathematics, English, Science, reading and comprehension, and homework routines."
       }
     ],
     flutterwaveEnabledDefault: false,
@@ -317,6 +323,7 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
     code: "united-kingdom",
     name: "United Kingdom",
     slug: "united-kingdom",
+    flag: "🇬🇧",
     countryCodes: ["GB", "UK"],
     continentCode: "EU",
     currency: "GBP",
@@ -343,17 +350,17 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
       "Exam-focused support where available"
     ],
     paymentNotes:
-      "GBP is shown for the United Kingdom. Flutterwave checkout depends on account configuration and manual payment fallback remains available.",
+      "Families in the United Kingdom can discuss plans in GBP. Final pricing and payment instructions are confirmed after assessment.",
     faq: [
       {
-        question: "Does TopMox guarantee 11+ or GCSE outcomes?",
+        question: "Can TopMox help with maths, English, and reading?",
         answer:
-          "No. TopMox can provide exam-focused support where available, but does not guarantee exam outcomes."
+          "Yes. TopMox can support maths, English, reading, homework routines, and exam-focused support where available."
       },
       {
-        question: "Is this suitable for diaspora families?",
+        question: "Is exam-focused support available?",
         answer:
-          "Yes. The support model is designed for families who value school-backed structure and parent visibility."
+          "Exam-focused support may be available where it fits the child's needs, but TopMox does not guarantee 11+ or GCSE outcomes."
       }
     ],
     flutterwaveEnabledDefault: true,
@@ -363,6 +370,7 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
     code: "europe",
     name: "Europe",
     slug: "europe",
+    flag: "🇪🇺",
     countryCodes: EUROPE_COUNTRY_CODES,
     continentCode: "EU",
     currency: "EUR",
@@ -379,7 +387,7 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
     offerBenefits: [
       "Structured tutoring with parent-safe progress visibility.",
       "Support across English, maths, science, and homework routines.",
-      "Manual region switching so families are never trapped by detection."
+      "Clear guidance for families living across different school systems."
     ],
     subjectsFocus: [
       "English",
@@ -389,17 +397,17 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
       "Homework support"
     ],
     paymentNotes:
-      "EUR is shown for Europe. Payment options depend on currency, country, and Flutterwave account configuration.",
+      "Families across Europe can discuss plans in EUR. Final pricing and payment instructions are confirmed after assessment.",
     faq: [
       {
-        question: "Does TopMox cover every European curriculum?",
+        question: "Can TopMox support families across different European school systems?",
         answer:
-          "No. TopMox supports core academic needs and should confirm local curriculum expectations with each family."
+          "TopMox supports core academic needs and will confirm local curriculum expectations with each family before recommending a plan."
       },
       {
-        question: "Can I choose a different region manually?",
+        question: "What does the assessment help clarify?",
         answer:
-          "Yes. The region switcher lets families choose the region that best matches their payment and support context."
+          "The assessment helps TopMox understand subject gaps, confidence needs, homework routines, and the best tutoring pace."
       }
     ],
     flutterwaveEnabledDefault: true,
@@ -409,6 +417,7 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
     code: "uae",
     name: "UAE",
     slug: "uae",
+    flag: "🇦🇪",
     countryCodes: ["AE"],
     continentCode: "AS",
     currency: "AED",
@@ -423,7 +432,7 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
       "Expat families often need practical academic support across contexts."
     ],
     offerBenefits: [
-      "Timezone-aware lesson coordination.",
+      "Evening and weekend lesson coordination.",
       "Structured support across core subjects.",
       "Parent reporting that keeps families informed."
     ],
@@ -435,17 +444,17 @@ export const REGION_CONFIGS: Record<RegionCode, RegionConfig> = {
       "Homework support"
     ],
     paymentNotes:
-      "AED is shown for your region. Live Flutterwave collection in AED should be confirmed before launch. Manual or fallback payment options may be used if needed.",
+      "Families in the UAE can discuss plans in AED. TopMox confirms final pricing and payment instructions after assessment.",
     faq: [
       {
-        question: "Is AED Flutterwave checkout enabled automatically?",
+        question: "Can lessons fit around evenings or weekends in the UAE?",
         answer:
-          "No. AED is displayed for regional clarity, but live Flutterwave collection should be confirmed in the TopMox Flutterwave account before launch."
+          "Yes. Scheduling is confirmed around family and tutor availability, including evening or weekend options where practical."
       },
       {
-        question: "Can TopMox support evening or weekend schedules?",
+        question: "How do parents see progress?",
         answer:
-          "Scheduling is handled online and should be confirmed based on tutor availability and family timezone."
+          "Parents can follow lessons, homework, notes, and progress reports so support feels visible rather than vague."
       }
     ],
     flutterwaveEnabledDefault: false,

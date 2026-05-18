@@ -57,7 +57,7 @@ export default async function NewParentPaymentPage({
     <section className="space-y-6">
       <PageHeader
         title="Choose Payment Method"
-        description="Start Flutterwave checkout or submit manual transfer details for a pending tutoring plan."
+        description="Start online checkout or submit manual transfer details for a pending tutoring plan."
         actions={
           <Button asChild variant="outline" className="w-full sm:w-auto">
             <Link href="/parent/payments">

@@ -24,23 +24,23 @@ describe("parent payment status copy", () => {
     );
   });
 
-  test("Flutterwave pending copy points parent back to checkout", () => {
-    assert.equal(
-      getParentPaymentStatusDescription({
+  test("online checkout pending copy points parent back to checkout without provider marketing", () => {
+    const copy = getParentPaymentStatusDescription({
         paymentMethod: "FLUTTERWAVE",
         status: "PENDING"
-      }),
-      "Checkout pending. Continue payment."
-    );
+      });
+
+    assert.equal(copy, "Checkout pending. Continue payment.");
+    assert.doesNotMatch(copy, /Flutterwave/i);
   });
 
-  test("Flutterwave failed copy avoids manual-review wording", () => {
-    assert.equal(
-      getParentPaymentStatusDescription({
+  test("online checkout failed copy avoids manual-review wording and provider marketing", () => {
+    const copy = getParentPaymentStatusDescription({
         paymentMethod: "FLUTTERWAVE",
         status: "FAILED"
-      }),
-      "Payment was not completed or could not be verified."
-    );
+      });
+
+    assert.equal(copy, "Payment was not completed or could not be verified.");
+    assert.doesNotMatch(copy, /Flutterwave/i);
   });
 });

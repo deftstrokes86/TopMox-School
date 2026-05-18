@@ -306,8 +306,8 @@ export function getPaymentFallbackForCurrency(
     flutterwaveEnabled,
     manualPaymentEnabled: true,
     note: flutterwaveEnabled
-      ? "Flutterwave checkout can be offered when the TopMox account is configured for this currency. Manual payment remains available."
-      : "Live Flutterwave collection for this currency should be confirmed before launch. Manual payment fallback remains available."
+      ? "Online checkout can be offered when the TopMox account is configured for this currency. Manual payment remains available."
+      : "Online checkout for this currency should be confirmed before launch. Manual payment fallback remains available."
   };
 }
 

@@ -25,16 +25,16 @@ export default function LocationsPage() {
     <section className="py-12 md:py-16">
       <div className="container space-y-12">
         <section className="rounded-2xl border border-royal-blue/20 bg-gradient-to-br from-deep-navy via-royal-blue to-[#2f75bf] p-7 text-white shadow-lifted md:p-10">
-          <p className="inline-flex rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-50">
+          <p className="inline-flex rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white">
             Locations
           </p>
           <h1 className="mt-4 text-balance text-3xl font-semibold leading-tight md:text-5xl">
             TopMox tutoring support for families in Nigeria and abroad.
           </h1>
-          <p className="mt-4 max-w-3xl text-sm text-blue-50/95 md:text-base">
-            Choose the region that best matches your family. TopMox uses soft
-            personalization only: no hard redirects, no platform-specific geo headers,
-            and no one is trapped in the wrong location.
+          <p className="mt-4 max-w-3xl text-sm text-white md:text-base">
+            Choose the country that best matches your family and explore how
+            TopMox can support your child with assessment-led online tutoring,
+            homework follow-through, and parent visibility.
           </p>
           <div className="mt-6 max-w-xl">
             <RegionSwitcher currentRegionCode={resolvedRegion.region.code} />
@@ -43,9 +43,9 @@ export default function LocationsPage() {
 
         <section className="space-y-6">
           <SectionHeader
-            eyebrow="Regional Guidance"
+            eyebrow="Tutoring By Country"
             title="Choose a tutoring region"
-            description="Each location page explains currency display, scheduling context, payment notes, and the parent support story for that region."
+            description="Each location page explains the parent support story, subject focus, scheduling approach, and pricing context for that country."
           />
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {PUBLIC_REGION_OPTIONS.map((region) => (
@@ -87,13 +87,12 @@ export default function LocationsPage() {
           <Globe2 className="h-8 w-8 text-warm-gold" />
           <div>
             <h2 className="text-xl font-semibold text-deep-navy">
-              Hostinger-safe location detection
+              A country-aware TopMox experience
             </h2>
             <p className="mt-2 text-sm text-text-secondary">
-              Manual region selection is stored in a cookie and always wins.
-              If the domain later uses Cloudflare, TopMox can read the
-              `CF-IPCountry` header as a soft default. Without geo data, the
-              site falls back to Nigeria and NGN.
+              TopMox keeps the experience familiar for each family while still
+              letting parents choose the country that best matches their support
+              and pricing context.
             </p>
           </div>
         </section>
@@ -105,5 +104,5 @@ export default function LocationsPage() {
 export const metadata: Metadata = {
   title: "Locations | TopMox Global Tutoring",
   description:
-    "Choose TopMox Global Tutoring support by region, with soft location personalization, currency guidance, and manual region switching."
+    "Choose TopMox Global Tutoring support by country, with parent-friendly guidance, subject support, and clear next steps."
 };

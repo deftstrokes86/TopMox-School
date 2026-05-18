@@ -272,13 +272,14 @@ Rules:
   `x-geo-country` may be used later if supported.
 - Browser timezone and `Accept-Language` are weak fallbacks only.
 - Unknown data falls back to Nigeria and NGN.
-- The app does not hard redirect by country.
-- A region switcher must remain visible on public pages.
+- The app keeps users in control of their country experience.
+- A country switcher must remain visible on public pages.
 - The homepage should adjust its headline, pain points, benefits, and currency
-  note to the resolved region without hiding global context.
-- FAQ is not part of the main public navigation menu, but `/faq` remains
-  directly accessible and may appear in footer/help contexts.
-- Public currency display does not give the client control over payment amount
+  note to the resolved region without showing technical geo language.
+- Global tutoring, Locations, Resources, and FAQ live under the About menu in
+  the main public navigation. `/faq` remains directly accessible and may appear
+  in footer/help contexts.
+- Public pricing context does not give the client control over payment amount
   or payment currency.
 - Payment amount and currency are derived server-side from enrollment/plan data.
 - Manual payment fallback remains available across regions.

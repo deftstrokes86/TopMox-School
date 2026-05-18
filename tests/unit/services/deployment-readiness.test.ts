@@ -100,7 +100,7 @@ describe("deployment readiness", () => {
         "Do not use static export",
         "CF-IPCountry",
         "topmox_region",
-        "soft personalization"
+        "country selector"
       ],
       "deployment guide"
     );

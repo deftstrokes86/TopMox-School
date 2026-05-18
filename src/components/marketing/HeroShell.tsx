@@ -35,14 +35,14 @@ export function HeroShell({
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="max-w-3xl space-y-5"
       >
-        <p className="inline-flex rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-blue-50">
+        <p className="inline-flex rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-white">
           School-backed online tutoring
         </p>
         <h1 className="text-balance text-4xl font-semibold leading-tight text-white md:text-5xl">
           {title}
         </h1>
-        <p className="text-base text-blue-50/95 md:text-lg">{subtitle}</p>
-        <p className="text-sm font-medium text-blue-100">{trustMicrocopy}</p>
+        <p className="text-base text-white md:text-lg">{subtitle}</p>
+        <p className="text-sm font-medium text-white">{trustMicrocopy}</p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button
             asChild
@@ -64,7 +64,7 @@ export function HeroShell({
           {benefitChips.map((chip) => (
             <p
               key={chip}
-              className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-sm text-blue-50/95"
+              className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-sm text-white"
             >
               <CheckCircle2 className="h-4 w-4 text-soft-gold" />
               {chip}

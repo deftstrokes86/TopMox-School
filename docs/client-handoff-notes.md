@@ -25,7 +25,7 @@ TopMox Global Tutoring now has the core MVP workflow for a school-backed online 
 - Resources/content management with draft, published, and archived states.
 - Location pages for Nigeria, United States, Canada, Australia, United Kingdom,
   Europe, and UAE.
-- Cookie-first region switching with region-specific currency display.
+- Cookie-first country switching with region-specific pricing context.
 - Role-based dashboards for Admin, Parent, and Tutor.
 - Auth/RBAC and ownership checks.
 - Browser stability checks for blank-screen prevention.
@@ -84,9 +84,10 @@ The staging or production environment must configure:
 - Production domain.
 - Hostinger Node.js app hosting.
 - Optional Cloudflare `CF-IPCountry` support for soft country detection.
-- Region switcher cookie `topmox_region`.
+- Country selector cookie `topmox_region`.
 - Nigeria/NGN as the safe default when no region signal is available.
-- FAQ remains accessible at `/faq`, but is not shown in the main navigation.
+- Global tutoring, Locations, Resources, and FAQ are grouped under About in the
+  main public navigation. FAQ remains accessible at `/faq`.
 - Demo login disabled for production with `NEXT_PUBLIC_DEMO_LOGIN_ENABLED="false"`.
 - Manual payment enablement policy.
 - Seed strategy for demo, staging, and production.
@@ -192,8 +193,8 @@ Recommended paid next steps should focus on launch readiness, real operations, a
 - No guaranteed grade promises should be made.
 - Real payment testing is required before production payment launch.
 - Real Flutterwave payment methods may differ by country, currency, merchant KYC, and account settings.
-- Location detection is soft. Manual region selection always wins, and unknown
-  geo data falls back to Nigeria/NGN.
+- Location detection is a helpful starting point only. Manual country selection
+  always wins, and unknown geo data falls back to Nigeria/NGN.
 - Hostinger does not provide country headers by default. Cloudflare can provide
   `CF-IPCountry` if configured.
 - Demo login must remain disabled in production unless deliberately enabled for a private staging walkthrough.

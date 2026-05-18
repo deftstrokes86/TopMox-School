@@ -32,6 +32,10 @@ function formatDate(value: Date | null): string {
 }
 
 function formatPaymentMethod(value: string): string {
+  if (value === "FLUTTERWAVE") {
+    return "Online Checkout";
+  }
+
   return value
     .split("_")
     .map((part) => part.charAt(0) + part.slice(1).toLowerCase())
@@ -119,10 +123,10 @@ export default async function ParentPaymentDetailPage({
             <Card className="border-success/25 bg-success/10 shadow-none">
               <CardContent className="space-y-3 p-5">
                 <p className="font-semibold text-deep-navy">
-                  Flutterwave checkout is ready.
+                  Online checkout is ready.
                 </p>
                 <p className="text-sm text-text-secondary">
-                  Continue to Flutterwave to complete payment securely. Your
+                  Continue to checkout to complete payment securely. Your
                   tutoring plan will only activate after payment is verified.
                 </p>
                 <Button asChild className="w-full sm:w-auto">

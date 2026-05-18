@@ -443,7 +443,9 @@ test.describe("browser route smoke checks", () => {
     });
 
     await expect(page.getByText(/families in Nigeria/i).first()).toBeVisible();
-    await expect(page.getByText(/Display currency:\s*(?:₦\s*)?NGN/i)).toBeVisible();
+    await expect(page.getByText(/plans.*NGN|NGN.*plans/i).first()).toBeVisible();
+    await expect(page.getByText(/Diaspora Families/i)).toHaveCount(0);
+    await expect(page.getByText(/hard redirects?|soft personalization|Flutterwave/i)).toHaveCount(0);
 
     guard.assertClean();
   });
@@ -452,22 +454,22 @@ test.describe("browser route smoke checks", () => {
     {
       country: "US",
       regionText: /families in United States/i,
-      currencyText: /Display currency:\s*(?:\$\s*)?USD/i
+      currencyText: /plans.*USD|USD.*plans/i
     },
     {
       country: "CA",
       regionText: /families in Canada/i,
-      currencyText: /Display currency:\s*(?:CA\$\s*)?CAD/i
+      currencyText: /plans.*CAD|CAD.*plans/i
     },
     {
       country: "GB",
       regionText: /families in United Kingdom/i,
-      currencyText: /Display currency:\s*(?:£\s*)?GBP/i
+      currencyText: /plans.*GBP|GBP.*plans/i
     },
     {
       country: "AE",
       regionText: /families in UAE/i,
-      currencyText: /Display currency:\s*(?:د\.إ\s*)?AED/i
+      currencyText: /plans.*AED|AED.*plans/i
     }
   ]) {
     test(`homepage personalizes for CF-IPCountry=${regionalHomepage.country}`, async ({
@@ -483,13 +485,15 @@ test.describe("browser route smoke checks", () => {
       });
 
       await expect(page.getByText(regionalHomepage.regionText).first()).toBeVisible();
-      await expect(page.getByText(regionalHomepage.currencyText)).toBeVisible();
+      await expect(page.getByText(regionalHomepage.currencyText).first()).toBeVisible();
+      await expect(page.getByText(/Is this only for children in Nigeria/i)).toHaveCount(0);
+      await expect(page.getByText(/Flutterwave|hard redirects?|manual region switcher/i)).toHaveCount(0);
 
       guard.assertClean();
     });
   }
 
-  test("main public navigation does not show FAQ", async ({ page }) => {
+  test("main public navigation groups secondary links under About", async ({ page }) => {
     const guard = attachBrowserStabilityGuards(page);
 
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -497,11 +501,35 @@ test.describe("browser route smoke checks", () => {
       waitUntil: "networkidle"
     });
 
-    await expect(page.locator("header nav").first()).not.toContainText("FAQ");
+    const desktopNav = page.getByTestId("public-desktop-nav");
+
+    await expect(desktopNav).toBeVisible();
+    await expect(desktopNav.getByTestId("public-about-menu-trigger")).toBeVisible();
+    await expect
+      .poll(async () =>
+        desktopNav
+          .locator("[data-public-main-nav-item]")
+          .evaluateAll((items) => items.map((item) => item.textContent ?? ""))
+      )
+      .not.toContainEqual(
+        expect.stringMatching(/Global Tutoring|Locations|Resources|FAQ/i)
+    );
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.reload({ waitUntil: "networkidle" });
-    await expect(page.locator("header nav").first()).not.toContainText("FAQ");
+
+    const mobileNav = page.getByTestId("public-mobile-nav");
+
+    await expect(mobileNav).toBeVisible();
+    await expect
+      .poll(async () =>
+        mobileNav
+          .locator("[data-public-main-nav-item]")
+          .evaluateAll((items) => items.map((item) => item.textContent ?? ""))
+      )
+      .not.toContainEqual(
+        expect.stringMatching(/Global Tutoring|Locations|Resources|FAQ/i)
+    );
 
     guard.assertClean();
   });
@@ -518,8 +546,32 @@ test.describe("browser route smoke checks", () => {
       .first();
 
     await expect(switcher).toBeVisible();
+    await expect(switcher.locator('option[value="global"]')).toHaveCount(0);
     await switcher.selectOption("canada");
-    await expect(switcher).toHaveValue("canada");
+    await expect(page).toHaveURL(/\/locations\/canada$/);
+
+    guard.assertClean();
+  });
+
+  test("location pages avoid technical geo and provider marketing language", async ({
+    page
+  }) => {
+    const guard = attachBrowserStabilityGuards(page);
+
+    await page.goto("/locations/australia", {
+      waitUntil: "networkidle"
+    });
+
+    await expect(
+      page.getByRole("heading", {
+        name: /^Tutoring support for families in Australia\.$/
+      })
+    ).toBeVisible();
+    await expect(page.getByText(/Timezone-aware/i)).toHaveCount(0);
+    await expect(
+      page.getByText(/Flutterwave|hard redirects?|manual region switcher|display currency/i)
+    ).toHaveCount(0);
+    await expect(page.getByText(/What happens after I book an assessment/i)).toBeVisible();
 
     guard.assertClean();
   });

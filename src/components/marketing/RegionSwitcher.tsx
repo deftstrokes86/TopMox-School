@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, useTransition } from "react";
+import { useEffect, useId, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, MapPin } from "lucide-react";
 
@@ -10,6 +10,8 @@ import {
   getRegionConfig
 } from "@/lib/constants/locations";
 import { setPreferredRegionAction } from "@/server/actions/location.actions";
+
+const regionSyncEventName = "topmox-region-sync";
 
 type RegionSwitcherProps = {
   currentRegionCode: RegionCode;
@@ -27,16 +29,67 @@ export function RegionSwitcher({
   const [isPending, startTransition] = useTransition();
   const currentRegion = getRegionConfig(selectedRegion);
 
+  useEffect(() => {
+    setSelectedRegion(currentRegionCode);
+  }, [currentRegionCode]);
+
+  useEffect(() => {
+    const handleRegionSync = (event: Event) => {
+      const regionSyncEvent = event as CustomEvent<{ regionCode?: RegionCode }>;
+      const regionCode = regionSyncEvent.detail?.regionCode;
+
+      if (!regionCode) {
+        return;
+      }
+
+      const nextRegion = REGION_OPTIONS.find(
+        (region) => region.code === regionCode
+      );
+
+      if (!nextRegion) {
+        return;
+      }
+
+      setSelectedRegion((current) => {
+        if (current === nextRegion.code) {
+          return current;
+        }
+
+        return nextRegion.code;
+      });
+    };
+
+    window.addEventListener(regionSyncEventName, handleRegionSync);
+
+    return () => {
+      window.removeEventListener(regionSyncEventName, handleRegionSync);
+    };
+  }, []);
+
   function handleRegionChange(value: string) {
-    const nextRegion = value as RegionCode;
-    setSelectedRegion(nextRegion);
+    const nextRegion = REGION_OPTIONS.find((region) => region.code === value);
+
+    if (!nextRegion || nextRegion.code === selectedRegion) {
+      return;
+    }
+
+    setSelectedRegion(nextRegion.code);
 
     startTransition(async () => {
-      const result = await setPreferredRegionAction(nextRegion);
+      const result = await setPreferredRegionAction(nextRegion.code);
 
-      if (result.success) {
-        router.refresh();
+      if (!result.success) {
+        setSelectedRegion(currentRegionCode);
+        return;
       }
+
+      window.dispatchEvent(
+        new CustomEvent(regionSyncEventName, {
+          detail: { regionCode: nextRegion.code }
+        })
+      );
+
+      router.refresh();
     });
   }
 
@@ -72,7 +125,7 @@ export function RegionSwitcher({
       >
         {REGION_OPTIONS.map((region) => (
           <option key={region.code} value={region.code}>
-            {region.name} · {region.currency}
+            {region.name} &#183; {region.currency}
           </option>
         ))}
       </select>

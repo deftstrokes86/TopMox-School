@@ -42,13 +42,13 @@ export function SubjectPageTemplate({
     <section className="py-12 md:py-16">
       <div className="container space-y-12 md:space-y-16">
         <section className="rounded-2xl border border-royal-blue/20 bg-gradient-to-br from-deep-navy via-royal-blue to-[#2f75bf] p-7 text-white shadow-lifted md:p-10">
-          <p className="inline-flex rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-50">
+          <p className="inline-flex rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white">
             {heroBadge}
           </p>
           <h1 className="mt-4 text-balance text-3xl font-semibold leading-tight md:text-5xl">
             {heroTitle}
           </h1>
-          <p className="mt-4 max-w-3xl text-sm text-blue-50/95 md:text-base">
+          <p className="mt-4 max-w-3xl text-sm text-white md:text-base">
             {heroDescription}
           </p>
         </section>

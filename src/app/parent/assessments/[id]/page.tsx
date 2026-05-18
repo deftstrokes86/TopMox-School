@@ -315,7 +315,7 @@ export default async function ParentAssessmentDetailPage({
                   </p>
                   <p className="mt-2 text-sm text-text-secondary">
                     {acceptedEnrollment
-                      ? "Your tutoring plan has been created. Choose Flutterwave checkout or manual transfer details as the next payment step."
+                      ? "Your tutoring plan has been created. Choose online checkout or manual transfer details as the next payment step."
                       : "Plan acceptance creates a pending tutoring plan. Payment is completed separately and only activates after verification."}
                   </p>
                   <div className="mt-4">

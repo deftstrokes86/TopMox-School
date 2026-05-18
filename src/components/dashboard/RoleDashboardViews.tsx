@@ -1238,7 +1238,7 @@ function getParentNextAction(data: ParentDashboardData): {
     return {
       title: "Choose payment method",
       description:
-        "Your recommended plan has been accepted. Choose Flutterwave checkout or manual transfer details as the next step.",
+        "Your recommended plan has been accepted. Choose online checkout or manual transfer details as the next step.",
       badgeLabel: "Pending payment",
       badgeTone: "warning",
       ctaLabel: "Choose payment method",

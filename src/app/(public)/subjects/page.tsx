@@ -9,13 +9,13 @@ export default function SubjectsPage() {
     <section className="py-12 md:py-16">
       <div className="container space-y-12 md:space-y-16">
         <section className="rounded-2xl border border-royal-blue/20 bg-gradient-to-br from-deep-navy via-royal-blue to-[#2f75bf] p-7 text-white shadow-lifted md:p-10">
-          <p className="inline-flex rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-50">
+          <p className="inline-flex rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white">
             Subject Support
           </p>
           <h1 className="mt-4 text-balance text-3xl font-semibold leading-tight md:text-5xl">
             Subject support designed around your child&apos;s learning needs
           </h1>
-          <p className="mt-4 max-w-3xl text-sm text-blue-50/95 md:text-base">
+          <p className="mt-4 max-w-3xl text-sm text-white md:text-base">
             TopMox supports core academic subjects with an assessment-first
             approach that is structured to help children gain confidence,
             consistency, and clearer learning direction.

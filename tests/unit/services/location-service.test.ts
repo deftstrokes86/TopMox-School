@@ -3,6 +3,7 @@ import { describe, test } from "node:test";
 
 import {
   DEFAULT_REGION_CODE,
+  PUBLIC_REGION_OPTIONS,
   REGION_COOKIE_NAME,
   REGION_CONFIGS,
   type RegionCode
@@ -180,5 +181,34 @@ describe("Hostinger-safe location service", () => {
     assert.equal(isFlutterwaveEnabledForRegion("uae"), false);
     assert.equal(getPaymentFallbackForRegion("australia").manualPaymentEnabled, true);
     assert.equal(getPaymentFallbackForRegion("uae").manualPaymentEnabled, true);
+  });
+
+  test("public region options exclude the global USD fallback", () => {
+    const publicRegionCodes = PUBLIC_REGION_OPTIONS.map((region) => region.code);
+
+    assert.equal(publicRegionCodes.includes("global"), false);
+    assert.equal(
+      PUBLIC_REGION_OPTIONS.every((region) => region.currency !== "USD" || region.code === "united-states"),
+      true
+    );
+  });
+
+  test("public location copy avoids provider marketing and technical geo language", () => {
+    for (const region of PUBLIC_REGION_OPTIONS) {
+      const publicCopy = [
+        region.headline,
+        region.shortDescription,
+        region.paymentNotes,
+        ...region.parentPainPoints,
+        ...region.offerBenefits,
+        ...region.faq.flatMap((item) => [item.question, item.answer])
+      ].join(" ");
+
+      assert.doesNotMatch(publicCopy, /Flutterwave/i);
+      assert.doesNotMatch(publicCopy, /hard redirects?/i);
+      assert.doesNotMatch(publicCopy, /manual region switch/i);
+      assert.doesNotMatch(publicCopy, /timezone-aware/i);
+      assert.doesNotMatch(publicCopy, /display(?:ed)? currency/i);
+    }
   });
 });

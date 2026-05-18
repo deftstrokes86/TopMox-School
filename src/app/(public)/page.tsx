@@ -44,7 +44,7 @@ export default function PublicHomePage() {
   const regionHref =
     region.code === "global" ? "/locations" : `/locations/${region.slug}`;
   const localizedHeadline = region.headline;
-  const localizedSubtitle = `${region.shortDescription} You can keep the global TopMox context while choosing the region that best matches your family.`;
+  const localizedSubtitle = `${region.shortDescription} Start with a child assessment, then move into lessons, homework support, and progress visibility with a plan that fits your family.`;
 
   return (
     <section className="py-12 md:py-16">
@@ -73,16 +73,16 @@ export default function PublicHomePage() {
           <CardContent className="flex flex-col gap-5 p-5 md:flex-row md:items-center md:justify-between md:p-6">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-royal-blue">
-                Location guidance
+                Tutoring in your country
               </p>
               <h2 className="mt-2 text-xl font-semibold text-deep-navy">
                 You&rsquo;re viewing tutoring support for families in{" "}
                 {region.name}.
               </h2>
               <p className="mt-2 text-sm text-text-secondary">
-                Display currency: {region.currencySymbol} {region.currency}.
-                This is soft personalization, not a hard redirect. You can
-                switch regions at any time.
+                Plans for {region.name} families are discussed in{" "}
+                {region.currencySymbol} {region.currency} where available.
+                Final pricing is confirmed after your child assessment.
               </p>
               <p className="mt-2 text-sm text-text-secondary">
                 {region.paymentNotes}
@@ -311,20 +311,20 @@ export default function PublicHomePage() {
 
         <section className="space-y-8 rounded-2xl border border-royal-blue/20 bg-gradient-to-br from-white to-soft-cream p-6 shadow-soft md:p-10">
           <SectionHeader
-            eyebrow="Diaspora Families"
-            title="Structured support for parents in Nigeria and abroad."
-            description="For parents in the UK, US, Canada, Europe, UAE, and beyond, TopMox Global Tutoring provides structured academic support from educators who understand discipline, cultural context, and parent expectations."
+            eyebrow={`Families in ${region.name}`}
+            title={`Tutoring support shaped for parents in ${region.name}.`}
+            description={region.shortDescription}
           />
           <div className="grid gap-4 md:grid-cols-3">
             <OfferBenefitCard
               icon={Globe2}
-              title="Global access"
-              description="Online tutoring format designed to support families across time zones."
+              title="Online access"
+              description="A flexible online tutoring format designed to fit family routines."
             />
             <OfferBenefitCard
               icon={MapPinned}
-              title="Context-aware support"
-              description="Educators focus on practical support that aligns with parent expectations and routines."
+              title={`${region.name} context`}
+              description={region.parentPainPoints[0]}
             />
             <OfferBenefitCard
               icon={HeartHandshake}
@@ -411,25 +411,16 @@ export default function PublicHomePage() {
           />
           <FAQSection
             items={[
+              ...region.faq,
               {
                 question: "How does TopMox Global Tutoring work?",
                 answer:
                   "You begin with a child assessment, receive a learning recommendation, start online lessons, and track progress through structured updates."
               },
               {
-                question: "Is this only for children in Nigeria?",
-                answer:
-                  "No. TopMox supports families in Nigeria and across diaspora locations including the UK, US, Canada, Europe, UAE, and beyond."
-              },
-              {
                 question: "How do you know what my child needs?",
                 answer:
-                  "We begin with a structured assessment to understand challenges, current level, and support priorities before recommending a plan."
-              },
-              {
-                question: "Can my child learn from outside Nigeria?",
-                answer:
-                  "Yes. Lessons are delivered online with scheduling built to support different locations and time zones."
+                  "TopMox begins with a structured assessment to understand challenges, current level, and support priorities before recommending a plan."
               },
               {
                 question: "Will I receive progress updates?",

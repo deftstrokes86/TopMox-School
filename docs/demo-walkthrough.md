@@ -98,7 +98,7 @@ What business value it proves: The platform can convert interest into plan selec
 
 What to show: the location-aware homepage, `/locations`, one region page such as `/locations/nigeria` or `/locations/united-kingdom`, the public header region switcher, and the pricing currency note.
 
-What to say: TopMox can speak to families in Nigeria, the US, Canada, Australia, the UK, Europe, and the UAE without hard geo redirects. Manual region selection always wins and is stored in the `topmox_region` cookie. If no signal is available, the safe default is Nigeria/NGN.
+What to say: TopMox can speak to families in Nigeria, the US, Canada, Australia, the UK, Europe, and the UAE with a country-aware homepage and location pages. Parents can choose their country from the selector, and if no signal is available, the safe default is Nigeria/NGN.
 
 Why it matters to TopMox: Hostinger does not provide automatic country headers by default, so this strategy works with Hostinger and can optionally use Cloudflare `CF-IPCountry`.
 

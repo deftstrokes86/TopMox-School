@@ -329,6 +329,8 @@ Each dashboard route should be wrapped in a protected layout.
 - `/about`
 - `/contact`
 - `/faq`
+- `/locations`
+- `/locations/[slug]`
 - `/resources`
 - `/resources/[slug]`
 
@@ -953,6 +955,47 @@ Payment safety rules:
 
 ---
 
+## 17.1 Region and Currency Localization Architecture
+
+TopMox is deployed as a Next.js Node.js app on Hostinger, not as a static
+export. Location personalization must therefore be Hostinger-compatible and
+must not rely on platform-specific geo headers.
+
+Region resolution priority:
+
+1. Manual selected region cookie: `topmox_region`.
+2. Cloudflare `CF-IPCountry` if the domain is proxied through Cloudflare.
+3. Optional custom country headers from future Hostinger/CDN configuration:
+   `x-country-code`, `x-forwarded-country`, or `x-geo-country`.
+4. Weak browser hints such as timezone and `Accept-Language`.
+5. Nigeria fallback with NGN.
+
+Supported public regions:
+
+- Global -> USD
+- Nigeria -> NGN
+- United States -> USD
+- Canada -> CAD
+- Australia -> AUD
+- United Kingdom -> GBP
+- Europe -> EUR
+- UAE -> AED
+
+Manual region selection always wins. Automatic detection is only a soft default.
+The app must never hard redirect a visitor based on guessed geography.
+The homepage uses the resolved region to adapt headline, parent pain points,
+benefits, and payment notes while keeping a visible region switcher.
+
+Payment currency safety remains server-side. Public currency display helps
+parents understand the region context, but payment records must derive amount
+and currency from the enrollment/plan data on the server. Manual payment
+fallback remains available in every region. Flutterwave checkout may be disabled
+for currencies that require account confirmation, especially AUD and AED.
+
+FAQ remains available at `/faq` but is not part of the main public navigation.
+
+---
+
 ## 18. File and Storage Architecture
 
 For MVP:
@@ -1157,10 +1200,12 @@ Future enhancements:
 
 Recommended deployment:
 
-- Vercel (or Node-compatible hosting)
+- Hostinger Node.js hosting for a Next.js App Router application
 - PostgreSQL on Supabase, Neon, Railway, Render, or managed provider
 - Secure environment variable management
 - Prisma migrations in deployment lifecycle
+- Do not use static export because the app depends on NextAuth, Prisma, API
+  routes, middleware, server actions, and Flutterwave callbacks/webhooks.
 
 ### Deployment Checklist
 

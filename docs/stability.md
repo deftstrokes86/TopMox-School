@@ -49,10 +49,17 @@ It checks:
 - Auth routes.
 - Dashboard entry routes.
 - `/api/health`.
+- `/api/geo`.
 - Homepage static assets under `/_next/static`.
 
 Dashboard routes may redirect unauthenticated users to `/login`. That is safe
 as long as the redirect produces real HTML instead of a blank page or crash.
+
+Location routes such as `/locations`, `/locations/nigeria`,
+`/locations/united-states`, `/locations/canada`, `/locations/australia`,
+`/locations/united-kingdom`, `/locations/europe`, and `/locations/uae` are part
+of the public smoke path. They should render even when no geo headers are
+available.
 
 ## Browser Smoke Checks
 
@@ -74,8 +81,10 @@ and checks these routes in Chromium:
 
 - Public: `/`, `/global-tutoring`, `/subjects`, `/subjects/mathematics`,
   `/subjects/english`, `/subjects/science`, `/subjects/reading-comprehension`,
-  `/exam-prep`, `/pricing`, `/about`, `/faq`, `/contact`, `/resources`, and a
-  published resource detail route.
+  `/exam-prep`, `/pricing`, `/about`, `/faq`, `/contact`, `/locations`,
+  `/locations/nigeria`, `/locations/united-states`, `/locations/canada`,
+  `/locations/australia`, `/locations/united-kingdom`, `/locations/europe`,
+  `/locations/uae`, `/resources`, and a published resource detail route.
 - Auth: `/login`, `/register`, `/forgot-password`.
 - Protected admin routes: `/admin`, `/admin/assessments`, `/admin/payments`,
   `/admin/enrollments`, `/admin/lessons`, `/admin/homework`, `/admin/reports`,
@@ -87,6 +96,7 @@ and checks these routes in Chromium:
 - Protected tutor routes: `/tutor`, `/tutor/lessons`, `/tutor/homework`,
   `/tutor/reports`, `/tutor/notifications`.
 - Health: `/api/health`.
+- Geo debug: `/api/geo`.
 
 Protected routes may redirect to `/login` when unauthenticated. That is valid
 as long as the browser renders meaningful text and does not blank.
@@ -95,6 +105,28 @@ The browser suite also includes a small mobile viewport pass for representative
 public, auth, and protected routes. These checks catch page-level horizontal
 overflow, permanent loading states, and fatal browser errors before a phase is
 reported complete.
+
+## Hostinger Geo Stability
+
+TopMox is deployed as a Next.js Node.js app on Hostinger, not as a static
+export. Location personalization must not depend on platform-specific hosting
+headers.
+
+Safe geo priority:
+
+1. Manual `topmox_region` cookie.
+2. Cloudflare `CF-IPCountry` if the domain is proxied through Cloudflare.
+3. Optional custom headers: `x-country-code`, `x-forwarded-country`,
+   `x-geo-country`.
+4. Weak browser hints such as timezone and `Accept-Language`.
+5. Nigeria/NGN fallback.
+
+No page should blank if region detection is missing, invalid, or ambiguous. The
+region switcher lets users correct the guess manually, the app should never hard
+redirect based on geo detection, and the safe default is Nigeria with NGN.
+The homepage should render region-aware copy for the resolved region without
+depending on Vercel headers. FAQ remains directly accessible at `/faq`, but it
+is not part of the main public navigation.
 
 The browser suite fails on serious client-side issues, including:
 

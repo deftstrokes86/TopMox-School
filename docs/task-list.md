@@ -60,6 +60,24 @@ Payment work must follow strict TDD and must protect enrollment activation.
 
 ---
 
+## Hostinger Location/Currency Rule
+
+TopMox deploys as a Next.js Node.js app on Hostinger, not as a static export.
+
+Location personalization must be soft and Hostinger-compatible:
+
+- Manual `topmox_region` cookie always wins.
+- Optional Cloudflare `CF-IPCountry` can provide a soft default.
+- Optional custom country headers may be used later.
+- Browser timezone and `Accept-Language` are weak fallbacks.
+- Unknown geo data falls back to Nigeria/NGN.
+- Never hard redirect by guessed location.
+- Public currency display must not control payment amount or currency.
+- Payment amount and currency are derived server-side.
+- Manual payment fallback remains available.
+
+---
+
 ## Phase 0: Project Setup
 
 ### Tasks

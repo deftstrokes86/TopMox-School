@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { cookies, headers } from "next/headers";
 import {
   BarChart3,
   BookOpenCheck,
@@ -23,20 +25,33 @@ import { HeroShell } from "@/components/marketing/HeroShell";
 import { OfferBenefitCard } from "@/components/marketing/OfferBenefitCard";
 import { PlanPreviewCard } from "@/components/marketing/PlanPreviewCard";
 import { ProcessStepCard } from "@/components/marketing/ProcessStepCard";
+import { RegionSwitcher } from "@/components/marketing/RegionSwitcher";
 import { SubjectSupportCard } from "@/components/marketing/SubjectSupportCard";
 import { TrustStrip } from "@/components/marketing/TrustStrip";
 import { CTASection } from "@/components/shared/CTASection";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Card, CardContent } from "@/components/ui/card";
+import { REGION_COOKIE_NAME } from "@/lib/constants/locations";
+import { resolveVisitorRegion } from "@/server/services/location.service";
 
 export default function PublicHomePage() {
+  const resolvedRegion = resolveVisitorRegion({
+    headers: headers(),
+    cookie: cookies().get(REGION_COOKIE_NAME)?.value
+  });
+  const region = resolvedRegion.region;
+  const regionHref =
+    region.code === "global" ? "/locations" : `/locations/${region.slug}`;
+  const localizedHeadline = region.headline;
+  const localizedSubtitle = `${region.shortDescription} You can keep the global TopMox context while choosing the region that best matches your family.`;
+
   return (
     <section className="py-12 md:py-16">
       <div className="container space-y-14 md:space-y-20">
         <HeroShell
-          title="School-backed online tutoring for children in Nigeria and abroad."
-          subtitle="TopMox Global Tutoring helps parents move from uncertainty to a clear academic support plan through experienced educators, live lessons, structured learning paths, and visible progress."
+          title={localizedHeadline}
+          subtitle={localizedSubtitle}
           trustMicrocopy="Powered by TopMox Schools"
           benefitChips={[
             "Structured learning plans",
@@ -54,6 +69,37 @@ export default function PublicHomePage() {
           ]}
         />
 
+        <Card className="border-royal-blue/20 bg-gradient-to-br from-white to-soft-blue/35 shadow-soft">
+          <CardContent className="flex flex-col gap-5 p-5 md:flex-row md:items-center md:justify-between md:p-6">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-royal-blue">
+                Location guidance
+              </p>
+              <h2 className="mt-2 text-xl font-semibold text-deep-navy">
+                You&rsquo;re viewing tutoring support for families in{" "}
+                {region.name}.
+              </h2>
+              <p className="mt-2 text-sm text-text-secondary">
+                Display currency: {region.currencySymbol} {region.currency}.
+                This is soft personalization, not a hard redirect. You can
+                switch regions at any time.
+              </p>
+              <p className="mt-2 text-sm text-text-secondary">
+                {region.paymentNotes}
+              </p>
+              <Link
+                href={regionHref}
+                className="mt-3 inline-flex text-sm font-semibold text-royal-blue hover:text-deep-navy"
+              >
+                View {region.name} tutoring guidance
+              </Link>
+            </div>
+            <div className="w-full max-w-md">
+              <RegionSwitcher currentRegionCode={region.code} />
+            </div>
+          </CardContent>
+        </Card>
+
         <section className="space-y-8">
           <SectionHeader
             eyebrow="Parent Reality"
@@ -64,13 +110,12 @@ export default function PublicHomePage() {
             <Card className="border-border shadow-soft">
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold text-text-primary">
-                  What parents often say
+                  What parents in {region.name} often need
                 </h3>
                 <ul className="mt-4 space-y-3 text-sm text-text-secondary">
-                  <li>&ldquo;My child is struggling, but I don&rsquo;t know exactly why.&rdquo;</li>
-                  <li>&ldquo;I have tried tutors before, but there was no structure.&rdquo;</li>
-                  <li>&ldquo;I want support I can trust.&rdquo;</li>
-                  <li>&ldquo;I need updates, not guesswork.&rdquo;</li>
+                  {region.parentPainPoints.map((painPoint) => (
+                    <li key={painPoint}>{painPoint}</li>
+                  ))}
                 </ul>
               </CardContent>
             </Card>
@@ -79,12 +124,11 @@ export default function PublicHomePage() {
                 <h3 className="text-lg font-semibold text-deep-navy">
                   The TopMox response
                 </h3>
-                <p className="mt-3 text-sm text-text-secondary">
-                  Your child starts with a structured assessment, then receives a
-                  focused learning recommendation, tutor support, and regular
-                  visibility. You stay informed and involved without carrying the
-                  process alone.
-                </p>
+                <ul className="mt-4 space-y-3 text-sm text-text-secondary">
+                  {region.offerBenefits.map((benefit) => (
+                    <li key={benefit}>{benefit}</li>
+                  ))}
+                </ul>
               </CardContent>
             </Card>
           </div>

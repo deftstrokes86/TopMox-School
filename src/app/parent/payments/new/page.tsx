@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getParentOnboardingStatus } from "@/server/queries/parent.queries";
 import { getCurrentParentPendingPaymentEnrollments } from "@/server/queries/enrollment.queries";
+import { getPaymentFallbackForCurrency } from "@/server/services/location.service";
 
 export const dynamic = "force-dynamic";
 
@@ -34,14 +35,22 @@ export default async function NewParentPaymentPage({
   }
 
   const enrollmentOptions: PaymentEnrollmentOption[] = pendingEnrollments.map(
-    (enrollment) => ({
-      id: enrollment.id,
-      childName: enrollment.student.fullName,
-      planName: enrollment.tutoringPlan.name,
-      sessionsPerWeek: enrollment.tutoringPlan.sessionsPerWeek,
-      amount: enrollment.tutoringPlan.monthlyPrice.toString(),
-      currency: enrollment.tutoringPlan.currency
-    })
+    (enrollment) => {
+      const paymentFallback = getPaymentFallbackForCurrency(
+        enrollment.tutoringPlan.currency
+      );
+
+      return {
+        id: enrollment.id,
+        childName: enrollment.student.fullName,
+        planName: enrollment.tutoringPlan.name,
+        sessionsPerWeek: enrollment.tutoringPlan.sessionsPerWeek,
+        amount: enrollment.tutoringPlan.monthlyPrice.toString(),
+        currency: enrollment.tutoringPlan.currency,
+        flutterwaveEnabled: paymentFallback.flutterwaveEnabled,
+        paymentAvailabilityNote: paymentFallback.note
+      };
+    }
   );
 
   return (

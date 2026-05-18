@@ -13,8 +13,10 @@ screens or deployment failures.
 - Environment variables copied from `.env.example` and filled with real
   deployment values.
 - Flutterwave account configuration if live checkout is enabled.
-- A deployment host that can run a Next.js App Router application, such as
-  Vercel or another Node-compatible platform.
+- Hostinger Node.js hosting configured to run a Next.js App Router application.
+- Do not use static export. TopMox depends on NextAuth, Prisma, Supabase
+  Postgres, Flutterwave API routes, middleware, server actions, and protected
+  routes.
 
 ## Required Environment Variables
 
@@ -110,11 +112,11 @@ npm run verify:browser
 `VERIFY_URL` is set. `npm run verify:browser` starts its own clean browser smoke
 server.
 
-## Production/Staging Deployment
+## Hostinger Production/Staging Deployment
 
-Use the following deployment sequence for production-like environments:
+Use the following deployment sequence for Hostinger production-like environments:
 
-1. Configure environment variables in the hosting provider.
+1. Configure environment variables in Hostinger hPanel.
 2. Generate Prisma Client during install/build:
 
 ```bash
@@ -147,10 +149,15 @@ npm run build
 npm run start
 ```
 
-7. Configure Flutterwave URLs:
+If Hostinger requires an explicit port, set `PORT` in hPanel or use the
+Hostinger-provided Node.js startup configuration.
 
-- Callback URL: `${APP_BASE_URL}/api/payments/flutterwave/callback`
-- Webhook URL: `${APP_BASE_URL}/api/webhooks/flutterwave`
+Do not use static export. The app must run as a Next.js Node.js application.
+
+7. Configure Flutterwave URLs with the Hostinger domain:
+
+- Callback URL: `https://YOUR_DOMAIN/api/payments/flutterwave/callback`
+- Webhook URL: `https://YOUR_DOMAIN/api/webhooks/flutterwave`
 
 8. Run smoke checks against the deployed base URL:
 
@@ -165,6 +172,36 @@ On PowerShell:
 $env:VERIFY_URL="https://your-domain.example"; npm run verify:site
 $env:PLAYWRIGHT_BASE_URL="https://your-domain.example"; npm run verify:browser
 ```
+
+## Hostinger Geolocation Strategy
+
+Hostinger does not provide platform geo headers by default. TopMox uses
+Hostinger-compatible soft personalization instead of hard redirects.
+
+Priority order:
+
+1. Manual selected region cookie: `topmox_region`.
+2. Cloudflare country header if the domain is proxied through Cloudflare:
+   `CF-IPCountry`.
+3. Optional custom proxy headers if Hostinger/CDN configuration later supports
+   them: `x-country-code`, `x-forwarded-country`, or `x-geo-country`.
+4. Weak browser hints such as timezone and `Accept-Language`.
+5. Nigeria fallback with NGN.
+
+Manual selection always wins. Header detection is only a guess. The region
+switcher works even without Cloudflare, and users should never be trapped in
+the wrong location. The homepage changes its guidance by resolved region, but
+the safe final fallback is Nigeria/NGN when no reliable signal is available.
+
+Region-based currency display is guidance for parents. Payment amount and
+currency must still be derived server-side from enrollment/plan data. Manual
+payment fallback remains available. For AUD and AED, live Flutterwave checkout
+should be confirmed in the TopMox Flutterwave account before enabling gateway
+collection.
+
+The homepage is region-aware and should default to Nigeria/NGN when no reliable
+signal is available. FAQ remains available at `/faq`, but it is intentionally
+not shown in the main public navigation.
 
 ## Flutterwave Notes
 

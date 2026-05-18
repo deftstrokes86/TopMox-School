@@ -31,6 +31,7 @@ import {
   validateManualPaymentSubmission,
   validateManualPaymentReview
 } from "@/server/services/payment.service";
+import { isFlutterwaveEnabledForCurrency } from "@/server/services/location.service";
 
 type PaymentFieldErrors = Partial<
   Record<
@@ -261,6 +262,14 @@ export async function createEnrollmentPaymentAction(
           paymentMethod: parsed.data.paymentMethod,
           successRoute: "/parent/payments?submitted=1"
         }
+      };
+    }
+
+    if (!isFlutterwaveEnabledForCurrency(enrollment.tutoringPlan.currency)) {
+      return {
+        success: false,
+        message:
+          "Flutterwave checkout is not enabled for this currency yet. Please use manual transfer or contact TopMox."
       };
     }
 

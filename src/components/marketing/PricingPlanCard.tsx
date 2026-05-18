@@ -10,6 +10,7 @@ type PricingPlanCardProps = {
   coreOutcomes: string[];
   parentReceives: string[];
   progressVisibility: string;
+  priceNote?: string;
   href?: string;
 };
 
@@ -20,6 +21,7 @@ export function PricingPlanCard({
   coreOutcomes,
   parentReceives,
   progressVisibility,
+  priceNote,
   href = "/book-assessment"
 }: PricingPlanCardProps) {
   return (
@@ -27,7 +29,7 @@ export function PricingPlanCard({
       <CardContent className="flex h-full flex-col p-6">
         <h3 className="text-xl font-semibold text-text-primary">{name}</h3>
         <p className="mt-2 text-sm font-medium text-royal-blue">
-          Final recommendation after child assessment.
+          {priceNote ?? "Final recommendation after child assessment."}
         </p>
 
         <p className="mt-4 text-sm text-text-secondary">

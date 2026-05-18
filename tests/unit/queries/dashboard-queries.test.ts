@@ -113,6 +113,22 @@ describe("admin dashboard aggregation", () => {
       }
     });
   });
+
+  test("admin dashboard returns a safe empty state when Supabase reads fail", async () => {
+    const client = {
+      user: {
+        count: async () => {
+          throw new Error("P1001 simulated Supabase pooler failure");
+        }
+      }
+    };
+
+    const data = await getAdminDashboardDataForUser(adminUser, client, now);
+
+    assert.equal(data.stats.totalParents, 0);
+    assert.deepEqual(data.recentAssessmentRequests, []);
+    assert.deepEqual(data.recentActivity, []);
+  });
 });
 
 describe("parent dashboard aggregation", () => {
@@ -198,6 +214,26 @@ describe("parent dashboard aggregation", () => {
     assert.equal(data.latestAssessment, null);
   });
 
+  test("parent dashboard returns a safe empty state when Supabase reads fail", async () => {
+    const client = {
+      parentProfile: {
+        findUnique: async () => {
+          throw new Error("P1001 simulated Supabase pooler failure");
+        }
+      }
+    };
+
+    const data = await getCurrentParentDashboardDataForUser(
+      parentUser,
+      client,
+      now
+    );
+
+    assert.equal(data.parentProfileStatus.hasParentProfile, false);
+    assert.deepEqual(data.childProfiles, []);
+    assert.deepEqual(data.recentActivity, []);
+  });
+
   test("non-parent cannot fetch parent dashboard data", async () => {
     await assert.rejects(
       () => getCurrentParentDashboardDataForUser(tutorUser, {}, now),
@@ -276,6 +312,26 @@ describe("tutor dashboard aggregation", () => {
     assert.equal(data.tutorProfile, null);
     assert.deepEqual(data.todayLessons, []);
     assert.deepEqual(data.assignedStudents, []);
+  });
+
+  test("tutor dashboard returns a safe empty state when Supabase reads fail", async () => {
+    const client = {
+      tutorProfile: {
+        findUnique: async () => {
+          throw new Error("P1001 simulated Supabase pooler failure");
+        }
+      }
+    };
+
+    const data = await getCurrentTutorDashboardDataForUser(
+      tutorUser,
+      client,
+      now
+    );
+
+    assert.equal(data.tutorProfile, null);
+    assert.deepEqual(data.todayLessons, []);
+    assert.deepEqual(data.recentActivity, []);
   });
 
   test("non-tutor cannot fetch tutor dashboard data", async () => {

@@ -8,7 +8,9 @@ export const SUPPORTED_PAYMENT_CURRENCIES = [
   "USD",
   "GBP",
   "EUR",
-  "CAD"
+  "CAD",
+  "AUD",
+  "AED"
 ] as const;
 
 export const DEFAULT_PAYMENT_CURRENCY = "NGN" as const;

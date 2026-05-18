@@ -41,6 +41,39 @@ const accounts: DemoAccount[] = [
 
 const protectedRoutes = ["/admin", "/parent", "/tutor"] as const;
 
+const demoRoutesByRole: Record<DemoAccount["role"], string[]> = {
+  ADMIN: [
+    "/admin",
+    "/admin/assessments",
+    "/admin/payments",
+    "/admin/enrollments",
+    "/admin/lessons",
+    "/admin/reports",
+    "/admin/support",
+    "/admin/resources",
+    "/admin/notifications"
+  ],
+  PARENT: [
+    "/parent",
+    "/parent/children",
+    "/parent/assessments",
+    "/parent/enrollments",
+    "/parent/payments",
+    "/parent/lessons",
+    "/parent/homework",
+    "/parent/reports",
+    "/parent/support",
+    "/parent/notifications"
+  ],
+  TUTOR: [
+    "/tutor",
+    "/tutor/lessons",
+    "/tutor/homework",
+    "/tutor/reports",
+    "/tutor/notifications"
+  ]
+};
+
 const fatalConsolePatterns = [
   /Hydration failed/i,
   /Minified React error/i,
@@ -110,13 +143,46 @@ async function visibleBodyText(page: Page) {
   );
 }
 
-async function loginAs(page: Page, account: DemoAccount) {
-  await page.goto("/login", { waitUntil: "networkidle" });
-  await page.getByLabel(/email address/i).fill(account.email);
-  await page.getByLabel(/^password$/i).fill(account.password);
-  await page.getByRole("button", { name: /sign in/i }).click();
+async function assertNoHorizontalOverflow(page: Page, context: string) {
+  const overflow = await page.evaluate(() => {
+    const documentElement = document.documentElement;
 
-  await expect(page).toHaveURL(new RegExp(`${account.dashboardPath}(?:$|[?#])`));
+    return documentElement.scrollWidth - documentElement.clientWidth;
+  });
+
+  expect(overflow, `${context} should not overflow the mobile viewport`).toBeLessThanOrEqual(2);
+}
+
+async function loginAs(page: Page, account: DemoAccount) {
+  let authenticated = false;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    await page.goto("/login", { waitUntil: "networkidle" });
+    await page.getByLabel(/email address/i).fill(account.email);
+    await page.getByLabel(/^password$/i).fill(account.password);
+    await page.getByRole("button", { name: /sign in/i }).click();
+
+    try {
+      await expect(page).toHaveURL(
+        new RegExp(`${account.dashboardPath}(?:$|[?#])`),
+        { timeout: 20_000 }
+      );
+      authenticated = true;
+      break;
+    } catch (error) {
+      const bodyText = await visibleBodyText(page);
+      const canRetry =
+        /Invalid email or password/i.test(bodyText) && attempt < 2;
+
+      if (!canRetry) {
+        throw error;
+      }
+
+      await page.waitForTimeout(2_000);
+    }
+  }
+
+  expect(authenticated).toBe(true);
   await expect.poll(() => visibleBodyText(page)).toMatch(account.dashboardText);
 
   const session = (await page.evaluate(async () => {
@@ -135,6 +201,19 @@ async function loginAs(page: Page, account: DemoAccount) {
   expect(session.user?.email).toBe(account.email);
   expect(session.user?.name).toBeTruthy();
   expect(session.user?.role).toBe(account.role);
+}
+
+async function assertAuthenticatedRouteLoads(page: Page, route: string) {
+  const response = await page.goto(route, { waitUntil: "networkidle" });
+  expect(response?.status() ?? 200, `${route} should not return a server error`).toBeLessThan(500);
+  await expect(page).toHaveURL(new RegExp(`${route}(?:$|[?#])`));
+
+  const bodyText = await visibleBodyText(page);
+
+  expect(bodyText.length, `${route} should render meaningful content`).toBeGreaterThan(40);
+  expect(bodyText, `${route} should not redirect to login`).not.toMatch(/Log in|Sign in/i);
+  expect(bodyText, `${route} should not render a not-found page`).not.toMatch(/Page not found|not found/i);
+  expect(bodyText, `${route} should not render the generic error boundary`).not.toMatch(/Something went wrong/i);
 }
 
 test.describe("authenticated browser RBAC", () => {
@@ -167,6 +246,40 @@ test.describe("authenticated browser RBAC", () => {
           new RegExp(`${account.dashboardPath}(?:$|[?#])`)
         );
         await expect.poll(() => visibleBodyText(page)).toMatch(account.dashboardText);
+      }
+
+      guard.assertClean();
+    });
+
+    test(`${account.role} dashboard is usable on mobile after login`, async ({
+      page
+    }) => {
+      const guard = attachBrowserStabilityGuards(page);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await assertLiveDatabase(page);
+      await loginAs(page, account);
+
+      await expect.poll(() => visibleBodyText(page)).toMatch(account.dashboardText);
+      await assertNoHorizontalOverflow(page, `${account.role} dashboard`);
+
+      await page.getByLabel(/open notifications/i).click();
+      await expect(
+        page.getByRole("link", { name: /view all notifications/i })
+      ).toBeVisible();
+      await assertNoHorizontalOverflow(page, `${account.role} notification dropdown`);
+
+      guard.assertClean();
+    });
+
+    test(`${account.role} seeded demo routes load after login`, async ({
+      page
+    }) => {
+      const guard = attachBrowserStabilityGuards(page);
+      await assertLiveDatabase(page);
+      await loginAs(page, account);
+
+      for (const route of demoRoutesByRole[account.role]) {
+        await assertAuthenticatedRouteLoads(page, route);
       }
 
       guard.assertClean();

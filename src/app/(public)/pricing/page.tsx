@@ -1,14 +1,30 @@
 import type { Metadata } from "next";
+import { cookies, headers } from "next/headers";
 import { Compass, DollarSign, FileSearch2, Target } from "lucide-react";
 
 import { AssessmentCTA } from "@/components/marketing/AssessmentCTA";
 import { OfferBenefitCard } from "@/components/marketing/OfferBenefitCard";
 import { PricingPlanCard } from "@/components/marketing/PricingPlanCard";
+import { RegionSwitcher } from "@/components/marketing/RegionSwitcher";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Card, CardContent } from "@/components/ui/card";
+import { REGION_COOKIE_NAME } from "@/lib/constants/locations";
+import {
+  getPaymentFallbackForRegion,
+  resolveVisitorRegion
+} from "@/server/services/location.service";
 
 export default function PricingPage() {
+  const resolvedRegion = resolveVisitorRegion({
+    headers: headers(),
+    cookie: cookies().get(REGION_COOKIE_NAME)?.value
+  });
+  const region = resolvedRegion.region;
+  const paymentFallback = getPaymentFallbackForRegion(region.code);
+  const priceNote = `${region.currency} shown for ${region.name}. Final pricing confirmed after child assessment.`;
+  const needsGatewayConfirmation = ["AUD", "AED"].includes(region.currency);
+
   return (
     <section className="py-12 md:py-16">
       <div className="container space-y-12 md:space-y-16">
@@ -28,7 +44,39 @@ export default function PricingPage() {
             <StatusBadge label="Assessment-led recommendation" tone="info" />
             <StatusBadge label="School-backed structure" tone="success" />
             <StatusBadge label="Parent visibility included" tone="neutral" />
+            <StatusBadge label={`${region.currency} display`} tone="warning" />
           </div>
+          <div className="mt-6 max-w-xl">
+            <RegionSwitcher currentRegionCode={region.code} />
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-warm-gold/30 bg-soft-cream p-6 shadow-soft md:p-8">
+          <h2 className="text-xl font-semibold text-deep-navy">
+            Pricing guidance for {region.name}
+          </h2>
+          <p className="mt-2 text-sm text-text-secondary">
+            Display currency: {region.currency}. Final pricing is confirmed
+            after child assessment so TopMox can recommend the right support
+            level before payment.
+          </p>
+          <p className="mt-2 text-sm text-text-secondary">
+            Payment options depend on currency, country, and Flutterwave account
+            configuration. Manual payment fallback remains available.
+          </p>
+          {needsGatewayConfirmation ? (
+            <p className="mt-2 text-sm font-medium text-deep-navy">
+              This currency is displayed for your region. Live Flutterwave
+              collection should be confirmed before launch. Manual or USD
+              fallback may be used.
+            </p>
+          ) : null}
+          {!paymentFallback.flutterwaveEnabled ? (
+            <p className="mt-2 text-sm font-medium text-deep-navy">
+              Online checkout is not enabled by default for this region until
+              Flutterwave support is confirmed. Manual payment remains available.
+            </p>
+          ) : null}
         </section>
 
         <section className="space-y-7">
@@ -52,6 +100,7 @@ export default function PricingPage() {
                 "Tutor notes with practical context",
                 "Homework and follow-through visibility"
               ]}
+              priceNote={priceNote}
               progressVisibility="Regular lesson updates and progress reporting designed to help parents track momentum."
             />
             <PricingPlanCard
@@ -68,6 +117,7 @@ export default function PricingPage() {
                 "Visible homework and attendance tracking",
                 "Monthly progress insight"
               ]}
+              priceNote={priceNote}
               progressVisibility="Parents can monitor lessons, notes, homework, and report trends without chasing updates."
             />
             <PricingPlanCard
@@ -84,6 +134,7 @@ export default function PricingPage() {
                 "Feedback on readiness patterns",
                 "Progress-focused communication"
               ]}
+              priceNote={priceNote}
               progressVisibility="Parents receive clearer signals on preparation consistency and support next steps."
             />
             <PricingPlanCard
@@ -100,6 +151,7 @@ export default function PricingPage() {
                 "Practical updates on follow-through",
                 "Guidance for home learning routines"
               ]}
+              priceNote={priceNote}
               progressVisibility="Parents can see homework consistency and tutor feedback in a structured format."
             />
           </div>

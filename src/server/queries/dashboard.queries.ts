@@ -913,6 +913,8 @@ export async function getCurrentParentDashboardDataForUser(
 ) {
   assertDashboardRole(user, "PARENT");
   const prisma = asClient(client);
+
+  try {
   const parentProfileResult = await prisma.parentProfile?.findUnique?.({
     where: { userId: user.id },
     select: {
@@ -1221,6 +1223,10 @@ export async function getCurrentParentDashboardDataForUser(
     },
     recentActivity
   };
+  } catch (error) {
+    console.error("Parent dashboard data failed to load:", error);
+    return createEmptyParentDashboard(user);
+  }
 }
 
 export async function getCurrentTutorDashboardDataForUser(
@@ -1230,6 +1236,8 @@ export async function getCurrentTutorDashboardDataForUser(
 ) {
   assertDashboardRole(user, "TUTOR");
   const prisma = asClient(client);
+
+  try {
   const tutorProfileResult = await prisma.tutorProfile?.findUnique?.({
     where: { userId: user.id },
     select: {
@@ -1446,6 +1454,10 @@ export async function getCurrentTutorDashboardDataForUser(
     },
     recentActivity
   };
+  } catch (error) {
+    console.error("Tutor dashboard data failed to load:", error);
+    return createEmptyTutorDashboard(user);
+  }
 }
 
 export async function getAdminDashboardData() {

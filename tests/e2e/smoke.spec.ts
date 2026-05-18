@@ -22,6 +22,20 @@ const smokeRoutes: SmokeRoute[] = [
   { path: "/about", expectedText: /About|TopMox Schools/i },
   { path: "/faq", expectedText: /FAQ|Questions/i },
   { path: "/contact", expectedText: /Contact|WhatsApp|TopMox/i },
+  { path: "/locations", expectedText: /Locations|Nigeria|United States/i },
+  { path: "/locations/nigeria", expectedText: /Nigeria|NGN|TopMox/i },
+  {
+    path: "/locations/united-states",
+    expectedText: /United States|USD|TopMox/i
+  },
+  { path: "/locations/canada", expectedText: /Canada|CAD|TopMox/i },
+  { path: "/locations/australia", expectedText: /Australia|AUD|TopMox/i },
+  {
+    path: "/locations/united-kingdom",
+    expectedText: /United Kingdom|GBP|TopMox/i
+  },
+  { path: "/locations/europe", expectedText: /Europe|EUR|TopMox/i },
+  { path: "/locations/uae", expectedText: /UAE|AED|TopMox/i },
   { path: "/resources", expectedText: /Resources|Read more/i },
   {
     path: "/resources/how-online-tutoring-works-at-topmox",
@@ -165,27 +179,7 @@ const smokeRoutes: SmokeRoute[] = [
   }
 ];
 
-const responsiveRoutes: SmokeRoute[] = [
-  { path: "/", expectedText: /TopMox Global Tutoring/i },
-  { path: "/subjects/mathematics", expectedText: /Mathematics|TopMox/i },
-  { path: "/resources", expectedText: /Resources|Read more|TopMox/i },
-  { path: "/login", expectedText: /TopMox Global Tutoring|Log in|Sign in/i },
-  {
-    path: "/admin",
-    expectedText: /TopMox Global Tutoring|Log in|Admin Dashboard/i,
-    allowLoginRedirect: true
-  },
-  {
-    path: "/parent",
-    expectedText: /TopMox Global Tutoring|Log in|Parent Dashboard/i,
-    allowLoginRedirect: true
-  },
-  {
-    path: "/tutor",
-    expectedText: /TopMox Global Tutoring|Log in|Tutor Dashboard/i,
-    allowLoginRedirect: true
-  }
-];
+const responsiveRoutes: SmokeRoute[] = smokeRoutes;
 
 const fatalConsolePatterns = [
   /Uncaught Error/i,
@@ -405,5 +399,128 @@ test.describe("browser route smoke checks", () => {
     expect(payload.app).toBe("TopMox Global Tutoring");
     expect(payload.timestamp).toBeTruthy();
     expect(["connected", "disconnected"]).toContain(payload.database);
+  });
+
+  test("/api/geo returns safe region JSON", async ({ request }) => {
+    const defaultResponse = await request.get("/api/geo");
+    expect(defaultResponse.status()).toBe(200);
+
+    const defaultPayload = (await defaultResponse.json()) as {
+      region?: { code?: string; currency?: string };
+      source?: string;
+    };
+
+    expect(defaultPayload.source).toBe("default");
+    expect(defaultPayload.region?.code).toBe("nigeria");
+    expect(defaultPayload.region?.currency).toBe("NGN");
+
+    const response = await request.get("/api/geo", {
+      headers: {
+        "CF-IPCountry": "NG"
+      }
+    });
+    expect(response.status()).toBe(200);
+
+    const payload = (await response.json()) as {
+      region?: { code?: string; currency?: string };
+      source?: string;
+      flutterwaveEnabled?: boolean;
+      manualPaymentEnabled?: boolean;
+    };
+
+    expect(payload.source).toBe("cloudflare-header");
+    expect(payload.region?.code).toBe("nigeria");
+    expect(payload.region?.currency).toBe("NGN");
+    expect(payload.flutterwaveEnabled).toBe(true);
+    expect(payload.manualPaymentEnabled).toBe(true);
+  });
+
+  test("homepage defaults to Nigeria and NGN without geo data", async ({ page }) => {
+    const guard = attachBrowserStabilityGuards(page);
+
+    await page.goto("/", {
+      waitUntil: "networkidle"
+    });
+
+    await expect(page.getByText(/families in Nigeria/i).first()).toBeVisible();
+    await expect(page.getByText(/Display currency:\s*(?:₦\s*)?NGN/i)).toBeVisible();
+
+    guard.assertClean();
+  });
+
+  for (const regionalHomepage of [
+    {
+      country: "US",
+      regionText: /families in United States/i,
+      currencyText: /Display currency:\s*(?:\$\s*)?USD/i
+    },
+    {
+      country: "CA",
+      regionText: /families in Canada/i,
+      currencyText: /Display currency:\s*(?:CA\$\s*)?CAD/i
+    },
+    {
+      country: "GB",
+      regionText: /families in United Kingdom/i,
+      currencyText: /Display currency:\s*(?:£\s*)?GBP/i
+    },
+    {
+      country: "AE",
+      regionText: /families in UAE/i,
+      currencyText: /Display currency:\s*(?:د\.إ\s*)?AED/i
+    }
+  ]) {
+    test(`homepage personalizes for CF-IPCountry=${regionalHomepage.country}`, async ({
+      page
+    }) => {
+      const guard = attachBrowserStabilityGuards(page);
+      await page.setExtraHTTPHeaders({
+        "CF-IPCountry": regionalHomepage.country
+      });
+
+      await page.goto("/", {
+        waitUntil: "networkidle"
+      });
+
+      await expect(page.getByText(regionalHomepage.regionText).first()).toBeVisible();
+      await expect(page.getByText(regionalHomepage.currencyText)).toBeVisible();
+
+      guard.assertClean();
+    });
+  }
+
+  test("main public navigation does not show FAQ", async ({ page }) => {
+    const guard = attachBrowserStabilityGuards(page);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/", {
+      waitUntil: "networkidle"
+    });
+
+    await expect(page.locator("header nav").first()).not.toContainText("FAQ");
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.reload({ waitUntil: "networkidle" });
+    await expect(page.locator("header nav").first()).not.toContainText("FAQ");
+
+    guard.assertClean();
+  });
+
+  test("public region switcher renders and can select Canada", async ({ page }) => {
+    const guard = attachBrowserStabilityGuards(page);
+
+    await page.goto("/", {
+      waitUntil: "networkidle"
+    });
+
+    const switcher = page
+      .getByLabel(/choose topmox region/i)
+      .first();
+
+    await expect(switcher).toBeVisible();
+    await switcher.selectOption("canada");
+    await expect(switcher).toHaveValue("canada");
+
+    guard.assertClean();
   });
 });

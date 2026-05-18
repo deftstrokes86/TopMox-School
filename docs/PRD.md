@@ -302,6 +302,26 @@ No feature should be added unless it strengthens the assessment-to-payment-to-pr
  /about
  /contact
  /faq
+ /locations
+ /locations/[slug]
  /resources
  /resources/[slug]
 ```
+
+### Location and Currency Personalization
+
+TopMox supports soft public personalization for Nigeria, United States, Canada,
+Australia, United Kingdom, Europe, and UAE.
+
+Manual region selection is stored in the `topmox_region` cookie and always wins.
+Cloudflare `CF-IPCountry` may be used as a soft country guess if the Hostinger
+domain is proxied through Cloudflare. Browser timezone and `Accept-Language`
+are weak fallbacks only. Unknown data falls back to Nigeria and NGN.
+
+The app must not hard redirect by geography. Public currency display is for
+parent clarity; payment amount and currency must still be derived server-side
+from enrollment/plan data. Manual payment fallback remains available.
+
+The homepage should use the resolved region to adjust parent-facing headline,
+pain points, benefits, and payment/currency note. FAQ should not appear in the
+main navigation menu, although `/faq` remains accessible.

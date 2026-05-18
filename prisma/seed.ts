@@ -1,6 +1,9 @@
+import { loadEnvConfig } from "@next/env";
 import { PrismaClient } from "@prisma/client";
 
 import { DEFAULT_RESOURCES } from "../src/lib/resources/default-resources";
+
+loadEnvConfig(process.cwd());
 
 const prisma = new PrismaClient();
 
@@ -55,6 +58,12 @@ const ReportStatus = {
   DRAFT: "DRAFT",
   REVIEW: "REVIEW",
   PUBLISHED: "PUBLISHED"
+} as const;
+
+const ResourceStatus = {
+  DRAFT: "DRAFT",
+  PUBLISHED: "PUBLISHED",
+  ARCHIVED: "ARCHIVED"
 } as const;
 
 const SupportStatus = {
@@ -570,6 +579,52 @@ async function main(): Promise<void> {
     });
   }
 
+  const adminResourceSeeds = [
+    {
+      title: "Draft: Parent webinar follow-up guide",
+      slug: "draft-parent-webinar-follow-up-guide",
+      excerpt:
+        "Internal draft for a future parent guide based on common questions from assessment calls.",
+      content:
+        "This draft resource is intentionally unpublished. It gives the admin demo a safe editorial workflow without exposing unfinished content to public visitors.",
+      category: "Parent Guidance",
+      status: ResourceStatus.DRAFT
+    },
+    {
+      title: "Archived: 2025 holiday tutoring announcement",
+      slug: "archived-2025-holiday-tutoring-announcement",
+      excerpt:
+        "Archived example showing how outdated seasonal resources are retained without public visibility.",
+      content:
+        "This archived resource is no longer part of the public parent library. It remains available to admins as an example of the archive workflow.",
+      category: "Operations",
+      status: ResourceStatus.ARCHIVED
+    }
+  ] as const;
+
+  for (const resourceSeed of adminResourceSeeds) {
+    await prisma.resource.upsert({
+      where: { slug: resourceSeed.slug },
+      update: {
+        title: resourceSeed.title,
+        excerpt: resourceSeed.excerpt,
+        content: resourceSeed.content,
+        category: resourceSeed.category,
+        status: resourceSeed.status,
+        authorId: adminUser.id
+      },
+      create: {
+        slug: resourceSeed.slug,
+        title: resourceSeed.title,
+        excerpt: resourceSeed.excerpt,
+        content: resourceSeed.content,
+        category: resourceSeed.category,
+        status: resourceSeed.status,
+        authorId: adminUser.id
+      }
+    });
+  }
+
   await prisma.communicationLog.deleteMany();
   await prisma.notification.deleteMany();
   await prisma.supportRequest.deleteMany();
@@ -802,15 +857,28 @@ async function main(): Promise<void> {
     }
   });
 
-  const enrollmentPendingPayment = await prisma.enrollment.create({
+  const enrollmentEnglishActive = await prisma.enrollment.create({
     data: {
       parentId: parentUk.id,
       studentId: studentZara.id,
       tutoringPlanId: plansBySlug["starter-support"].id,
       assignedTutorId: tutorEnglish.id,
+      status: EnrollmentStatus.ACTIVE,
+      startDate: addDays(-15),
+      notes:
+        "Active English and reading support from a prior verified payment cycle."
+    }
+  });
+
+  const enrollmentPendingPayment = await prisma.enrollment.create({
+    data: {
+      parentId: parentUk.id,
+      studentId: studentZara.id,
+      tutoringPlanId: plansBySlug["homework-club"].id,
       status: EnrollmentStatus.PENDING_PAYMENT,
       startDate: addDays(4),
-      notes: "Enrollment to activate immediately after payment verification."
+      notes:
+        "Homework Club add-on to activate after manual payment verification."
     }
   });
 
@@ -844,12 +912,30 @@ async function main(): Promise<void> {
     }
   });
 
+  const paymentPaidUk = await prisma.payment.create({
+    data: {
+      parentId: parentUk.id,
+      studentId: studentZara.id,
+      enrollmentId: enrollmentEnglishActive.id,
+      amount: "350.00",
+      currency: "GBP",
+      status: PaymentStatus.PAID,
+      paymentMethod: PaymentMethod.MANUAL_TRANSFER,
+      provider: "MANUAL",
+      reference: "TOPMOX-UK-2026-026",
+      proofUrl: "https://files.example.com/payments/topmox-uk-2026-026",
+      adminNote: "Verified by admin for active English and reading support.",
+      verifiedAt: addDays(-14),
+      paidAt: addDays(-14)
+    }
+  });
+
   const paymentAwaiting = await prisma.payment.create({
     data: {
       parentId: parentUk.id,
       studentId: studentZara.id,
       enrollmentId: enrollmentPendingPayment.id,
-      amount: "350.00",
+      amount: "180.00",
       currency: "GBP",
       status: PaymentStatus.AWAITING_VERIFICATION,
       paymentMethod: PaymentMethod.MANUAL_TRANSFER,
@@ -918,7 +1004,7 @@ async function main(): Promise<void> {
       studentId: studentZara.id,
       tutorId: tutorEnglish.id,
       subjectId: english.id,
-      enrollmentId: enrollmentPendingPayment.id,
+      enrollmentId: enrollmentEnglishActive.id,
       title: "Essay Structure Foundations",
       startTime: addDays(2, 10),
       endTime: addDays(2, 11),
@@ -940,7 +1026,7 @@ async function main(): Promise<void> {
       endTime: addDays(3, 13),
       timezone: "America/Toronto",
       meetingLink: "https://meet.example.com/topmox-lesson-ethan-science",
-      status: LessonStatus.SCHEDULED
+      status: LessonStatus.CANCELLED
     }
   });
 
@@ -971,7 +1057,7 @@ async function main(): Promise<void> {
       studentId: studentZara.id,
       tutorId: tutorEnglish.id,
       subjectId: reading.id,
-      enrollmentId: enrollmentPendingPayment.id,
+      enrollmentId: enrollmentEnglishActive.id,
       title: "Reading Comprehension Strategies",
       startTime: addDays(-6, 9),
       endTime: addDays(-6, 10),
@@ -1103,7 +1189,7 @@ async function main(): Promise<void> {
       parentId: parentUk.id,
       studentId: studentZara.id,
       tutorId: tutorEnglish.id,
-      enrollmentId: enrollmentPendingPayment.id,
+      enrollmentId: enrollmentEnglishActive.id,
       reportingMonth: new Date("2026-04-01T00:00:00.000Z"),
       subjectsCovered: "English and Reading",
       attendanceSummary: "Attended 4 of 5 sessions",
@@ -1168,7 +1254,7 @@ async function main(): Promise<void> {
       paymentId: paymentAwaiting.id,
       subject: "Payment verification timeline",
       message:
-        "Kindly confirm when our submitted card payment will be verified.",
+        "Kindly confirm when our submitted payment proof will be verified.",
       adminReply:
         "We are verifying with the payment provider and will update within 24 hours.",
       status: SupportStatus.IN_REVIEW
@@ -1298,11 +1384,12 @@ async function main(): Promise<void> {
       "Users: 6",
       "Students: 4",
       "Assessments: 5",
-      "Enrollments: 3",
+      "Enrollments: 4",
       "Lessons: 7",
       "Reports: 3",
       "Support requests: 3",
-      "Communication logs: 6"
+      "Communication logs: 6",
+      "Resources: 6"
     ].join(" | ")
   );
   console.log(

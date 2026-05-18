@@ -55,3 +55,19 @@ Do not activate an enrollment from callback data alone. Flutterwave payments mus
 Manual payments can only activate enrollment through admin approval.
 
 Payment event processing must be idempotent so duplicate callbacks or webhooks do not create duplicate state transitions.
+
+## Hostinger Geo and Currency Rules
+
+TopMox is deployed as a Next.js Node.js app on Hostinger, not as a static export.
+
+Do not depend on platform-specific geo headers. Region personalization must use:
+
+1. Manual `topmox_region` cookie.
+2. Optional Cloudflare `CF-IPCountry`.
+3. Optional custom country headers: `x-country-code`, `x-forwarded-country`, `x-geo-country`.
+4. Weak browser hints such as timezone and `Accept-Language`.
+5. Nigeria/NGN fallback.
+
+Manual region selection always wins. Never hard redirect by guessed location.
+
+Public currency display is not payment authority. Payment amount and currency must be derived server-side from enrollment/plan data. Manual payment fallback remains available, and Flutterwave checkout can be disabled for currencies that require account confirmation. FAQ must not appear in the main public navigation, though `/faq` remains accessible.

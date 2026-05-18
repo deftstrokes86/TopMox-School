@@ -95,10 +95,19 @@ describe("deployment readiness", () => {
         "/api/payments/flutterwave/callback",
         "verify amount",
         "currency",
-        "reference"
+        "reference",
+        "Hostinger",
+        "Do not use static export",
+        "CF-IPCountry",
+        "topmox_region",
+        "soft personalization"
       ],
       "deployment guide"
     );
+
+    assert.doesNotMatch(document, /x-vercel-ip-country/i);
+    assert.doesNotMatch(document, /x-vercel-ip-continent/i);
+    assert.doesNotMatch(document, /x-vercel-ip-timezone/i);
   });
 
   test("package scripts support release verification and Prisma operations", () => {

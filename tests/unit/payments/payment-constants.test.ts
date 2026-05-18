@@ -27,10 +27,10 @@ describe("payment constants", () => {
     assert.equal(methods.includes("STRIPE"), false);
   });
 
-  test("supports NGN and major foreign currencies", () => {
+  test("supports regional display and payment currencies", () => {
     const currencies: readonly string[] = SUPPORTED_PAYMENT_CURRENCIES;
 
-    for (const currency of ["NGN", "USD", "GBP", "EUR", "CAD"]) {
+    for (const currency of ["NGN", "USD", "GBP", "EUR", "CAD", "AUD", "AED"]) {
       assert.equal(isSupportedPaymentCurrency(currency), true);
       assert.equal(currencies.includes(currency), true);
     }
@@ -40,7 +40,7 @@ describe("payment constants", () => {
     assert.equal(isSupportedPaymentCurrency("JPY"), false);
   });
 
-  test("defaults to NGN without assuming all payments are NGN", () => {
+  test("defaults to Nigeria NGN for safe fallback payments", () => {
     assert.equal(DEFAULT_PAYMENT_CURRENCY, "NGN");
   });
 });

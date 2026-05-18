@@ -7,6 +7,7 @@ export const PUBLIC_NAV_ITEMS: NavigationItem[] = [
   { label: "Home", href: "/" },
   { label: "Global Tutoring", href: "/global-tutoring" },
   { label: "Subjects", href: "/subjects" },
+  { label: "Locations", href: "/locations" },
   { label: "Exam Prep", href: "/exam-prep" },
   { label: "Pricing", href: "/pricing" },
   { label: "Resources", href: "/resources" },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,6 +25,8 @@ export type PaymentEnrollmentOption = {
   sessionsPerWeek: number;
   amount: string;
   currency: string;
+  flutterwaveEnabled: boolean;
+  paymentAvailabilityNote: string;
 };
 
 const paymentMethodOptions = [
@@ -57,6 +59,23 @@ function getDefaultEnrollmentId(
   return enrollments[0]?.id ?? "";
 }
 
+function getDefaultPaymentMethod(
+  enrollments: PaymentEnrollmentOption[],
+  requestedEnrollmentId?: string
+): CreateEnrollmentPaymentInput["paymentMethod"] {
+  const defaultEnrollmentId = getDefaultEnrollmentId(
+    enrollments,
+    requestedEnrollmentId
+  );
+  const defaultEnrollment = enrollments.find(
+    (enrollment) => enrollment.id === defaultEnrollmentId
+  );
+
+  return defaultEnrollment?.flutterwaveEnabled === false
+    ? "MANUAL_TRANSFER"
+    : "FLUTTERWAVE";
+}
+
 export function PaymentSubmissionForm({
   enrollments,
   defaultEnrollmentId
@@ -68,7 +87,7 @@ export function PaymentSubmissionForm({
   const defaultValues = useMemo(
     () => ({
       enrollmentId: getDefaultEnrollmentId(enrollments, defaultEnrollmentId),
-      paymentMethod: "FLUTTERWAVE" as const,
+      paymentMethod: getDefaultPaymentMethod(enrollments, defaultEnrollmentId),
       reference: "",
       proofUrl: ""
     }),
@@ -79,6 +98,7 @@ export function PaymentSubmissionForm({
     register,
     handleSubmit,
     setError,
+    setValue,
     watch,
     formState: { errors }
   } = useForm<CreateEnrollmentPaymentInput>({
@@ -91,6 +111,17 @@ export function PaymentSubmissionForm({
   const selectedEnrollment = enrollments.find(
     (enrollment) => enrollment.id === selectedEnrollmentId
   );
+
+  useEffect(() => {
+    if (
+      selectedEnrollment?.flutterwaveEnabled === false &&
+      selectedPaymentMethod === "FLUTTERWAVE"
+    ) {
+      setValue("paymentMethod", "MANUAL_TRANSFER", {
+        shouldValidate: true
+      });
+    }
+  }, [selectedEnrollment, selectedPaymentMethod, setValue]);
 
   const onSubmit = (values: CreateEnrollmentPaymentInput) => {
     setResult(null);
@@ -167,6 +198,9 @@ export function PaymentSubmissionForm({
               {selectedEnrollment.planName} for {selectedEnrollment.childName} -{" "}
               {selectedEnrollment.sessionsPerWeek} sessions per week
             </p>
+            <p className="mt-2 text-sm text-text-secondary">
+              {selectedEnrollment.paymentAvailabilityNote}
+            </p>
           </div>
         ) : null}
 
@@ -178,7 +212,14 @@ export function PaymentSubmissionForm({
             {...register("paymentMethod")}
           >
             {paymentMethodOptions.map((method) => (
-              <option key={method.value} value={method.value}>
+              <option
+                key={method.value}
+                value={method.value}
+                disabled={
+                  method.value === "FLUTTERWAVE" &&
+                  selectedEnrollment?.flutterwaveEnabled === false
+                }
+              >
                 {method.label}
               </option>
             ))}

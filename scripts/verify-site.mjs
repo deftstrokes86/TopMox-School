@@ -15,6 +15,14 @@ const routes = [
   { path: "/about", kind: "html" },
   { path: "/faq", kind: "html" },
   { path: "/contact", kind: "html" },
+  { path: "/locations", kind: "html" },
+  { path: "/locations/nigeria", kind: "html" },
+  { path: "/locations/united-states", kind: "html" },
+  { path: "/locations/canada", kind: "html" },
+  { path: "/locations/australia", kind: "html" },
+  { path: "/locations/united-kingdom", kind: "html" },
+  { path: "/locations/europe", kind: "html" },
+  { path: "/locations/uae", kind: "html" },
   { path: "/resources", kind: "html" },
   { path: "/resources/how-online-tutoring-works-at-topmox", kind: "html" },
   { path: "/login", kind: "html" },
@@ -46,7 +54,8 @@ const routes = [
   { path: "/tutor/homework", kind: "html" },
   { path: "/tutor/reports", kind: "html" },
   { path: "/tutor/notifications", kind: "html" },
-  { path: "/api/health", kind: "json" }
+  { path: "/api/health", kind: "json" },
+  { path: "/api/geo", kind: "geo-json" }
 ];
 
 function fail(message) {
@@ -113,12 +122,49 @@ async function verifyJsonRoute(route) {
   }
 }
 
+async function verifyGeoJsonRoute(route) {
+  const url = `${BASE_URL.replace(/\/$/, "")}${route}`;
+  const response = await fetchOk(url, `Route ${route}`);
+  const payload = await response.json();
+
+  if (!payload || typeof payload !== "object") {
+    fail(`route ${route} did not return a JSON object.`);
+  }
+
+  if (!payload.region?.code || !payload.region?.currency) {
+    fail(`route ${route} is missing safe region metadata.`);
+  }
+
+  if (payload.region.code !== "nigeria" || payload.region.currency !== "NGN") {
+    fail(
+      `route ${route} should default to Nigeria/NGN, received ${payload.region.code}/${payload.region.currency}.`
+    );
+  }
+
+  if (!payload.source) {
+    fail(`route ${route} is missing detection source metadata.`);
+  }
+
+  if (typeof payload.flutterwaveEnabled !== "boolean") {
+    fail(`route ${route} is missing Flutterwave availability metadata.`);
+  }
+
+  if (typeof payload.manualPaymentEnabled !== "boolean") {
+    fail(`route ${route} is missing manual payment availability metadata.`);
+  }
+}
+
 async function main() {
   const homepageHtml = await verifyHtmlRoute("/");
 
   for (const route of routes.slice(1)) {
     if (route.kind === "json") {
       await verifyJsonRoute(route.path);
+      continue;
+    }
+
+    if (route.kind === "geo-json") {
+      await verifyGeoJsonRoute(route.path);
       continue;
     }
 

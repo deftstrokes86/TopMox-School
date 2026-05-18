@@ -71,3 +71,21 @@ Do not depend on platform-specific geo headers. Region personalization must use:
 User-selected country always wins. Never trap users in a guessed country experience.
 
 Public pricing context is not payment authority. Payment amount and currency must be derived server-side from enrollment/plan data. Manual payment fallback remains available, and online checkout can be disabled for currencies that require account confirmation. Global tutoring, Locations, Resources, and FAQ should be grouped under About in the main public navigation, while `/faq` remains accessible.
+
+## Demo Login Rules
+
+Demo login is for private staging/client demos only, not normal production use.
+
+Use both flags:
+
+```bash
+DEMO_LOGIN_ENABLED="false"
+NEXT_PUBLIC_DEMO_LOGIN_ENABLED="false"
+DEMO_USER_PASSWORD=""
+```
+
+`NEXT_PUBLIC_DEMO_LOGIN_ENABLED` controls whether demo buttons render. `DEMO_LOGIN_ENABLED` is the server-side source of truth and must reject demo login when false.
+
+Demo login must only authorize fixed seeded accounts for Admin, Parent, and Tutor. Do not allow arbitrary role or email selection, do not expose password hashes or raw demo credentials to the client, and do not bypass server-side auth/RBAC.
+
+Before claiming demo login works, run `npm run prisma:seed`, confirm `/api/health` returns `status: ok` and `database: connected`, and browser-test the Admin, Parent, and Tutor demo buttons.

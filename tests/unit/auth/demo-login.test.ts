@@ -3,9 +3,11 @@ import { describe, test } from "node:test";
 
 import {
   DEMO_LOGIN_ACCOUNTS,
-  isDemoLoginEnabled,
+  getDemoLoginAccountForRole,
+  isDemoLoginVisible,
   parseDemoLoginEnabled
 } from "@/lib/auth/demo-login";
+import { isDemoLoginServerEnabled } from "@/lib/auth/demo-login.server";
 
 describe("demo login helpers", () => {
   test("parseDemoLoginEnabled respects env-style flag values", () => {
@@ -14,14 +16,14 @@ describe("demo login helpers", () => {
     assert.equal(parseDemoLoginEnabled(undefined), false);
   });
 
-  test("isDemoLoginEnabled reads NEXT_PUBLIC_DEMO_LOGIN_ENABLED", () => {
+  test("isDemoLoginVisible reads only NEXT_PUBLIC_DEMO_LOGIN_ENABLED", () => {
     const previousValue = process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED;
 
     process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED = "true";
-    assert.equal(isDemoLoginEnabled(), true);
+    assert.equal(isDemoLoginVisible(), true);
 
     process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED = "false";
-    assert.equal(isDemoLoginEnabled(), false);
+    assert.equal(isDemoLoginVisible(), false);
 
     if (previousValue === undefined) {
       delete process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED;
@@ -30,37 +32,50 @@ describe("demo login helpers", () => {
     }
   });
 
-  test("demo login cannot be enabled in production", () => {
-    const previousValue = process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED;
-    const previousNodeEnv = process.env.NODE_ENV;
-    const mutableEnv = process.env as Record<string, string | undefined>;
+  test("server demo authorization reads only DEMO_LOGIN_ENABLED", () => {
+    const previousPublicValue = process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED;
+    const previousServerValue = process.env.DEMO_LOGIN_ENABLED;
 
     try {
       process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED = "true";
-      mutableEnv.NODE_ENV = "production";
+      process.env.DEMO_LOGIN_ENABLED = "false";
+      assert.equal(isDemoLoginVisible(), true);
+      assert.equal(isDemoLoginServerEnabled(), false);
 
-      assert.equal(isDemoLoginEnabled(), false);
+      process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED = "false";
+      process.env.DEMO_LOGIN_ENABLED = "true";
+      assert.equal(isDemoLoginVisible(), false);
+      assert.equal(isDemoLoginServerEnabled(), true);
     } finally {
-      if (previousValue === undefined) {
+      if (previousPublicValue === undefined) {
         delete process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED;
       } else {
-        process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED = previousValue;
+        process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED = previousPublicValue;
       }
 
-      if (previousNodeEnv === undefined) {
-        delete mutableEnv.NODE_ENV;
+      if (previousServerValue === undefined) {
+        delete process.env.DEMO_LOGIN_ENABLED;
       } else {
-        mutableEnv.NODE_ENV = previousNodeEnv;
+        process.env.DEMO_LOGIN_ENABLED = previousServerValue;
       }
     }
   });
 
-  test("demo accounts include admin, tutor, and parent", () => {
+  test("demo accounts include one fixed quick-login account per role", () => {
     const roles = [...new Set(DEMO_LOGIN_ACCOUNTS.map((account) => account.role))].sort();
     assert.deepEqual(roles, ["ADMIN", "PARENT", "TUTOR"]);
+    assert.equal(DEMO_LOGIN_ACCOUNTS.length, 3);
     assert.equal(
       DEMO_LOGIN_ACCOUNTS.every((account) => account.name && account.walkthrough),
       true
     );
+  });
+
+  test("demo account mapping never accepts arbitrary roles or emails", () => {
+    assert.equal(getDemoLoginAccountForRole("ADMIN")?.email, "admin@topmox.test");
+    assert.equal(getDemoLoginAccountForRole("PARENT")?.role, "PARENT");
+    assert.equal(getDemoLoginAccountForRole("TUTOR")?.role, "TUTOR");
+    assert.equal(getDemoLoginAccountForRole("OWNER"), null);
+    assert.equal(getDemoLoginAccountForRole("admin@topmox.test"), null);
   });
 });

@@ -3,10 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, test } from "node:test";
 
-import {
-  DEMO_LOGIN_ACCOUNTS,
-  DEMO_LOGIN_PASSWORD
-} from "@/lib/auth/demo-login";
+import { DEMO_LOGIN_ACCOUNTS } from "@/lib/auth/demo-login";
 
 const repoRoot = process.cwd();
 
@@ -33,14 +30,11 @@ function escapeRegExp(value: string): string {
 }
 
 describe("demo walkthrough readiness", () => {
-  test("demo login quick access covers admin, two tutors, and three parent locations", () => {
+  test("demo login quick access exposes one deterministic account per role", () => {
     const expectedAccounts = [
       { email: "admin@topmox.test", role: "ADMIN" },
       { email: "amara.math@topmox.test", role: "TUTOR" },
-      { email: "david.english@topmox.test", role: "TUTOR" },
-      { email: "ngozi.parent@topmox.test", role: "PARENT" },
-      { email: "bola.ukparent@topmox.test", role: "PARENT" },
-      { email: "ada.canadaparent@topmox.test", role: "PARENT" }
+      { email: "ngozi.parent@topmox.test", role: "PARENT" }
     ] as const;
 
     const accountsByEmail = new Map(
@@ -48,9 +42,9 @@ describe("demo walkthrough readiness", () => {
     );
 
     assert.equal(
-      DEMO_LOGIN_PASSWORD,
-      "demo-only-change-me",
-      "demo password should be visibly demo-only"
+      DEMO_LOGIN_ACCOUNTS.length,
+      3,
+      "quick demo login should not leave multiple role variants visible"
     );
 
     for (const expectedAccount of expectedAccounts) {
@@ -84,6 +78,10 @@ describe("demo walkthrough readiness", () => {
       ],
       "seed demo account and geography coverage"
     );
+    assert.match(seed, /DEMO_USER_PASSWORD/);
+    assert.match(seed, /TopMoxDemo2026!/);
+    assert.match(seed, /hashPassword/);
+    assert.doesNotMatch(seed, /const DEMO_PASSWORD_HASH = "demo-only-change-me"/);
   });
 
   test("seed script supports the full client demo story", () => {
@@ -172,7 +170,9 @@ describe("demo walkthrough readiness", () => {
         "amara.math@topmox.test",
         "ngozi.parent@topmox.test",
         "npm run prisma:seed",
-        "npm run dev:clean",
+        "DEMO_LOGIN_ENABLED",
+        "NEXT_PUBLIC_DEMO_LOGIN_ENABLED",
+        "DEMO_USER_PASSWORD",
         "npm run verify:browser"
       ],
       "demo walkthrough document"

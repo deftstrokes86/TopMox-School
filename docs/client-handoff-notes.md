@@ -88,7 +88,9 @@ The staging or production environment must configure:
 - Nigeria/NGN as the safe default when no region signal is available.
 - Global tutoring, Locations, Resources, and FAQ are grouped under About in the
   main public navigation. FAQ remains accessible at `/faq`.
-- Demo login disabled for production with `NEXT_PUBLIC_DEMO_LOGIN_ENABLED="false"`.
+- Demo login is for private staging/client demos only. Keep `DEMO_LOGIN_ENABLED="false"` and `NEXT_PUBLIC_DEMO_LOGIN_ENABLED="false"` in production.
+- Demo buttons are seed-backed and server-enforced. Run `npm run prisma:seed` before a demo, use `DEMO_USER_PASSWORD` only in private environment configuration, and verify `/api/health` reports `status: ok` and `database: connected`.
+- If demo buttons do not appear, check `NEXT_PUBLIC_DEMO_LOGIN_ENABLED`. If they appear but fail, check `DEMO_LOGIN_ENABLED`, seeded demo accounts, and Supabase connectivity.
 - Manual payment enablement policy.
 - Seed strategy for demo, staging, and production.
 

@@ -22,18 +22,22 @@ This walkthrough shows how TopMox can:
 
 ## Demo Accounts
 
-Use these only for local or staged walkthroughs. Demo login is controlled by `NEXT_PUBLIC_DEMO_LOGIN_ENABLED` and remains disabled in production by default.
+Use these only for local or private staged walkthroughs. Demo login is controlled by two flags:
+
+- `NEXT_PUBLIC_DEMO_LOGIN_ENABLED` controls whether the buttons render.
+- `DEMO_LOGIN_ENABLED` is the server-side enforcement flag and source of truth.
+
+Keep both flags disabled in production. If the public flag is enabled but the server flag is disabled, the buttons fail safely with: "Demo login is currently unavailable. Please check demo configuration and seeded accounts."
+
+Seed demo passwords with `DEMO_USER_PASSWORD`. If that variable is blank during local/demo seeding, the seed script uses the demo-only fallback `TopMoxDemo2026!`. Do not put real credentials in docs or client code.
 
 | Role | Email | Walkthrough use |
 | --- | --- | --- |
 | Admin | `admin@topmox.test` | Operations dashboard, assessments, payments, lessons, reports, support, resources |
 | Tutor | `amara.math@topmox.test` | Mathematics and Science lessons, homework, reports |
-| Tutor | `david.english@topmox.test` | English and Reading lessons, homework, reports |
 | Parent | `ngozi.parent@topmox.test` | Nigeria parent with active plan, lessons, homework, report, support |
-| Parent | `bola.ukparent@topmox.test` | UK parent with active English support and pending payment add-on |
-| Parent | `ada.canadaparent@topmox.test` | Canada parent with exam-prep history and Flutterwave payment examples |
 
-Demo-only password: `demo-only-change-me`.
+Additional seeded walkthrough accounts can remain in the database for story coverage, but the visible demo-login buttons are deterministic: Continue as Admin, Continue as Parent, and Continue as Tutor.
 
 ## Demo Order
 
@@ -109,6 +113,22 @@ What business value it proves: TopMox can market internationally while keeping p
 What to show: Login page and optional demo quick login if enabled.
 
 What to say: Demo login is for staged walkthroughs only and is controlled by environment configuration.
+
+How to enable for staging/demo:
+
+- Run `npm run prisma:seed` so `admin@topmox.test`, `ngozi.parent@topmox.test`, and `amara.math@topmox.test` exist with hashed passwords and required profiles.
+- Set `DEMO_LOGIN_ENABLED="true"`.
+- Set `NEXT_PUBLIC_DEMO_LOGIN_ENABLED="true"`.
+- Optionally set `DEMO_USER_PASSWORD` before seeding. Leave it blank only for local/demo fallback.
+- Confirm `/api/health` reports `status: ok` and `database: connected`.
+
+How to disable for production:
+
+- Set `DEMO_LOGIN_ENABLED="false"`.
+- Set `NEXT_PUBLIC_DEMO_LOGIN_ENABLED="false"`.
+- Confirm the login page does not render Demo access buttons.
+
+If demo buttons do not appear, check `NEXT_PUBLIC_DEMO_LOGIN_ENABLED`. If buttons appear but fail, check `DEMO_LOGIN_ENABLED`, the seed data, and Supabase connectivity. A disconnected Supabase database can show P1001-style failures and must be fixed before claiming demo login works.
 
 Why it matters to TopMox: Role-based access keeps parent, tutor, and admin experiences separate.
 
@@ -226,7 +246,7 @@ What business value it proves: The platform bridges sales and academic operation
 
 ### 16. Tutor login
 
-What to show: Tutor dashboard for `amara.math@topmox.test` or `david.english@topmox.test`.
+What to show: Tutor dashboard for `amara.math@topmox.test`.
 
 What to say: Tutors see only assigned work and do not see payment or admin-only data.
 

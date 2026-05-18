@@ -23,6 +23,8 @@ describe("security audit guardrails", () => {
       "FLUTTERWAVE_BASE_URL",
       "NEXT_PUBLIC_FLUTTERWAVE_ENABLED",
       "NEXT_PUBLIC_MANUAL_PAYMENTS_ENABLED",
+      "DEMO_LOGIN_ENABLED",
+      "DEMO_USER_PASSWORD",
       "NEXT_PUBLIC_DEMO_LOGIN_ENABLED"
     ];
 

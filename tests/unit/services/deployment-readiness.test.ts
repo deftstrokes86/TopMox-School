@@ -42,6 +42,8 @@ describe("deployment readiness", () => {
       'FLUTTERWAVE_BASE_URL="https://api.flutterwave.com/v3"',
       'NEXT_PUBLIC_FLUTTERWAVE_ENABLED="true"',
       'NEXT_PUBLIC_MANUAL_PAYMENTS_ENABLED="true"',
+      'DEMO_LOGIN_ENABLED="false"',
+      'DEMO_USER_PASSWORD=""',
       'NEXT_PUBLIC_DEMO_LOGIN_ENABLED="false"'
     ];
 

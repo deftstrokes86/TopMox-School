@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  DEMO_LOGIN_PASSWORD,
+  DEMO_LOGIN_UNAVAILABLE_MESSAGE,
   type DemoLoginAccount
 } from "@/lib/auth/demo-login";
 import { getDashboardPathForRole } from "@/lib/auth/role";
@@ -45,7 +45,7 @@ export function LoginForm({
 }: LoginFormProps) {
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
-  const [demoLoadingEmail, setDemoLoadingEmail] = useState<string | null>(null);
+  const [demoLoadingRole, setDemoLoadingRole] = useState<string | null>(null);
 
   const {
     register,
@@ -86,17 +86,17 @@ export function LoginForm({
 
   const onDemoLogin = async (account: DemoLoginAccount) => {
     setFormError(null);
-    setDemoLoadingEmail(account.email);
+    setDemoLoadingRole(account.role);
 
     try {
       const result = await signIn("credentials", {
-        email: account.email,
-        password: DEMO_LOGIN_PASSWORD,
+        demoLogin: "true",
+        demoRole: account.role,
         redirect: false
       });
 
       if (!result || result.error) {
-        setFormError("Demo login failed. Please confirm demo mode is enabled.");
+        setFormError(DEMO_LOGIN_UNAVAILABLE_MESSAGE);
         return;
       }
 
@@ -110,7 +110,7 @@ export function LoginForm({
       router.replace(nextPath);
       router.refresh();
     } finally {
-      setDemoLoadingEmail(null);
+      setDemoLoadingRole(null);
     }
   };
 
@@ -194,10 +194,10 @@ export function LoginForm({
         <div className="rounded-xl border border-royal-blue/20 bg-soft-blue/35 p-4">
           <p className="flex items-center gap-2 text-sm font-semibold text-deep-navy">
             <Sparkles className="h-4 w-4 text-warm-gold" />
-            Demo Login
+            Demo access
           </p>
           <p className="mt-1 text-sm text-text-secondary">
-            Demo-only quick access for MVP walkthroughs. Remove before production.
+            Use these buttons to preview the Admin, Parent, and Tutor experiences.
           </p>
           <div className="mt-3 grid gap-2">
             {demoAccounts.map((account) => (
@@ -206,20 +206,20 @@ export function LoginForm({
                 type="button"
                 variant="outline"
                 className="h-auto justify-start whitespace-normal py-3 text-left"
-                disabled={isSubmitting || demoLoadingEmail !== null}
+                disabled={isSubmitting || demoLoadingRole !== null}
                 onClick={() => onDemoLogin(account)}
               >
-                {demoLoadingEmail === account.email ? (
+                {demoLoadingRole === account.role ? (
                   <Loader2 className="mr-3 h-4 w-4 shrink-0 animate-spin" />
                 ) : (
                   <Sparkles className="mr-3 h-4 w-4 shrink-0 text-warm-gold" />
                 )}
                 <span>
                   <span className="block text-sm font-semibold">
-                    {`Continue as ${account.label}: ${account.name}`}
+                    {`Continue as ${account.label}`}
                   </span>
                   <span className="block text-xs font-normal text-text-secondary">
-                    {account.walkthrough}
+                    {`${account.name} - ${account.walkthrough}`}
                   </span>
                 </span>
               </Button>

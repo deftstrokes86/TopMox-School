@@ -11,10 +11,15 @@ export { authOptions } from "./auth-options";
 export { getDashboardRedirectPath, requireDashboardAccess } from "./dashboard-access";
 export {
   DEMO_LOGIN_ACCOUNTS,
-  DEMO_LOGIN_PASSWORD,
-  isDemoLoginEnabled,
+  DEMO_LOGIN_UNAVAILABLE_MESSAGE,
+  getDemoLoginAccountForRole,
+  isDemoLoginVisible,
   parseDemoLoginEnabled
 } from "./demo-login";
+export {
+  authorizeDemoLogin,
+  isDemoLoginServerEnabled
+} from "./demo-login.server";
 export { getDashboardPathForRole } from "./role";
 export {
   AuthError,

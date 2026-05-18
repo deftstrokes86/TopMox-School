@@ -15,7 +15,9 @@ npm install
    - `DATABASE_URL`
    - `NEXTAUTH_URL=http://localhost:7000`
    - `NEXTAUTH_SECRET` (secure random string)
+   - `DEMO_LOGIN_ENABLED=true` (or `false`)
    - `NEXT_PUBLIC_DEMO_LOGIN_ENABLED=true` (or `false`)
+   - `DEMO_USER_PASSWORD=` (optional private demo seed password)
 
 Generate a local secret:
 

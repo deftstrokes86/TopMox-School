@@ -3,10 +3,16 @@ import CredentialsProvider from "next-auth/providers/credentials";
 
 import { loginSchema } from "@/lib/validations/auth.schema";
 
-import { isDemoLoginEnabled } from "./demo-login";
+import { authorizeDemoLogin } from "./demo-login.server";
 import { isScryptPasswordHash, verifyPassword } from "./password";
 import { getDashboardPathForRole } from "./role";
 import { isAppRole, type AppRole } from "./types";
+
+type CredentialsPayload = Record<string, string> | undefined;
+
+function isDemoCredentialsPayload(credentials: CredentialsPayload): boolean {
+  return credentials?.demoLogin === "true";
+}
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
@@ -21,9 +27,15 @@ export const authOptions: NextAuthOptions = {
       name: "TopMox Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
+        demoLogin: { label: "Demo login", type: "text" },
+        demoRole: { label: "Demo role", type: "text" }
       },
       async authorize(credentials) {
+        if (isDemoCredentialsPayload(credentials)) {
+          return authorizeDemoLogin(credentials?.demoRole);
+        }
+
         const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) {
           return null;
@@ -65,13 +77,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const usesLegacyDemoHash = !isScryptPasswordHash(user.passwordHash);
-        // Demo-only protection: legacy plain demo hashes should never authenticate in production unless explicitly enabled.
-        if (
-          usesLegacyDemoHash &&
-          !isDemoLoginEnabled() &&
-          process.env.NODE_ENV !== "test"
-        ) {
+        if (!isScryptPasswordHash(user.passwordHash)) {
           return null;
         }
 

@@ -1,13 +1,15 @@
 import { loadEnvConfig } from "@next/env";
 import { PrismaClient } from "@prisma/client";
 
+import { hashPassword } from "../src/lib/auth/password";
 import { DEFAULT_RESOURCES } from "../src/lib/resources/default-resources";
 
 loadEnvConfig(process.cwd());
 
 const prisma = new PrismaClient();
 
-const DEMO_PASSWORD_HASH = "demo-only-change-me";
+const demoPasswordFromEnv = process.env.DEMO_USER_PASSWORD?.trim();
+const DEMO_USER_PASSWORD = demoPasswordFromEnv || "TopMoxDemo2026!";
 
 const Role = {
   ADMIN: "ADMIN",
@@ -117,18 +119,20 @@ const addDays = (days: number, hourOffset = 0): Date => {
 };
 
 async function main(): Promise<void> {
+  const demoPasswordHash = await hashPassword(DEMO_USER_PASSWORD);
+
   const adminUser = await prisma.user.upsert({
     where: { email: "admin@topmox.test" },
     update: {
       name: "TopMox Admin",
       role: Role.ADMIN,
-      passwordHash: DEMO_PASSWORD_HASH
+      passwordHash: demoPasswordHash
     },
     create: {
       email: "admin@topmox.test",
       name: "TopMox Admin",
       role: Role.ADMIN,
-      passwordHash: DEMO_PASSWORD_HASH
+      passwordHash: demoPasswordHash
     }
   });
 
@@ -137,13 +141,13 @@ async function main(): Promise<void> {
     update: {
       name: "Amara Okoye",
       role: Role.TUTOR,
-      passwordHash: DEMO_PASSWORD_HASH
+      passwordHash: demoPasswordHash
     },
     create: {
       email: "amara.math@topmox.test",
       name: "Amara Okoye",
       role: Role.TUTOR,
-      passwordHash: DEMO_PASSWORD_HASH
+      passwordHash: demoPasswordHash
     }
   });
 
@@ -152,13 +156,13 @@ async function main(): Promise<void> {
     update: {
       name: "David Mensah",
       role: Role.TUTOR,
-      passwordHash: DEMO_PASSWORD_HASH
+      passwordHash: demoPasswordHash
     },
     create: {
       email: "david.english@topmox.test",
       name: "David Mensah",
       role: Role.TUTOR,
-      passwordHash: DEMO_PASSWORD_HASH
+      passwordHash: demoPasswordHash
     }
   });
 
@@ -167,13 +171,13 @@ async function main(): Promise<void> {
     update: {
       name: "Ngozi Akinyemi",
       role: Role.PARENT,
-      passwordHash: DEMO_PASSWORD_HASH
+      passwordHash: demoPasswordHash
     },
     create: {
       email: "ngozi.parent@topmox.test",
       name: "Ngozi Akinyemi",
       role: Role.PARENT,
-      passwordHash: DEMO_PASSWORD_HASH
+      passwordHash: demoPasswordHash
     }
   });
 
@@ -182,13 +186,13 @@ async function main(): Promise<void> {
     update: {
       name: "Bola Okafor",
       role: Role.PARENT,
-      passwordHash: DEMO_PASSWORD_HASH
+      passwordHash: demoPasswordHash
     },
     create: {
       email: "bola.ukparent@topmox.test",
       name: "Bola Okafor",
       role: Role.PARENT,
-      passwordHash: DEMO_PASSWORD_HASH
+      passwordHash: demoPasswordHash
     }
   });
 
@@ -197,13 +201,13 @@ async function main(): Promise<void> {
     update: {
       name: "Ada Mensah",
       role: Role.PARENT,
-      passwordHash: DEMO_PASSWORD_HASH
+      passwordHash: demoPasswordHash
     },
     create: {
       email: "ada.canadaparent@topmox.test",
       name: "Ada Mensah",
       role: Role.PARENT,
-      passwordHash: DEMO_PASSWORD_HASH
+      passwordHash: demoPasswordHash
     }
   });
 

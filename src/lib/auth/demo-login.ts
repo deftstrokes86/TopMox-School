@@ -1,4 +1,4 @@
-import type { AppRole } from "./types";
+import { isAppRole, type AppRole } from "./types";
 
 export type DemoLoginAccount = {
   role: AppRole;
@@ -8,65 +8,51 @@ export type DemoLoginAccount = {
   walkthrough: string;
 };
 
-/**
- * Demo-only credentials used for local MVP walkthroughs.
- * Never use these as production credentials.
- */
-export const DEMO_LOGIN_PASSWORD = "demo-only-change-me";
+export const DEMO_LOGIN_UNAVAILABLE_MESSAGE =
+  "Demo login is currently unavailable. Please check demo configuration and seeded accounts.";
 
-export const DEMO_LOGIN_ACCOUNTS: DemoLoginAccount[] = [
-  {
+const DEMO_LOGIN_ACCOUNT_BY_ROLE: Record<AppRole, DemoLoginAccount> = {
+  ADMIN: {
     role: "ADMIN",
     label: "Admin",
     email: "admin@topmox.test",
     name: "TopMox Admin",
     walkthrough: "Operations dashboard, assessments, payments, lessons, reports"
   },
-  {
+  TUTOR: {
     role: "TUTOR",
     label: "Tutor",
     email: "amara.math@topmox.test",
     name: "Amara Okoye",
     walkthrough: "Mathematics and Science tutor workflow"
   },
-  {
-    role: "TUTOR",
-    label: "Tutor",
-    email: "david.english@topmox.test",
-    name: "David Mensah",
-    walkthrough: "English and Reading tutor workflow"
-  },
-  {
+  PARENT: {
     role: "PARENT",
     label: "Parent",
     email: "ngozi.parent@topmox.test",
     name: "Ngozi Akinyemi",
     walkthrough: "Nigeria parent with active plan, lessons, homework, and report"
-  },
-  {
-    role: "PARENT",
-    label: "Parent",
-    email: "bola.ukparent@topmox.test",
-    name: "Bola Okafor",
-    walkthrough: "UK parent with scheduled assessment and pending payment review"
-  },
-  {
-    role: "PARENT",
-    label: "Parent",
-    email: "ada.canadaparent@topmox.test",
-    name: "Ada Mensah",
-    walkthrough: "Canada parent with Flutterwave payment and exam-prep history"
   }
+};
+
+export const DEMO_LOGIN_ACCOUNTS: DemoLoginAccount[] = [
+  DEMO_LOGIN_ACCOUNT_BY_ROLE.ADMIN,
+  DEMO_LOGIN_ACCOUNT_BY_ROLE.PARENT,
+  DEMO_LOGIN_ACCOUNT_BY_ROLE.TUTOR
 ];
 
 export function parseDemoLoginEnabled(value: string | undefined): boolean {
   return value === "true";
 }
 
-export function isDemoLoginEnabled(): boolean {
-  if (process.env.NODE_ENV === "production") {
-    return false;
+export function isDemoLoginVisible(): boolean {
+  return parseDemoLoginEnabled(process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED);
+}
+
+export function getDemoLoginAccountForRole(role: unknown): DemoLoginAccount | null {
+  if (!isAppRole(role)) {
+    return null;
   }
 
-  return parseDemoLoginEnabled(process.env.NEXT_PUBLIC_DEMO_LOGIN_ENABLED);
+  return DEMO_LOGIN_ACCOUNT_BY_ROLE[role] ?? null;
 }

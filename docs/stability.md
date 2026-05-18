@@ -249,3 +249,15 @@ At minimum, manually check:
 
 Protected dashboard routes should redirect safely to `/login` when the user is
 not authenticated.
+
+## Demo login stability
+
+Demo login is a private staging/client-demo feature, not normal production authentication.
+
+- `NEXT_PUBLIC_DEMO_LOGIN_ENABLED` only controls whether Demo access buttons render.
+- `DEMO_LOGIN_ENABLED` is the server-side enforcement flag and source of truth.
+- Demo login authorizes only fixed seeded accounts: `admin@topmox.test`, `ngozi.parent@topmox.test`, and `amara.math@topmox.test`.
+- Demo users must be created by `npm run prisma:seed`, must have scrypt password hashes, and parent/tutor demo users must have the expected profiles.
+- `DEMO_USER_PASSWORD` can be set before seeding in private demo environments. If it is blank locally, the seed script uses the demo-only fallback `TopMoxDemo2026!`.
+- If Supabase is disconnected or `/api/health` is degraded, demo login is not verified.
+- If public visibility is enabled but server enforcement is disabled, demo login must fail safely without exposing credentials.

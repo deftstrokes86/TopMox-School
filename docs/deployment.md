@@ -36,7 +36,9 @@ FLUTTERWAVE_BASE_URL="https://api.flutterwave.com/v3"
 
 NEXT_PUBLIC_FLUTTERWAVE_ENABLED="true"
 NEXT_PUBLIC_MANUAL_PAYMENTS_ENABLED="true"
+DEMO_LOGIN_ENABLED="false"
 NEXT_PUBLIC_DEMO_LOGIN_ENABLED="false"
+DEMO_USER_PASSWORD=""
 ```
 
 Keep `AUTH_SECRET` and `NEXTAUTH_SECRET` aligned unless the auth strategy is
@@ -225,7 +227,10 @@ under About in the main public navigation. FAQ remains available at `/faq`.
 
 ## Production Safety Checklist
 
-- Demo login disabled by default with `NEXT_PUBLIC_DEMO_LOGIN_ENABLED="false"`.
+- Demo login is disabled by default with `DEMO_LOGIN_ENABLED="false"` and `NEXT_PUBLIC_DEMO_LOGIN_ENABLED="false"`.
+- Use demo login only for private staging/client demos. `NEXT_PUBLIC_DEMO_LOGIN_ENABLED` controls button visibility, while `DEMO_LOGIN_ENABLED` is the server-side source of truth.
+- Before enabling demo login, run `npm run prisma:seed` so the fixed demo accounts are present with hashed passwords and required profiles. Use `DEMO_USER_PASSWORD` in private environment configuration if the default local/demo fallback should be replaced.
+- If `/api/health` does not report `status: ok` and `database: connected`, do not claim demo login is verified.
 - Error boundaries show safe branded messages and do not expose stack traces in
   production UI.
 - No real secrets committed.

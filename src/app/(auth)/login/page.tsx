@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { LoginForm } from "@/components/forms/auth/login-form";
-import { DEMO_LOGIN_ACCOUNTS, isDemoLoginEnabled } from "@/lib/auth/demo-login";
+import { DEMO_LOGIN_ACCOUNTS, isDemoLoginVisible } from "@/lib/auth/demo-login";
 import { getDashboardPathForRole } from "@/lib/auth/role";
 import { getCurrentUser } from "@/lib/auth/session";
 
@@ -13,7 +13,7 @@ export default async function LoginPage() {
     redirect(getDashboardPathForRole(user.role));
   }
 
-  const demoLoginEnabled = isDemoLoginEnabled();
+  const demoLoginEnabled = isDemoLoginVisible();
 
   return (
     <div className="space-y-6">

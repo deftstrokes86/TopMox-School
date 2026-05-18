@@ -1,6 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 
 const runAuthE2E = process.env.RUN_AUTH_E2E === "1";
+const demoUserPassword = process.env.DEMO_USER_PASSWORD || "TopMoxDemo2026!";
 
 test.skip(
   !runAuthE2E,
@@ -19,21 +20,21 @@ const accounts: DemoAccount[] = [
   {
     role: "ADMIN",
     email: "admin@topmox.test",
-    password: "demo-only-change-me",
+    password: demoUserPassword,
     dashboardPath: "/admin",
     dashboardText: /Admin Dashboard|Operations|Pending assessments/i
   },
   {
     role: "PARENT",
     email: "ngozi.parent@topmox.test",
-    password: "demo-only-change-me",
+    password: demoUserPassword,
     dashboardPath: "/parent",
     dashboardText: /Parent Dashboard|Family profile|Next Step/i
   },
   {
     role: "TUTOR",
     email: "amara.math@topmox.test",
-    password: "demo-only-change-me",
+    password: demoUserPassword,
     dashboardPath: "/tutor",
     dashboardText: /Tutor Dashboard|Today's work|Assigned students/i
   }

@@ -5,6 +5,7 @@ import { relative, resolve, sep } from "node:path";
 const workspaceRoot = process.cwd();
 const port = process.env.PORT ?? "7000";
 const targets = [".next", "node_modules/.cache"];
+const shouldCleanNextCache = process.env.PLAYWRIGHT_CLEAN_NEXT_CACHE === "1";
 
 function assertInWorkspace(absolutePath) {
   const relPath = relative(workspaceRoot, absolutePath);
@@ -82,5 +83,8 @@ function startNextDevServer() {
   });
 }
 
-await cleanNextCache();
+if (shouldCleanNextCache) {
+  await cleanNextCache();
+}
+
 startNextDevServer();

@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useId, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { Loader2, MapPin } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { ChevronDown, Loader2 } from "lucide-react";
 
 import {
-  REGION_OPTIONS,
+  DEFAULT_REGION_CODE,
+  PUBLIC_REGION_OPTIONS,
   type RegionCode,
   getRegionConfig
 } from "@/lib/constants/locations";
@@ -16,22 +17,34 @@ const regionSyncEventName = "topmox-region-sync";
 type RegionSwitcherProps = {
   currentRegionCode: RegionCode;
   compact?: boolean;
+  jumpToLocation?: boolean;
 };
 
 export function RegionSwitcher({
   currentRegionCode,
-  compact = false
+  compact = false,
+  jumpToLocation = false
 }: RegionSwitcherProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const selectId = useId();
+  const pathRegion = PUBLIC_REGION_OPTIONS.find(
+    (region) => pathname === `/locations/${region.slug}`
+  );
+  const isLocationRoute =
+    pathname === "/locations" || pathname.startsWith("/locations/");
+  const shouldJumpToLocation = jumpToLocation || isLocationRoute;
+  const safeCurrentRegionCode =
+    pathRegion?.code ??
+    (currentRegionCode === "global" ? DEFAULT_REGION_CODE : currentRegionCode);
   const [selectedRegion, setSelectedRegion] =
-    useState<RegionCode>(currentRegionCode);
+    useState<RegionCode>(safeCurrentRegionCode);
   const [isPending, startTransition] = useTransition();
   const currentRegion = getRegionConfig(selectedRegion);
 
   useEffect(() => {
-    setSelectedRegion(currentRegionCode);
-  }, [currentRegionCode]);
+    setSelectedRegion(safeCurrentRegionCode);
+  }, [safeCurrentRegionCode]);
 
   useEffect(() => {
     const handleRegionSync = (event: Event) => {
@@ -42,7 +55,7 @@ export function RegionSwitcher({
         return;
       }
 
-      const nextRegion = REGION_OPTIONS.find(
+      const nextRegion = PUBLIC_REGION_OPTIONS.find(
         (region) => region.code === regionCode
       );
 
@@ -67,49 +80,59 @@ export function RegionSwitcher({
   }, []);
 
   function handleRegionChange(value: string) {
-    const nextRegion = REGION_OPTIONS.find((region) => region.code === value);
+    const nextRegion = PUBLIC_REGION_OPTIONS.find(
+      (region) => region.code === value
+    );
 
     if (!nextRegion || nextRegion.code === selectedRegion) {
       return;
     }
 
     setSelectedRegion(nextRegion.code);
+    window.dispatchEvent(
+      new CustomEvent(regionSyncEventName, {
+        detail: { regionCode: nextRegion.code }
+      })
+    );
+
+    if (shouldJumpToLocation) {
+      router.push(`/locations/${nextRegion.slug}`);
+    }
 
     startTransition(async () => {
       const result = await setPreferredRegionAction(nextRegion.code);
 
       if (!result.success) {
-        setSelectedRegion(currentRegionCode);
+        if (!shouldJumpToLocation) {
+          setSelectedRegion(safeCurrentRegionCode);
+        }
         return;
       }
 
-      window.dispatchEvent(
-        new CustomEvent(regionSyncEventName, {
-          detail: { regionCode: nextRegion.code }
-        })
-      );
-
-      router.refresh();
+      if (!shouldJumpToLocation) {
+        router.refresh();
+      }
     });
   }
 
+  const shellClasses = compact
+    ? "relative flex items-center gap-2 rounded-full border border-border bg-white px-3 py-1.5 text-xs shadow-soft"
+    : "relative flex flex-col gap-2 rounded-2xl border border-royal-blue/20 bg-white/90 p-3 shadow-soft sm:flex-row sm:items-center";
+
   return (
-    <div
-      className={
-        compact
-          ? "flex items-center gap-2 rounded-full border border-border bg-white px-3 py-1.5 text-xs shadow-soft"
-          : "flex flex-col gap-2 rounded-2xl border border-royal-blue/20 bg-white/90 p-3 shadow-soft sm:flex-row sm:items-center"
-      }
-    >
-      <div className="flex min-w-0 items-center gap-2 text-deep-navy">
+    <div className={shellClasses} data-region-switcher>
+      <div
+        className="pointer-events-none relative z-10 flex min-w-0 items-center gap-1.5 text-deep-navy"
+        data-testid="region-switcher-trigger"
+      >
         {isPending ? (
           <Loader2 className="h-4 w-4 shrink-0 animate-spin text-royal-blue" />
         ) : (
-          <MapPin className="h-4 w-4 shrink-0 text-royal-blue" />
+          <span aria-hidden="true" className="text-lg leading-none">
+            {currentRegion.flag}
+          </span>
         )}
-        <span className={compact ? "sr-only" : "text-sm font-semibold"}>
-          Region
-        </span>
+        <ChevronDown className="h-3.5 w-3.5 text-royal-blue" />
       </div>
 
       <label className="sr-only" htmlFor={selectId}>
@@ -121,20 +144,14 @@ export function RegionSwitcher({
         value={selectedRegion}
         onChange={(event) => handleRegionChange(event.target.value)}
         disabled={isPending}
-        className="max-w-full rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold text-text-primary outline-none transition focus:border-royal-blue focus:ring-2 focus:ring-royal-blue/20 disabled:cursor-wait disabled:opacity-70"
+        className="absolute inset-0 z-20 h-full w-full cursor-pointer appearance-none opacity-0 disabled:cursor-wait"
       >
-        {REGION_OPTIONS.map((region) => (
+        {PUBLIC_REGION_OPTIONS.map((region) => (
           <option key={region.code} value={region.code}>
-            {region.name} &#183; {region.currency}
+            {region.flag} {region.name} - {region.currency}
           </option>
         ))}
       </select>
-
-      {!compact ? (
-        <p className="text-xs text-text-secondary">
-          Showing {currentRegion.currency} guidance. You can change this anytime.
-        </p>
-      ) : null}
     </div>
   );
 }

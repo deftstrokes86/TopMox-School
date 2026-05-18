@@ -105,7 +105,11 @@ export default function LocationDetailPage({ params }: LocationPageProps) {
               </div>
             </div>
             <div className="w-full max-w-sm rounded-2xl border border-border bg-white p-4 shadow-soft">
-              <RegionSwitcher currentRegionCode={region.code} />
+              <RegionSwitcher
+                currentRegionCode={region.code}
+                compact
+                jumpToLocation
+              />
               <Button asChild className="mt-4 w-full">
                 <Link href="/book-assessment">Book a Child Assessment</Link>
               </Button>

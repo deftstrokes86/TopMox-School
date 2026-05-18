@@ -534,21 +534,29 @@ test.describe("browser route smoke checks", () => {
     guard.assertClean();
   });
 
-  test("public region switcher renders and can select Canada", async ({ page }) => {
+  test("location page region switchers are flag-only and jump to selected country", async ({ page }) => {
     const guard = attachBrowserStabilityGuards(page);
 
-    await page.goto("/", {
+    await page.goto("/locations/nigeria", {
       waitUntil: "networkidle"
     });
 
     const switcher = page
       .getByLabel(/choose topmox region/i)
       .first();
+    const trigger = page.getByTestId("region-switcher-trigger").first();
 
     await expect(switcher).toBeVisible();
     await expect(switcher.locator('option[value="global"]')).toHaveCount(0);
+    await expect(trigger).not.toContainText(/Region|Nigeria|NGN|Showing/i);
+    await expect(switcher.locator('option[value="canada"]')).toContainText(/Canada/);
+    await expect(switcher.locator('option[value="canada"]')).toContainText(/CAD/);
+
     await switcher.selectOption("canada");
     await expect(page).toHaveURL(/\/locations\/canada$/);
+    await expect(page.getByLabel(/choose topmox region/i).first()).toHaveValue(
+      "canada"
+    );
 
     guard.assertClean();
   });

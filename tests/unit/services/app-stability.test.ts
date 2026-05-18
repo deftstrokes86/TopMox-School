@@ -94,6 +94,21 @@ describe("app stability infrastructure", () => {
     }
   });
 
+  test("browser verification server does not delete shared Next cache by default", () => {
+    const devServerScript = readProjectFile("scripts/playwright-dev-server.mjs");
+
+    assert.match(
+      devServerScript,
+      /PLAYWRIGHT_CLEAN_NEXT_CACHE/,
+      "Browser verification should require an explicit opt-in before deleting .next."
+    );
+    assert.doesNotMatch(
+      devServerScript,
+      /await cleanNextCache\(\);\s*startNextDevServer\(\);/,
+      "Browser verification should not clean shared .next before every dev server start."
+    );
+  });
+
   test("Next.js app has root error, global error, not-found, and loading boundaries", () => {
     const requiredBoundaryFiles = [
       "src/app/error.tsx",

@@ -37,7 +37,11 @@ export default function LocationsPage() {
             homework follow-through, and parent visibility.
           </p>
           <div className="mt-6 max-w-xl">
-            <RegionSwitcher currentRegionCode={resolvedRegion.region.code} />
+            <RegionSwitcher
+              currentRegionCode={resolvedRegion.region.code}
+              compact
+              jumpToLocation
+            />
           </div>
         </section>
 

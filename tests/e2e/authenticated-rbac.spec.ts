@@ -209,10 +209,10 @@ async function assertAuthenticatedRouteLoads(page: Page, route: string) {
   await expect(page).toHaveURL(new RegExp(`${route}(?:$|[?#])`));
 
   await expect
-    .poll(() => visibleBodyText(page), {
+    .poll(async () => (await visibleBodyText(page)).length, {
       message: `${route} should render meaningful authenticated content`
     })
-    .toSatisfy((text) => text.length > 40);
+    .toBeGreaterThan(40);
 
   const bodyText = await visibleBodyText(page);
 

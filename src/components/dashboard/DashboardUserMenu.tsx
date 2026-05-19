@@ -25,6 +25,7 @@ export function DashboardUserMenu({ name, email, role }: DashboardUserMenuProps)
         type="button"
         size="sm"
         variant="outline"
+        className="shrink-0"
         onClick={() => signOut({ callbackUrl: "/login" })}
       >
         <UserCircle2 className="mr-2 h-4 w-4" />

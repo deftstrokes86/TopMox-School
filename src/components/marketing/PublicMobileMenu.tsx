@@ -4,21 +4,25 @@ import Link from "next/link";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { usePathname } from "next/navigation";
 
+import { RegionSwitcher } from "@/components/marketing/RegionSwitcher";
+import { Button } from "@/components/ui/button";
+import { BRAND } from "@/lib/constants/brand";
+import type { RegionCode } from "@/lib/constants/locations";
 import type { NavigationItem } from "@/lib/constants/navigation";
-import { cn } from "@/lib/utils";
 
-type MobileDashboardNavProps = {
-  title: string;
-  items: NavigationItem[];
+type PublicMobileMenuProps = {
+  currentRegionCode: RegionCode;
+  navItems: NavigationItem[];
 };
 
-export function MobileDashboardNav({ title, items }: MobileDashboardNavProps) {
+export function PublicMobileMenu({
+  currentRegionCode,
+  navItems
+}: PublicMobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLDivElement | null>(null);
-  const pathname = usePathname();
 
   useEffect(() => {
     if (!isOpen) {
@@ -49,7 +53,7 @@ export function MobileDashboardNav({ title, items }: MobileDashboardNavProps) {
 
     const focusableElements = Array.from(
       drawerRef.current.querySelectorAll<HTMLElement>(
-        'a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])'
+        'a[href],button:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])'
       )
     );
 
@@ -73,11 +77,11 @@ export function MobileDashboardNav({ title, items }: MobileDashboardNavProps) {
     <>
       <button
         type="button"
-        data-testid="dashboard-mobile-menu-button"
-        aria-label="Open dashboard menu"
+        data-testid="public-menu-button"
+        aria-label="Open main menu"
         aria-expanded={isOpen}
-        aria-controls="dashboard-mobile-menu"
-        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-white text-deep-navy shadow-sm transition hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25"
+        aria-controls="public-mobile-menu"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white text-deep-navy shadow-soft transition hover:border-royal-blue/40 hover:text-royal-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal-blue/25 xl:hidden"
         onClick={() => setIsOpen(true)}
       >
         <Menu className="h-5 w-5" aria-hidden="true" />
@@ -85,7 +89,7 @@ export function MobileDashboardNav({ title, items }: MobileDashboardNavProps) {
 
       {isOpen ? (
         <div
-          className="fixed inset-0 z-50 bg-deep-navy/35 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-50 bg-deep-navy/35 backdrop-blur-sm xl:hidden"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
               setIsOpen(false);
@@ -93,66 +97,65 @@ export function MobileDashboardNav({ title, items }: MobileDashboardNavProps) {
           }}
         >
           <div
-            id="dashboard-mobile-menu"
+            id="public-mobile-menu"
             ref={drawerRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Dashboard menu"
-            data-testid="dashboard-mobile-menu"
-            className="flex h-full w-[min(20rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-r-3xl border-r border-border bg-white shadow-lifted"
+            aria-label="Main menu"
+            data-testid="public-mobile-menu"
+            className="ml-auto flex h-full w-[min(22rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-l-3xl border-l border-border bg-white shadow-lifted"
             onKeyDown={handleDrawerKeyDown}
           >
-            <div className="flex items-start justify-between gap-4 border-b border-border bg-soft-cream/70 px-5 py-4">
+            <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-royal-blue">
-                  {title}
+                <p className="text-sm font-semibold text-text-primary">
+                  {BRAND.PRODUCT_NAME}
                 </p>
-                <p className="mt-1 text-sm font-semibold text-text-primary">
-                  Navigation
+                <p className="mt-1 text-xs text-text-secondary">
+                  School-backed global tutoring
                 </p>
               </div>
               <button
                 type="button"
                 ref={closeButtonRef}
-                aria-label="Close dashboard menu"
-                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-white text-deep-navy transition hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25"
+                aria-label="Close main menu"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border text-deep-navy transition hover:border-royal-blue/40 hover:text-royal-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal-blue/25"
                 onClick={() => setIsOpen(false)}
               >
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
 
-            <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-4">
-              {items.map((item) => {
-                const isActive = isActiveDashboardRoute(pathname, item.href);
+            <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5">
+              <RegionSwitcher currentRegionCode={currentRegionCode} compact />
 
-                return (
+              <nav className="grid gap-2" aria-label="Mobile main navigation">
+                {navItems.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={cn(
-                      "block rounded-xl px-4 py-3 text-sm font-semibold text-text-secondary transition hover:bg-soft-cream hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25",
-                      isActive ? "bg-soft-cream text-text-primary" : null
-                    )}
+                    className="rounded-2xl px-4 py-3 text-sm font-semibold text-text-secondary transition hover:bg-soft-blue hover:text-deep-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal-blue/25"
                     onClick={() => setIsOpen(false)}
                   >
                     {item.label}
                   </Link>
-                );
-              })}
-            </nav>
+                ))}
+              </nav>
+            </div>
+
+            <div className="border-t border-border p-5">
+              <Button asChild className="w-full">
+                <Link
+                  href="/book-assessment"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {BRAND.PRIMARY_CTA}
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       ) : null}
     </>
   );
-}
-
-function isActiveDashboardRoute(pathname: string, href: string) {
-  if (href === "/admin" || href === "/parent" || href === "/tutor") {
-    return pathname === href;
-  }
-
-  return pathname === href || pathname.startsWith(`${href}/`);
 }

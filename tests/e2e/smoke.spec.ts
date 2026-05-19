@@ -493,7 +493,7 @@ test.describe("browser route smoke checks", () => {
     });
   }
 
-  test("main public navigation groups secondary links under About", async ({ page }) => {
+  test("main public navigation exposes primary links without FAQ", async ({ page }) => {
     const guard = attachBrowserStabilityGuards(page);
 
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -504,32 +504,40 @@ test.describe("browser route smoke checks", () => {
     const desktopNav = page.getByTestId("public-desktop-nav");
 
     await expect(desktopNav).toBeVisible();
-    await expect(desktopNav.getByTestId("public-about-menu-trigger")).toBeVisible();
     await expect
       .poll(async () =>
         desktopNav
           .locator("[data-public-main-nav-item]")
           .evaluateAll((items) => items.map((item) => item.textContent ?? ""))
       )
-      .not.toContainEqual(
-        expect.stringMatching(/Global Tutoring|Locations|Resources|FAQ/i)
-    );
+      .toEqual([
+        "Home",
+        "Global Tutoring",
+        "Subjects",
+        "Locations",
+        "Exam Prep",
+        "Pricing",
+        "Resources",
+        "About",
+        "Contact"
+      ]);
+    await expect(desktopNav.getByRole("link", { name: "FAQ" })).toHaveCount(0);
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.reload({ waitUntil: "networkidle" });
 
-    const mobileNav = page.getByTestId("public-mobile-nav");
+    const menuButton = page.getByRole("button", { name: /open main menu/i });
+
+    await expect(menuButton).toBeVisible();
+    await menuButton.click();
+
+    const mobileNav = page.getByTestId("public-mobile-menu");
 
     await expect(mobileNav).toBeVisible();
-    await expect
-      .poll(async () =>
-        mobileNav
-          .locator("[data-public-main-nav-item]")
-          .evaluateAll((items) => items.map((item) => item.textContent ?? ""))
-      )
-      .not.toContainEqual(
-        expect.stringMatching(/Global Tutoring|Locations|Resources|FAQ/i)
-    );
+    await expect(mobileNav.getByRole("link", { name: "FAQ" })).toHaveCount(0);
+    await expect(mobileNav.getByRole("link", { name: "Global Tutoring" })).toBeVisible();
+    await expect(mobileNav.getByRole("link", { name: "Locations" })).toBeVisible();
+    await expect(mobileNav.getByRole("link", { name: "Resources" })).toBeVisible();
 
     guard.assertClean();
   });

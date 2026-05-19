@@ -23,21 +23,23 @@ export function DashboardShell({
   children
 }: DashboardShellProps) {
   return (
-    <div className="min-h-screen bg-warm-ivory">
-      <div className="container py-6">
+    <div className="min-h-screen overflow-x-hidden bg-warm-ivory">
+      <div className="container py-4 md:py-6">
         <div className="overflow-hidden rounded-xl border border-border bg-white shadow-card">
-          <div className="grid min-h-[78vh] lg:grid-cols-[16rem_1fr]">
+          <div className="grid min-h-[78vh] min-w-0 lg:grid-cols-[16rem_1fr]">
             <DashboardSidebar title={shellTitle} items={navItems} />
-            <div className="flex min-h-full flex-col">
+            <div className="flex min-h-full min-w-0 flex-col">
               <DashboardTopbar
                 title={topbarTitle}
                 subtitle={topbarSubtitle}
                 actions={topbarActions}
+                mobileNav={
+                  <MobileDashboardNav title={shellTitle} items={navItems} />
+                }
               />
-              <main className="flex-1 p-5 pb-24 md:p-6 md:pb-24 lg:pb-6">
+              <main className="min-w-0 flex-1 overflow-x-hidden p-4 md:p-6">
                 {children}
               </main>
-              <MobileDashboardNav items={navItems} />
             </div>
           </div>
         </div>

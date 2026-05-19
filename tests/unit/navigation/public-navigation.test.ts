@@ -22,15 +22,25 @@ describe("public navigation", () => {
     );
   });
 
-  test("global tutoring, locations, resources, and FAQ live under the about menu", () => {
+  test("primary public pages are direct links while FAQ stays out of header navigation", () => {
     const directMainHrefs = PUBLIC_NAV_ITEMS.map((item) => item.href);
     const aboutMenuHrefs = PUBLIC_ABOUT_MENU_ITEMS.map((item) => item.href);
 
-    for (const href of ["/global-tutoring", "/locations", "/resources", "/faq"]) {
-      assert.equal(directMainHrefs.includes(href), false);
-      assert.equal(aboutMenuHrefs.includes(href), true);
+    for (const href of [
+      "/",
+      "/global-tutoring",
+      "/subjects",
+      "/locations",
+      "/exam-prep",
+      "/pricing",
+      "/resources",
+      "/about",
+      "/contact"
+    ]) {
+      assert.equal(directMainHrefs.includes(href), true);
     }
 
-    assert.equal(aboutMenuHrefs.includes("/about"), true);
+    assert.equal(directMainHrefs.includes("/faq"), false);
+    assert.equal(aboutMenuHrefs.includes("/faq"), false);
   });
 });

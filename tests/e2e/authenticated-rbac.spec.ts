@@ -26,14 +26,14 @@ const accounts: DemoAccount[] = [
   },
   {
     role: "PARENT",
-    email: "ngozi.parent@topmox.test",
+    email: "parent@topmox.test",
     password: demoUserPassword,
     dashboardPath: "/parent",
     dashboardText: /Parent Dashboard|Family profile|Next Step/i
   },
   {
     role: "TUTOR",
-    email: "amara.math@topmox.test",
+    email: "tutor@topmox.test",
     password: demoUserPassword,
     dashboardPath: "/tutor",
     dashboardText: /Tutor Dashboard|Today's work|Assigned students/i

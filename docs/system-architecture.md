@@ -415,7 +415,7 @@ Default policy: use Server Components unless interactive behavior requires clien
 - Admin sees all data
 - Protected layouts for role route groups
 - Login redirects by role
-- Demo login buttons may exist in development only
+- Demo login buttons may exist only when private demo/staging flags and server readiness pass
 
 ### Recommended Implementation
 
@@ -1084,7 +1084,7 @@ Future enhancements:
 - Password hashing handled by auth provider/strategy
 - Environment variables never exposed to client bundles
 - Admin-only destructive actions require confirmation
-- Demo login only in development
+- Demo login only in local or protected staging demos with server-side enforcement
 - Avoid logging sensitive records in production
 
 ### Environment Variables
@@ -1215,7 +1215,7 @@ Recommended deployment:
 - Production `DATABASE_URL` set
 - Auth secret configured
 - Production domain configured
-- Demo login disabled or dev-only
+- Demo login disabled unless intentionally enabled for a protected demo/staging environment
 - Migrations applied
 - Seed strategy decided
 - Build passes

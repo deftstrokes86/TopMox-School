@@ -38,9 +38,9 @@ describe("Phase 15C demo data readiness", () => {
       seed,
       [
         "admin@topmox.test",
-        "amara.math@topmox.test",
+        "tutor@topmox.test",
         "david.english@topmox.test",
-        "ngozi.parent@topmox.test",
+        "parent@topmox.test",
         "bola.ukparent@topmox.test",
         "ada.canadaparent@topmox.test",
         "Starter Support",

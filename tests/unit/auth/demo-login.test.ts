@@ -73,8 +73,8 @@ describe("demo login helpers", () => {
 
   test("demo account mapping never accepts arbitrary roles or emails", () => {
     assert.equal(getDemoLoginAccountForRole("ADMIN")?.email, "admin@topmox.test");
-    assert.equal(getDemoLoginAccountForRole("PARENT")?.role, "PARENT");
-    assert.equal(getDemoLoginAccountForRole("TUTOR")?.role, "TUTOR");
+    assert.equal(getDemoLoginAccountForRole("PARENT")?.email, "parent@topmox.test");
+    assert.equal(getDemoLoginAccountForRole("TUTOR")?.email, "tutor@topmox.test");
     assert.equal(getDemoLoginAccountForRole("OWNER"), null);
     assert.equal(getDemoLoginAccountForRole("admin@topmox.test"), null);
   });

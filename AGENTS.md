@@ -84,7 +84,7 @@ NEXT_PUBLIC_DEMO_LOGIN_ENABLED="false"
 DEMO_USER_PASSWORD=""
 ```
 
-`NEXT_PUBLIC_DEMO_LOGIN_ENABLED` controls whether demo buttons render. `DEMO_LOGIN_ENABLED` is the server-side source of truth and must reject demo login when false.
+Demo buttons render only when public visibility is enabled, the server-side demo flag is enabled, and the fixed seeded demo accounts are ready. `DEMO_LOGIN_ENABLED` is the server-side source of truth and must reject demo login when false.
 
 Demo login must only authorize fixed seeded accounts for Admin, Parent, and Tutor. Do not allow arbitrary role or email selection, do not expose password hashes or raw demo credentials to the client, and do not bypass server-side auth/RBAC.
 

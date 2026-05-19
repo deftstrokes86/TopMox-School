@@ -137,14 +137,14 @@ async function main(): Promise<void> {
   });
 
   const tutorMathUser = await prisma.user.upsert({
-    where: { email: "amara.math@topmox.test" },
+    where: { email: "tutor@topmox.test" },
     update: {
       name: "Amara Okoye",
       role: Role.TUTOR,
       passwordHash: demoPasswordHash
     },
     create: {
-      email: "amara.math@topmox.test",
+      email: "tutor@topmox.test",
       name: "Amara Okoye",
       role: Role.TUTOR,
       passwordHash: demoPasswordHash
@@ -167,14 +167,14 @@ async function main(): Promise<void> {
   });
 
   const parentNigeriaUser = await prisma.user.upsert({
-    where: { email: "ngozi.parent@topmox.test" },
+    where: { email: "parent@topmox.test" },
     update: {
       name: "Ngozi Akinyemi",
       role: Role.PARENT,
       passwordHash: demoPasswordHash
     },
     create: {
-      email: "ngozi.parent@topmox.test",
+      email: "parent@topmox.test",
       name: "Ngozi Akinyemi",
       role: Role.PARENT,
       passwordHash: demoPasswordHash

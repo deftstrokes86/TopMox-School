@@ -32,14 +32,14 @@ const accounts: DemoAccount[] = [
   {
     role: "PARENT",
     buttonName: /continue as parent/i,
-    email: "ngozi.parent@topmox.test",
+    email: "parent@topmox.test",
     dashboardPath: "/parent",
     wrongRoute: "/admin"
   },
   {
     role: "TUTOR",
     buttonName: /continue as tutor/i,
-    email: "amara.math@topmox.test",
+    email: "tutor@topmox.test",
     dashboardPath: "/tutor",
     wrongRoute: "/parent"
   }

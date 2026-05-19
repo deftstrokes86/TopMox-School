@@ -22,14 +22,14 @@ const DEMO_LOGIN_ACCOUNT_BY_ROLE: Record<AppRole, DemoLoginAccount> = {
   TUTOR: {
     role: "TUTOR",
     label: "Tutor",
-    email: "amara.math@topmox.test",
+    email: "tutor@topmox.test",
     name: "Amara Okoye",
     walkthrough: "Mathematics and Science tutor workflow"
   },
   PARENT: {
     role: "PARENT",
     label: "Parent",
-    email: "ngozi.parent@topmox.test",
+    email: "parent@topmox.test",
     name: "Ngozi Akinyemi",
     walkthrough: "Nigeria parent with active plan, lessons, homework, and report"
   }

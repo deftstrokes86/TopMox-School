@@ -33,8 +33,8 @@ describe("demo walkthrough readiness", () => {
   test("demo login quick access exposes one deterministic account per role", () => {
     const expectedAccounts = [
       { email: "admin@topmox.test", role: "ADMIN" },
-      { email: "amara.math@topmox.test", role: "TUTOR" },
-      { email: "ngozi.parent@topmox.test", role: "PARENT" }
+      { email: "tutor@topmox.test", role: "TUTOR" },
+      { email: "parent@topmox.test", role: "PARENT" }
     ] as const;
 
     const accountsByEmail = new Map(
@@ -63,9 +63,9 @@ describe("demo walkthrough readiness", () => {
       seed,
       [
         "admin@topmox.test",
-        "amara.math@topmox.test",
+        "tutor@topmox.test",
         "david.english@topmox.test",
-        "ngozi.parent@topmox.test",
+        "parent@topmox.test",
         "bola.ukparent@topmox.test",
         "ada.canadaparent@topmox.test",
         "Nigeria",
@@ -167,8 +167,8 @@ describe("demo walkthrough readiness", () => {
         "Progress report",
         "Notifications/activity",
         "admin@topmox.test",
-        "amara.math@topmox.test",
-        "ngozi.parent@topmox.test",
+        "tutor@topmox.test",
+        "parent@topmox.test",
         "npm run prisma:seed",
         "DEMO_LOGIN_ENABLED",
         "NEXT_PUBLIC_DEMO_LOGIN_ENABLED",

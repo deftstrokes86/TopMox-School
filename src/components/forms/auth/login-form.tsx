@@ -24,6 +24,41 @@ type LoginFormProps = {
   demoAccounts?: DemoLoginAccount[];
 };
 
+type DemoLoginReadinessResponse = {
+  available: boolean;
+  message: string;
+};
+
+async function getDemoLoginReadiness(): Promise<DemoLoginReadinessResponse> {
+  try {
+    const response = await fetch("/api/auth/demo-readiness", {
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      return {
+        available: false,
+        message: DEMO_LOGIN_UNAVAILABLE_MESSAGE
+      };
+    }
+
+    const readiness = (await response.json()) as {
+      available?: boolean;
+      message?: string;
+    };
+
+    return {
+      available: readiness.available === true,
+      message: readiness.message || DEMO_LOGIN_UNAVAILABLE_MESSAGE
+    };
+  } catch {
+    return {
+      available: false,
+      message: "Database unavailable. Check /api/health."
+    };
+  }
+}
+
 async function waitForDashboardPathAfterSignIn() {
   for (let attempt = 0; attempt < 10; attempt += 1) {
     const session = await getSession();
@@ -89,6 +124,13 @@ export function LoginForm({
     setDemoLoadingRole(account.role);
 
     try {
+      const readiness = await getDemoLoginReadiness();
+
+      if (!readiness.available) {
+        setFormError(readiness.message);
+        return;
+      }
+
       const result = await signIn("credentials", {
         demoLogin: "true",
         demoRole: account.role,
@@ -96,7 +138,12 @@ export function LoginForm({
       });
 
       if (!result || result.error) {
-        setFormError(DEMO_LOGIN_UNAVAILABLE_MESSAGE);
+        const latestReadiness = await getDemoLoginReadiness();
+        setFormError(
+          latestReadiness.available
+            ? "Demo login could not complete through credentials auth. Check NextAuth credentials configuration and server logs."
+            : latestReadiness.message
+        );
         return;
       }
 

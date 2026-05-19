@@ -90,7 +90,7 @@ The staging or production environment must configure:
   main public navigation. FAQ remains accessible at `/faq`.
 - Demo login is for private staging/client demos only. Keep `DEMO_LOGIN_ENABLED="false"` and `NEXT_PUBLIC_DEMO_LOGIN_ENABLED="false"` in production.
 - Demo buttons are seed-backed and server-enforced. Run `npm run prisma:seed` before a demo, use `DEMO_USER_PASSWORD` only in private environment configuration, and verify `/api/health` reports `status: ok` and `database: connected`.
-- If demo buttons do not appear, check `NEXT_PUBLIC_DEMO_LOGIN_ENABLED`. If they appear but fail, check `DEMO_LOGIN_ENABLED`, seeded demo accounts, and Supabase connectivity.
+- If demo buttons do not appear, check `NEXT_PUBLIC_DEMO_LOGIN_ENABLED`, `DEMO_LOGIN_ENABLED`, seeded demo accounts, and Supabase connectivity. The login page only renders demo buttons when server-side demo readiness passes.
 - Manual payment enablement policy.
 - Seed strategy for demo, staging, and production.
 

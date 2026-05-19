@@ -31,11 +31,16 @@ describe("public navigation", () => {
       "/global-tutoring",
       "/subjects",
       "/locations",
-      "/exam-prep",
-      "/resources",
-      "/faq"
+      "/resources"
     ]) {
       assert.equal(aboutMenuHrefs.includes(href), true);
     }
+
+    assert.equal(
+      aboutMenuHrefs.includes("/exam-prep"),
+      false
+    );
+
+    assert.equal(aboutMenuHrefs.includes("/faq"), false);
   });
 });

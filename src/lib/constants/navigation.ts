@@ -14,10 +14,8 @@ export const PUBLIC_ABOUT_MENU_ITEMS: NavigationItem[] = [
   { label: "About TopMox", href: "/about" },
   { label: "Global Tutoring", href: "/global-tutoring" },
   { label: "Subjects", href: "/subjects" },
-  { label: "Exam Prep", href: "/exam-prep" },
   { label: "Locations", href: "/locations" },
-  { label: "Resources", href: "/resources" },
-  { label: "FAQ", href: "/faq" }
+  { label: "Resources", href: "/resources" }
 ];
 
 export const PUBLIC_HELP_LINKS: NavigationItem[] = [
@@ -69,4 +67,3 @@ export const ADMIN_NAV_ITEMS: NavigationItem[] = [
   { label: "Resources", href: "/admin/resources" },
   { label: "Settings", href: "/admin/settings" }
 ];
-

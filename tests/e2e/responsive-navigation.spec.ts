@@ -1,25 +1,28 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Locator, type Page, test } from "@playwright/test";
 
 const desktopMainNavLabels = ["Home", "About", "Pricing", "Contact"];
 const aboutDropdownLabels = [
   "About TopMox",
   "Global Tutoring",
   "Subjects",
-  "Exam Prep",
   "Locations",
-  "Resources",
-  "FAQ"
+  "Resources"
 ];
 const aboutDropdownByLabel: Record<string, string> = {
   "About TopMox": "/about",
   "Global Tutoring": "/global-tutoring",
   Subjects: "/subjects",
-  "Exam Prep": "/exam-prep",
   Locations: "/locations",
-  Resources: "/resources",
-  FAQ: "/faq"
+  Resources: "/resources"
 };
-const nonTopLevelLabels = ["Global Tutoring", "Subjects", "Locations", "Resources", "FAQ", "Exam Prep"];
+const nonTopLevelLabels = [
+  "Global Tutoring",
+  "Subjects",
+  "Locations",
+  "Resources",
+  "FAQ",
+  "Exam Prep"
+];
 
 const fatalConsolePatterns = [
   /Uncaught Error/i,
@@ -58,6 +61,44 @@ function attachBrowserStabilityGuards(page: Page) {
   };
 }
 
+function getTopLevelMobileItems(menu: ReturnType<Page["getByTestId"]>) {
+  return menu.locator("[data-mobile-main-nav-item]");
+}
+
+function getTopLevelDesktopItems(nav: ReturnType<Page["getByTestId"]>) {
+  return nav.locator("[data-public-main-nav-item]");
+}
+
+function getLoginAuthButton(page: Page) {
+  return page.getByRole("link", { name: "Login / Sign Up" });
+}
+
+function getRegionSwitcher(page: Page) {
+  return page.getByTestId("region-switcher-trigger");
+}
+
+async function assertFirstAboveSecond(
+  first: Locator,
+  second: Locator,
+  page: Page
+) {
+  const [firstBox, secondBox] = await Promise.all([
+    first.boundingBox(),
+    second.boundingBox()
+  ]);
+
+  expect(firstBox, "first element must be visible").not.toBeNull();
+  expect(secondBox, "second element must be visible").not.toBeNull();
+
+  const firstTop = firstBox ? firstBox.y : null;
+  const secondTop = secondBox ? secondBox.y : null;
+
+  expect(
+    firstTop,
+    "first item should appear above or in the same row as second item"
+  ).toBeLessThanOrEqual(secondTop ?? Number.POSITIVE_INFINITY);
+}
+
 async function assertNoHorizontalOverflow(page: Page) {
   const overflow = await page.evaluate(() => {
     const documentElement = document.documentElement;
@@ -68,12 +109,17 @@ async function assertNoHorizontalOverflow(page: Page) {
   expect(overflow).toBeLessThanOrEqual(2);
 }
 
-function getTopLevelMobileItems(menu: ReturnType<Page["getByTestId"]>) {
-  return menu.locator("[data-mobile-main-nav-item]");
-}
+async function assertDropdownContainsOnlyExpectedLinks(
+  dropdown: ReturnType<Page["getByTestId"]>
+) {
+  for (const label of aboutDropdownLabels) {
+    const link = dropdown.getByRole("link", { name: label });
+    await expect(link).toBeVisible();
+    await expect(link).toHaveAttribute("href", aboutDropdownByLabel[label]!);
+  }
 
-function getTopLevelDesktopItems(nav: ReturnType<Page["getByTestId"]>) {
-  return nav.locator("[data-public-main-nav-item]");
+  await expect(dropdown.getByRole("link", { name: "FAQ" })).toHaveCount(0);
+  await expect(dropdown.getByRole("link", { name: "Exam Prep" })).toHaveCount(0);
 }
 
 test.describe("responsive public navigation", () => {
@@ -91,19 +137,31 @@ test.describe("responsive public navigation", () => {
     expect(desktopItems.at(-1)).toBe("Contact");
 
     for (const label of nonTopLevelLabels) {
-      const desktopTopLevel = getTopLevelDesktopItems(desktopNav).filter({ hasText: label });
-      await expect(desktopTopLevel).toHaveCount(0);
+      await expect(
+        getTopLevelDesktopItems(desktopNav).filter({ hasText: label })
+      ).toHaveCount(0);
     }
 
-    await expect(page.getByRole("link", { name: "Login" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Sign Up" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Book Assessment" })).toBeVisible();
+    const authButton = getLoginAuthButton(page);
+    await expect(authButton).toBeVisible();
+    await expect(page.getByRole("link", { name: "Login" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Sign Up" })).toHaveCount(0);
+
+    const cta = page.getByRole("link", { name: "Book Assessment" });
+    await expect(cta).toBeVisible();
+    await expect(getRegionSwitcher(page)).toBeVisible();
+
+    await assertFirstAboveSecond(
+      getRegionSwitcher(page),
+      cta,
+      page
+    );
 
     await assertNoHorizontalOverflow(page);
     guard.assertClean();
   });
 
-  test("about dropdown contains grouped public links", async ({ page }) => {
+  test("desktop about dropdown contains grouped links", async ({ page }) => {
     const guard = attachBrowserStabilityGuards(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/", { waitUntil: "networkidle" });
@@ -112,23 +170,19 @@ test.describe("responsive public navigation", () => {
 
     const aboutDropdown = page.getByTestId("public-about-dropdown");
     await expect(aboutDropdown).toBeVisible();
+    await assertDropdownContainsOnlyExpectedLinks(aboutDropdown);
 
-    for (const label of aboutDropdownLabels) {
-      const link = aboutDropdown.getByRole("link", { name: label });
-      await expect(link).toBeVisible();
-      await expect(link).toHaveAttribute("href", aboutDropdownByLabel[label]!);
-    }
-
-    await aboutDropdown.getByRole("link", { name: "Exam Prep" }).click();
-    await expect(page).toHaveURL(/\/exam-prep$/);
-
+    await aboutDropdown.getByRole("link", { name: "About TopMox" }).click();
+    await expect(page).toHaveURL(/\/about$/);
     await page.goBack();
     await expect(page).toHaveURL(/\/$/);
     await assertNoHorizontalOverflow(page);
     guard.assertClean();
   });
 
-  test("mobile navigation is a drawer with actions and nested About links", async ({ page }) => {
+  test("mobile navigation is a drawer with grouped About links and compact actions", async ({
+    page
+  }) => {
     const guard = attachBrowserStabilityGuards(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/", { waitUntil: "networkidle" });
@@ -147,19 +201,25 @@ test.describe("responsive public navigation", () => {
     const mobileTopLevelItems = getTopLevelMobileItems(mobileMenu);
     await expect(mobileTopLevelItems).toHaveText(desktopMainNavLabels);
 
-    for (const label of aboutDropdownLabels) {
-      await expect(mobileMenu.getByRole("link", { name: label })).toBeVisible();
-    }
+    await assertDropdownContainsOnlyExpectedLinks(
+      mobileMenu.locator("[data-mobile-about-dropdown]")
+    );
 
     for (const label of nonTopLevelLabels) {
       const topLevelMatch = mobileTopLevelItems.filter({ hasText: label });
       await expect(topLevelMatch).toHaveCount(0);
     }
 
-    await expect(page.getByRole("link", { name: "Login" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Sign Up" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Book Assessment" })).toBeVisible();
-    await expect(mobileMenu.getByLabel(/choose topmox region/i)).toBeVisible();
+    const authButton = getLoginAuthButton(page);
+    await expect(authButton).toBeVisible();
+    await expect(page.getByRole("link", { name: "Login" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Sign Up" })).toHaveCount(0);
+
+    const regionSwitcher = mobileMenu.getByTestId("region-switcher-trigger");
+    const cta = mobileMenu.getByRole("link", { name: "Book Assessment" });
+    await expect(regionSwitcher).toBeVisible();
+    await expect(cta).toBeVisible();
+    await assertFirstAboveSecond(regionSwitcher, cta, page);
 
     await mobileMenu.getByRole("link", { name: "Pricing" }).click();
     await expect(page).toHaveURL(/\/pricing$/);
@@ -187,7 +247,9 @@ test.describe("responsive public navigation", () => {
 });
 
 test.describe("responsive dashboard navigation", () => {
-  test("mobile protected dashboard routes redirect safely without overflow", async ({ page }) => {
+  test("mobile protected dashboard routes redirect safely without overflow", async ({
+    page
+  }) => {
     const guard = attachBrowserStabilityGuards(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/admin", { waitUntil: "networkidle" });

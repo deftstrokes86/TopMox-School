@@ -3,6 +3,7 @@ import { cookies, headers } from "next/headers";
 import { ChevronDown } from "lucide-react";
 
 import { PublicMobileMenu } from "@/components/marketing/PublicMobileMenu";
+import { RegionSwitcher } from "@/components/marketing/RegionSwitcher";
 import { Button } from "@/components/ui/button";
 import { BRAND } from "@/lib/constants/brand";
 import { REGION_COOKIE_NAME } from "@/lib/constants/locations";
@@ -18,13 +19,13 @@ function MainNavLinks({ className = "" }: { className?: string }) {
       {PUBLIC_NAV_ITEMS.map((item) => (
         <span key={item.label}>
           {item.label === "About" ? (
-      <details className="group relative">
-        <summary
-          role="button"
-          aria-label="About"
-          data-public-main-nav-item
-          className={`list-none rounded-full px-3 py-2 text-sm font-semibold text-text-secondary transition hover:-translate-y-0.5 hover:bg-soft-blue hover:text-deep-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal-blue/25 ${className}`}
-        >
+            <details className="group relative">
+              <summary
+                role="button"
+                aria-label="About"
+                data-public-main-nav-item
+                className={`list-none rounded-full px-3 py-2 text-sm font-semibold text-text-secondary transition hover:-translate-y-0.5 hover:bg-soft-blue hover:text-deep-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal-blue/25 ${className}`}
+              >
                 <span className="inline-flex items-center gap-1">
                   About
                   <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
@@ -84,18 +85,26 @@ export function PublicHeader() {
           <MainNavLinks />
         </nav>
 
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <div
+          data-testid="public-header-actions"
+          className="flex shrink-0 items-center gap-2 sm:gap-3"
+        >
           <div className="hidden xl:flex items-center gap-2">
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/login">Login</Link>
-            </Button>
             <Button asChild variant="outline" size="sm">
-              <Link href="/register">Sign Up</Link>
+              <Link href="/login">Login / Sign Up</Link>
             </Button>
-            <Button asChild size="sm">
-              <Link href="/book-assessment">Book Assessment</Link>
-            </Button>
+
+            <div className="flex min-h-0 flex-col gap-2">
+              <RegionSwitcher
+                compact
+                currentRegionCode={resolvedRegion.region.code}
+              />
+              <Button asChild size="sm">
+                <Link href="/book-assessment">Book Assessment</Link>
+              </Button>
+            </div>
           </div>
+
           <PublicMobileMenu
             currentRegionCode={resolvedRegion.region.code}
             aboutItems={PUBLIC_ABOUT_MENU_ITEMS}

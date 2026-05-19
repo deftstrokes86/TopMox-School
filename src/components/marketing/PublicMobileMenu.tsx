@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -143,7 +141,10 @@ export function PublicMobileMenu({
                             <ChevronDown className="h-4 w-4" aria-hidden="true" />
                           </span>
                         </summary>
-                        <div className="mt-2 grid gap-1 pl-4">
+                        <div
+                          className="mt-2 grid gap-1 pl-4"
+                          data-mobile-about-dropdown
+                        >
                           {aboutItems.map((aboutItem) => (
                             <Link
                               key={aboutItem.href}
@@ -174,27 +175,22 @@ export function PublicMobileMenu({
 
             <div className="border-t border-border p-5">
               <div className="flex flex-col gap-2">
-                <Button asChild variant="ghost" size="sm">
-                  <Link href="/login" onClick={() => setIsOpen(false)}>
-                    Login
-                  </Link>
-                </Button>
                 <Button asChild variant="outline" size="sm">
-                  <Link href="/register" onClick={() => setIsOpen(false)}>
-                    Sign Up
+                  <Link href="/login" onClick={() => setIsOpen(false)}>
+                    Login / Sign Up
                   </Link>
                 </Button>
+                <div>
+                  <RegionSwitcher
+                    currentRegionCode={currentRegionCode}
+                    compact
+                  />
+                </div>
                 <Button asChild size="sm">
                   <Link href="/book-assessment" onClick={() => setIsOpen(false)}>
                     Book Assessment
                   </Link>
                 </Button>
-              </div>
-              <div className="mt-4 border-t border-border/70 pt-4">
-                <RegionSwitcher
-                  currentRegionCode={currentRegionCode}
-                  compact
-                />
               </div>
             </div>
           </div>

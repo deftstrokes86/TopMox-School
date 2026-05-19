@@ -18,7 +18,9 @@ describe("public location config", () => {
   });
 
   test("region flag text and currency mapping is stable", () => {
-    const expectedFlags: Record<RegionCode, string> = {
+    type PublicRegionCode = Exclude<RegionCode, "global">;
+
+    const expectedFlags: Record<PublicRegionCode, string> = {
       nigeria: "\u{1F1F3}\u{1F1EC}",
       "united-states": "\u{1F1FA}\u{1F1F8}",
       canada: "\u{1F1E8}\u{1F1E6}",
@@ -28,7 +30,7 @@ describe("public location config", () => {
       uae: "\u{1F1E6}\u{1F1EA}"
     };
 
-    const expectedCurrencies: Record<RegionCode, RegionCurrency> = {
+    const expectedCurrencies: Record<PublicRegionCode, RegionCurrency> = {
       nigeria: "NGN",
       "united-states": "USD",
       canada: "CAD",
@@ -38,11 +40,12 @@ describe("public location config", () => {
       uae: "AED"
     };
 
-    for (const [regionCode, expectedFlag] of Object.entries(expectedFlags)) {
-      const regionConfig = REGION_CONFIGS[regionCode as RegionCode];
+    for (const [rawRegionCode, expectedFlag] of Object.entries(expectedFlags)) {
+      const regionCode = rawRegionCode as PublicRegionCode;
+      const regionConfig = REGION_CONFIGS[regionCode];
 
       assert.equal(regionConfig.flag, expectedFlag);
-      assert.equal(regionConfig.currency, expectedCurrencies[regionCode as RegionCode]);
+      assert.equal(regionConfig.currency, expectedCurrencies[regionCode]);
       assert.equal(regionConfig.countryCodes.length > 0, true);
     }
   });

@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -89,7 +91,7 @@ export function PublicMobileMenu({
 
       {isOpen ? (
         <div
-          className="fixed inset-0 z-50 bg-deep-navy/35 backdrop-blur-sm xl:hidden"
+          className="fixed inset-0 z-50 h-full max-h-dvh overflow-hidden bg-deep-navy/35 backdrop-blur-sm xl:hidden"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
               setIsOpen(false);
@@ -103,12 +105,15 @@ export function PublicMobileMenu({
             aria-modal="true"
             aria-label="Main menu"
             data-testid="public-mobile-menu"
-            className="ml-auto flex h-full w-[min(22rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-l-3xl border-l border-border bg-white shadow-lifted"
+            className="ml-auto flex h-[100dvh] max-h-dvh w-[min(22rem,calc(100vw-1rem))] flex-col overflow-hidden rounded-l-3xl border-l border-border bg-white shadow-lifted"
             onKeyDown={handleDrawerKeyDown}
           >
             <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
               <div>
-                <p className="text-sm font-semibold text-text-primary">
+                <p
+                  data-testid="public-mobile-menu-title"
+                  className="text-sm font-semibold text-text-primary"
+                >
                   {BRAND.PRODUCT_NAME}
                 </p>
                 <p className="mt-1 text-xs text-text-secondary">
@@ -126,7 +131,10 @@ export function PublicMobileMenu({
               </button>
             </div>
 
-            <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5">
+            <div
+              data-testid="public-mobile-menu-body"
+              className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5"
+            >
               <nav className="grid gap-2" aria-label="Mobile main navigation">
                 {navItems.map((item) => (
                   <span key={item.href}>
@@ -173,7 +181,7 @@ export function PublicMobileMenu({
               </nav>
             </div>
 
-            <div className="border-t border-border p-5">
+            <div className="shrink-0 border-t border-border p-5">
               <div className="flex flex-col gap-2">
                 <Button asChild variant="outline" size="sm">
                   <Link href="/login" onClick={() => setIsOpen(false)}>

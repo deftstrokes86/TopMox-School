@@ -36,6 +36,13 @@ const fatalConsolePatterns = [
   /Failed to load resource.*\/_next\/static.*(404|500)/i
 ];
 
+const mobileViewports: Array<{ width: number; height: number }> = [
+  { width: 360, height: 740 },
+  { width: 390, height: 844 },
+  { width: 414, height: 896 },
+  { width: 768, height: 1024 }
+];
+
 function attachBrowserStabilityGuards(page: Page) {
   const failures: string[] = [];
 
@@ -69,12 +76,16 @@ function getTopLevelDesktopItems(nav: ReturnType<Page["getByTestId"]>) {
   return nav.locator("[data-public-main-nav-item]");
 }
 
+function getHeaderActions(page: Page) {
+  return page.getByTestId("public-header-actions");
+}
+
 function getLoginAuthButton(page: Page) {
   return page.getByRole("link", { name: "Login / Sign Up" });
 }
 
 function getRegionSwitcher(page: Page) {
-  return page.getByTestId("region-switcher-trigger");
+  return getHeaderActions(page).getByTestId("region-switcher-trigger");
 }
 
 async function assertFirstAboveSecond(
@@ -113,13 +124,45 @@ async function assertDropdownContainsOnlyExpectedLinks(
   dropdown: ReturnType<Page["getByTestId"]>
 ) {
   for (const label of aboutDropdownLabels) {
-    const link = dropdown.getByRole("link", { name: label });
+    const link = dropdown.locator("a", { hasText: label });
     await expect(link).toBeVisible();
+    await expect(link).toHaveCount(1);
     await expect(link).toHaveAttribute("href", aboutDropdownByLabel[label]!);
   }
 
   await expect(dropdown.getByRole("link", { name: "FAQ" })).toHaveCount(0);
   await expect(dropdown.getByRole("link", { name: "Exam Prep" })).toHaveCount(0);
+}
+
+async function assertMenuBodyHasHeight(menu: ReturnType<Page["getByTestId"]>) {
+  const menuBody = menu.locator('[data-testid="public-mobile-menu-body"]');
+  await expect(menuBody).toBeVisible();
+
+  const bodyHeight = await menuBody.evaluate((element) => element.clientHeight);
+  expect(bodyHeight).toBeGreaterThan(200);
+}
+
+async function assertAtLeastVisibleActionableItems(menu: ReturnType<Page["getByTestId"]>) {
+  const actionableItems = await menu
+    .locator("a")
+    .evaluateAll((elements) =>
+      elements.filter((element) => element.getAttribute("href") !== "javascript:void(0)").length
+    );
+
+  expect(actionableItems).toBeGreaterThan(8);
+}
+
+async function ensureAboutSectionExpanded(mobileMenu: ReturnType<Page["getByTestId"]>) {
+  const aboutSummary = mobileMenu.locator("details summary");
+
+  if (await aboutSummary.count() === 0) {
+    return;
+  }
+
+  const details = mobileMenu.locator("details").first();
+  await details.evaluate((element) => {
+    (element as HTMLDetailsElement).open = true;
+  });
 }
 
 test.describe("responsive public navigation", () => {
@@ -144,8 +187,16 @@ test.describe("responsive public navigation", () => {
 
     const authButton = getLoginAuthButton(page);
     await expect(authButton).toBeVisible();
-    await expect(page.getByRole("link", { name: "Login" })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Sign Up" })).toHaveCount(0);
+    const actions = page.getByTestId("public-header-actions");
+    await expect(
+      actions.getByRole("link", { name: "Login / Sign Up" })
+    ).toBeVisible();
+    await expect(
+      actions.getByRole("link", { name: "Login", exact: true })
+    ).toHaveCount(0);
+    await expect(
+      actions.getByRole("link", { name: "Sign Up", exact: true })
+    ).toHaveCount(0);
 
     const cta = page.getByRole("link", { name: "Book Assessment" });
     await expect(cta).toBeVisible();
@@ -180,53 +231,89 @@ test.describe("responsive public navigation", () => {
     guard.assertClean();
   });
 
-  test("mobile navigation is a drawer with grouped About links and compact actions", async ({
-    page
-  }) => {
-    const guard = attachBrowserStabilityGuards(page);
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/", { waitUntil: "networkidle" });
+  for (const viewport of mobileViewports) {
+    test(`mobile navigation works at ${viewport.width}x${viewport.height}`, async ({
+      page
+    }) => {
+      const guard = attachBrowserStabilityGuards(page);
+      await page.setViewportSize(viewport);
+      await page.goto("/", { waitUntil: "networkidle" });
 
-    await expect(page.getByTestId("public-desktop-nav")).toBeHidden();
-    const menuButton = page.getByRole("button", { name: /open main menu/i });
-    await expect(menuButton).toBeVisible();
-    await expect(menuButton).toHaveAttribute("aria-expanded", "false");
+      await expect(page.getByTestId("public-desktop-nav")).toBeHidden();
+      const menuButton = page.getByRole("button", { name: /open main menu/i });
+      const closeButton = page.getByRole("button", { name: /close main menu/i });
 
-    await menuButton.click();
+      await expect(menuButton).toBeVisible();
+      await expect(menuButton).toHaveAttribute("aria-expanded", "false");
 
-    const mobileMenu = page.getByTestId("public-mobile-menu");
-    await expect(mobileMenu).toBeVisible();
-    await expect(menuButton).toHaveAttribute("aria-expanded", "true");
+      await menuButton.click();
 
-    const mobileTopLevelItems = getTopLevelMobileItems(mobileMenu);
-    await expect(mobileTopLevelItems).toHaveText(desktopMainNavLabels);
+      const mobileMenu = page.getByTestId("public-mobile-menu");
+      await expect(mobileMenu).toBeVisible();
+      const menuTitle = mobileMenu.getByTestId("public-mobile-menu-title");
+      await expect(menuButton).toHaveAttribute("aria-expanded", "true");
+      await expect(menuTitle).toBeVisible();
+      await expect(closeButton).toBeVisible();
 
-    await assertDropdownContainsOnlyExpectedLinks(
-      mobileMenu.locator("[data-mobile-about-dropdown]")
-    );
+      await assertMenuBodyHasHeight(mobileMenu);
 
-    for (const label of nonTopLevelLabels) {
-      const topLevelMatch = mobileTopLevelItems.filter({ hasText: label });
-      await expect(topLevelMatch).toHaveCount(0);
-    }
+      const mobileTopLevelItems = getTopLevelMobileItems(mobileMenu);
+      await expect(mobileTopLevelItems).toHaveText(desktopMainNavLabels);
 
-    const authButton = getLoginAuthButton(page);
-    await expect(authButton).toBeVisible();
-    await expect(page.getByRole("link", { name: "Login" })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Sign Up" })).toHaveCount(0);
+      await ensureAboutSectionExpanded(mobileMenu);
+      await assertDropdownContainsOnlyExpectedLinks(
+        mobileMenu.locator("[data-mobile-about-dropdown]")
+      );
 
-    const regionSwitcher = mobileMenu.getByTestId("region-switcher-trigger");
-    const cta = mobileMenu.getByRole("link", { name: "Book Assessment" });
-    await expect(regionSwitcher).toBeVisible();
-    await expect(cta).toBeVisible();
-    await assertFirstAboveSecond(regionSwitcher, cta, page);
+      for (const label of nonTopLevelLabels) {
+        const topLevelMatch = mobileTopLevelItems.filter({ hasText: label });
+        await expect(topLevelMatch).toHaveCount(0);
+      }
 
-    await mobileMenu.getByRole("link", { name: "Pricing" }).click();
-    await expect(page).toHaveURL(/\/pricing$/);
-    await expect(mobileMenu).toBeHidden();
-    await assertNoHorizontalOverflow(page);
-    guard.assertClean();
-  });
+      const authButton = getLoginAuthButton(page);
+      const authButtonInMenu = mobileMenu.getByRole("link", {
+        name: "Login / Sign Up"
+      });
+      await expect(authButton).toBeVisible();
+      await expect(authButtonInMenu).toBeVisible();
+      await expect(
+        mobileMenu.getByRole("link", { name: "Login", exact: true })
+      ).toHaveCount(0);
+      await expect(
+        mobileMenu.getByRole("link", { name: "Sign Up", exact: true })
+      ).toHaveCount(0);
+
+      const regionSwitcher = mobileMenu.getByTestId("region-switcher-trigger");
+      const cta = mobileMenu.getByRole("link", { name: "Book Assessment" });
+      await expect(regionSwitcher).toBeVisible();
+      await expect(cta).toBeVisible();
+      await assertFirstAboveSecond(regionSwitcher, cta, page);
+
+      const visibleActionableItems = await mobileMenu
+        .locator("a")
+        .filter({ hasText: /.+/ })
+        .evaluateAll((elements) =>
+          elements.filter(
+            (element) =>
+              element.getAttribute("href") &&
+              element.getBoundingClientRect().height > 0 &&
+              element.getBoundingClientRect().width > 0
+          ).length
+        );
+      expect(visibleActionableItems).toBeGreaterThanOrEqual(8);
+
+      await expect(
+        mobileMenu.getByRole("link", { name: "FAQ" })
+      ).toHaveCount(0);
+
+      await mobileMenu.getByRole("link", { name: "Pricing" }).click();
+      await expect(page).toHaveURL(/\/pricing$/);
+      await expect(mobileMenu).toBeHidden();
+
+      await assertNoHorizontalOverflow(page);
+      guard.assertClean();
+    });
+  }
 
   test("tablet header uses no horizontal overflow", async ({ page }) => {
     const guard = attachBrowserStabilityGuards(page);

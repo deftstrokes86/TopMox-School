@@ -2,17 +2,19 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
 import {
-  DEFAULT_REGION_CODE,
   getCurrencyForRegion,
   getRegionFromBrowserHints,
   getRegionFromCloudflareHeaders,
   getRegionFromCookie,
   getRegionFromCountryCode,
   getRegionFromGenericGeoHeaders,
-  getRegionConfig,
   isFlutterwaveEnabledForRegion,
   resolveVisitorRegion
 } from "@/server/services/location.service";
+import {
+  DEFAULT_REGION_CODE,
+  getRegionConfig
+} from "@/lib/constants/locations";
 
 function headers(values: Record<string, string>) {
   return new Headers(values);

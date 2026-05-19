@@ -5,21 +5,19 @@ export type NavigationItem = {
 
 export const PUBLIC_NAV_ITEMS: NavigationItem[] = [
   { label: "Home", href: "/" },
-  { label: "Global Tutoring", href: "/global-tutoring" },
-  { label: "Subjects", href: "/subjects" },
-  { label: "Locations", href: "/locations" },
-  { label: "Exam Prep", href: "/exam-prep" },
-  { label: "Pricing", href: "/pricing" },
-  { label: "Resources", href: "/resources" },
   { label: "About", href: "/about" },
+  { label: "Pricing", href: "/pricing" },
   { label: "Contact", href: "/contact" }
 ];
 
 export const PUBLIC_ABOUT_MENU_ITEMS: NavigationItem[] = [
   { label: "About TopMox", href: "/about" },
   { label: "Global Tutoring", href: "/global-tutoring" },
+  { label: "Subjects", href: "/subjects" },
+  { label: "Exam Prep", href: "/exam-prep" },
   { label: "Locations", href: "/locations" },
-  { label: "Resources", href: "/resources" }
+  { label: "Resources", href: "/resources" },
+  { label: "FAQ", href: "/faq" }
 ];
 
 export const PUBLIC_HELP_LINKS: NavigationItem[] = [
@@ -71,3 +69,4 @@ export const ADMIN_NAV_ITEMS: NavigationItem[] = [
   { label: "Resources", href: "/admin/resources" },
   { label: "Settings", href: "/admin/settings" }
 ];
+

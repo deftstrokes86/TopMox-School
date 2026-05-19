@@ -1,16 +1,25 @@
 import { expect, type Page, test } from "@playwright/test";
 
-const publicNavLabels = [
-  "Home",
+const desktopMainNavLabels = ["Home", "About", "Pricing", "Contact"];
+const aboutDropdownLabels = [
+  "About TopMox",
   "Global Tutoring",
   "Subjects",
-  "Locations",
   "Exam Prep",
-  "Pricing",
+  "Locations",
   "Resources",
-  "About",
-  "Contact"
+  "FAQ"
 ];
+const aboutDropdownByLabel: Record<string, string> = {
+  "About TopMox": "/about",
+  "Global Tutoring": "/global-tutoring",
+  Subjects: "/subjects",
+  "Exam Prep": "/exam-prep",
+  Locations: "/locations",
+  Resources: "/resources",
+  FAQ: "/faq"
+};
+const nonTopLevelLabels = ["Global Tutoring", "Subjects", "Locations", "Resources", "FAQ", "Exam Prep"];
 
 const fatalConsolePatterns = [
   /Uncaught Error/i,
@@ -59,10 +68,16 @@ async function assertNoHorizontalOverflow(page: Page) {
   expect(overflow).toBeLessThanOrEqual(2);
 }
 
+function getTopLevelMobileItems(menu: ReturnType<Page["getByTestId"]>) {
+  return menu.locator("[data-mobile-main-nav-item]");
+}
+
+function getTopLevelDesktopItems(nav: ReturnType<Page["getByTestId"]>) {
+  return nav.locator("[data-public-main-nav-item]");
+}
+
 test.describe("responsive public navigation", () => {
-  test("desktop navigation is readable, complete, and overflow-safe", async ({
-    page
-  }) => {
+  test("desktop navigation is compact and ordered correctly", async ({ page }) => {
     const guard = attachBrowserStabilityGuards(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/", { waitUntil: "networkidle" });
@@ -70,21 +85,90 @@ test.describe("responsive public navigation", () => {
     const desktopNav = page.getByTestId("public-desktop-nav");
     await expect(desktopNav).toBeVisible();
 
-    for (const label of publicNavLabels) {
-      await expect(desktopNav.getByRole("link", { name: label })).toBeVisible();
+    const desktopItems = await getTopLevelDesktopItems(desktopNav).allTextContents();
+    expect(desktopItems).toEqual(desktopMainNavLabels);
+    expect(desktopItems[1]).toBe("About");
+    expect(desktopItems.at(-1)).toBe("Contact");
+
+    for (const label of nonTopLevelLabels) {
+      const desktopTopLevel = getTopLevelDesktopItems(desktopNav).filter({ hasText: label });
+      await expect(desktopTopLevel).toHaveCount(0);
     }
 
-    await expect(desktopNav.getByRole("link", { name: "FAQ" })).toHaveCount(0);
-    await expect(
-      page.getByRole("link", { name: "Book a Child Assessment" }).first()
-    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Login" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Sign Up" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Book Assessment" })).toBeVisible();
+
     await assertNoHorizontalOverflow(page);
     guard.assertClean();
   });
 
-  test("tablet navigation does not overflow or expose duplicate breakpoints", async ({
-    page
-  }) => {
+  test("about dropdown contains grouped public links", async ({ page }) => {
+    const guard = attachBrowserStabilityGuards(page);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/", { waitUntil: "networkidle" });
+
+    await page.getByRole("button", { name: "About" }).click();
+
+    const aboutDropdown = page.getByTestId("public-about-dropdown");
+    await expect(aboutDropdown).toBeVisible();
+
+    for (const label of aboutDropdownLabels) {
+      const link = aboutDropdown.getByRole("link", { name: label });
+      await expect(link).toBeVisible();
+      await expect(link).toHaveAttribute("href", aboutDropdownByLabel[label]!);
+    }
+
+    await aboutDropdown.getByRole("link", { name: "Exam Prep" }).click();
+    await expect(page).toHaveURL(/\/exam-prep$/);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/$/);
+    await assertNoHorizontalOverflow(page);
+    guard.assertClean();
+  });
+
+  test("mobile navigation is a drawer with actions and nested About links", async ({ page }) => {
+    const guard = attachBrowserStabilityGuards(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/", { waitUntil: "networkidle" });
+
+    await expect(page.getByTestId("public-desktop-nav")).toBeHidden();
+    const menuButton = page.getByRole("button", { name: /open main menu/i });
+    await expect(menuButton).toBeVisible();
+    await expect(menuButton).toHaveAttribute("aria-expanded", "false");
+
+    await menuButton.click();
+
+    const mobileMenu = page.getByTestId("public-mobile-menu");
+    await expect(mobileMenu).toBeVisible();
+    await expect(menuButton).toHaveAttribute("aria-expanded", "true");
+
+    const mobileTopLevelItems = getTopLevelMobileItems(mobileMenu);
+    await expect(mobileTopLevelItems).toHaveText(desktopMainNavLabels);
+
+    for (const label of aboutDropdownLabels) {
+      await expect(mobileMenu.getByRole("link", { name: label })).toBeVisible();
+    }
+
+    for (const label of nonTopLevelLabels) {
+      const topLevelMatch = mobileTopLevelItems.filter({ hasText: label });
+      await expect(topLevelMatch).toHaveCount(0);
+    }
+
+    await expect(page.getByRole("link", { name: "Login" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Sign Up" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Book Assessment" })).toBeVisible();
+    await expect(mobileMenu.getByLabel(/choose topmox region/i)).toBeVisible();
+
+    await mobileMenu.getByRole("link", { name: "Pricing" }).click();
+    await expect(page).toHaveURL(/\/pricing$/);
+    await expect(mobileMenu).toBeHidden();
+    await assertNoHorizontalOverflow(page);
+    guard.assertClean();
+  });
+
+  test("tablet header uses no horizontal overflow", async ({ page }) => {
     const guard = attachBrowserStabilityGuards(page);
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.goto("/", { waitUntil: "networkidle" });
@@ -100,50 +184,10 @@ test.describe("responsive public navigation", () => {
     await assertNoHorizontalOverflow(page);
     guard.assertClean();
   });
-
-  test("mobile navigation opens as a drawer and closes after navigation", async ({
-    page
-  }) => {
-    const guard = attachBrowserStabilityGuards(page);
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/", { waitUntil: "networkidle" });
-
-    await expect(page.getByTestId("public-desktop-nav")).toBeHidden();
-    const menuButton = page.getByRole("button", { name: /open main menu/i });
-    await expect(menuButton).toBeVisible();
-    await expect(menuButton).toHaveAttribute("aria-expanded", "false");
-
-    await menuButton.click();
-
-    const mobileMenu = page.getByTestId("public-mobile-menu");
-    await expect(menuButton).toHaveAttribute("aria-expanded", "true");
-    await expect(mobileMenu).toBeVisible();
-
-    for (const label of publicNavLabels) {
-      await expect(mobileMenu.getByRole("link", { name: label })).toBeVisible();
-    }
-
-    await expect(mobileMenu.getByRole("link", { name: "FAQ" })).toHaveCount(0);
-    await expect(
-      mobileMenu.getByRole("link", { name: "Book a Child Assessment" })
-    ).toBeVisible();
-    await expect(
-      mobileMenu.getByLabel(/choose topmox region/i)
-    ).toBeVisible();
-    await assertNoHorizontalOverflow(page);
-
-    await mobileMenu.getByRole("link", { name: "Pricing" }).click();
-    await expect(page).toHaveURL(/\/pricing$/);
-    await expect(mobileMenu).toBeHidden();
-    await assertNoHorizontalOverflow(page);
-    guard.assertClean();
-  });
 });
 
 test.describe("responsive dashboard navigation", () => {
-  test("mobile protected dashboard routes redirect safely without overflow", async ({
-    page
-  }) => {
+  test("mobile protected dashboard routes redirect safely without overflow", async ({ page }) => {
     const guard = attachBrowserStabilityGuards(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/admin", { waitUntil: "networkidle" });

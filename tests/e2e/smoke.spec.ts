@@ -512,13 +512,8 @@ test.describe("browser route smoke checks", () => {
       )
       .toEqual([
         "Home",
-        "Global Tutoring",
-        "Subjects",
-        "Locations",
-        "Exam Prep",
-        "Pricing",
-        "Resources",
         "About",
+        "Pricing",
         "Contact"
       ]);
     await expect(desktopNav.getByRole("link", { name: "FAQ" })).toHaveCount(0);
@@ -534,10 +529,19 @@ test.describe("browser route smoke checks", () => {
     const mobileNav = page.getByTestId("public-mobile-menu");
 
     await expect(mobileNav).toBeVisible();
-    await expect(mobileNav.getByRole("link", { name: "FAQ" })).toHaveCount(0);
+    await expect(mobileNav.getByRole("link", { name: "FAQ" })).toBeVisible();
     await expect(mobileNav.getByRole("link", { name: "Global Tutoring" })).toBeVisible();
     await expect(mobileNav.getByRole("link", { name: "Locations" })).toBeVisible();
     await expect(mobileNav.getByRole("link", { name: "Resources" })).toBeVisible();
+    await expect(mobileNav.getByRole("link", { name: "Subjects" })).toBeVisible();
+    await expect(mobileNav.getByRole("link", { name: "Exam Prep" })).toBeVisible();
+    const mobileMainItems = mobileNav.locator("[data-mobile-main-nav-item]");
+    await expect(mobileMainItems).toHaveText([
+      "Home",
+      "About",
+      "Pricing",
+      "Contact"
+    ]);
 
     guard.assertClean();
   });

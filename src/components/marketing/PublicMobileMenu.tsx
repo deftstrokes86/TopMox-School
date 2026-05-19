@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 
 import { RegionSwitcher } from "@/components/marketing/RegionSwitcher";
 import { Button } from "@/components/ui/button";
@@ -14,11 +14,13 @@ import type { NavigationItem } from "@/lib/constants/navigation";
 type PublicMobileMenuProps = {
   currentRegionCode: RegionCode;
   navItems: NavigationItem[];
+  aboutItems: NavigationItem[];
 };
 
 export function PublicMobileMenu({
   currentRegionCode,
-  navItems
+  navItems,
+  aboutItems
 }: PublicMobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -127,31 +129,73 @@ export function PublicMobileMenu({
             </div>
 
             <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5">
-              <RegionSwitcher currentRegionCode={currentRegionCode} compact />
-
               <nav className="grid gap-2" aria-label="Mobile main navigation">
                 {navItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="rounded-2xl px-4 py-3 text-sm font-semibold text-text-secondary transition hover:bg-soft-blue hover:text-deep-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal-blue/25"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
+                  <span key={item.href}>
+                    {item.label === "About" ? (
+                      <details open className="rounded-2xl border border-border/50 bg-white">
+                        <summary
+                          className="list-none rounded-2xl px-4 py-3 text-sm font-semibold text-text-secondary transition hover:bg-soft-blue hover:text-deep-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal-blue/25"
+                          data-mobile-main-nav-item
+                        >
+                          <span className="inline-flex w-full items-center justify-between gap-2">
+                            <span>{item.label}</span>
+                            <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                          </span>
+                        </summary>
+                        <div className="mt-2 grid gap-1 pl-4">
+                          {aboutItems.map((aboutItem) => (
+                            <Link
+                              key={aboutItem.href}
+                              href={aboutItem.href}
+                              className="rounded-xl px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-soft-blue hover:text-deep-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal-blue/25"
+                              onClick={() => setIsOpen(false)}
+                            >
+                              {aboutItem.label}
+                            </Link>
+                          ))}
+                        </div>
+                      </details>
+                    ) : (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="block rounded-2xl px-4 py-3 text-sm font-semibold text-text-secondary transition hover:bg-soft-blue hover:text-deep-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-royal-blue/25"
+                        data-mobile-main-nav-item
+                        onClick={() => setIsOpen(false)}
+                      >
+                        {item.label}
+                      </Link>
+                    )}
+                  </span>
                 ))}
               </nav>
             </div>
 
             <div className="border-t border-border p-5">
-              <Button asChild className="w-full">
-                <Link
-                  href="/book-assessment"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {BRAND.PRIMARY_CTA}
-                </Link>
-              </Button>
+              <div className="flex flex-col gap-2">
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/login" onClick={() => setIsOpen(false)}>
+                    Login
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/register" onClick={() => setIsOpen(false)}>
+                    Sign Up
+                  </Link>
+                </Button>
+                <Button asChild size="sm">
+                  <Link href="/book-assessment" onClick={() => setIsOpen(false)}>
+                    Book Assessment
+                  </Link>
+                </Button>
+              </div>
+              <div className="mt-4 border-t border-border/70 pt-4">
+                <RegionSwitcher
+                  currentRegionCode={currentRegionCode}
+                  compact
+                />
+              </div>
             </div>
           </div>
         </div>
